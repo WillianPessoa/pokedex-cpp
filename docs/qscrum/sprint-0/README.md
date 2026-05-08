@@ -23,7 +23,8 @@
   - [ ] `prototypes/*.html` for the 5 minimal screens, mobile (375px) + desktop (1280px) on the same page
 - [ ] **Phase 5 — Test**:
   - [ ] `.design/pokedex/DESIGN_REVIEW.md` (`/design-review`)
-  - [ ] `.design/pokedex/USER_TEST.md` — ≥2 sessions with real users
+  - [ ] `.design/pokedex/USER_TEST.md` — qualitative prototype walkthrough with ≥2 real users from the Brazilian retro-Pokémon Facebook communities (anonymous / pseudonym)
+  - [ ] **Facebook community survey** (quantitative) — distributed in the same groups under pseudonym; validates JTBD ranking and persona P2 hypothesis (see `.design/research/PERSONAS.md`). Results inform Sprint 1 backlog priorities
   - [ ] `.design/pokedex/TASKS.md` revised after testing
   - [ ] Issues created in the GitHub Project with DoR applied (`/to-issues`)
 - [ ] **Bridge**:
