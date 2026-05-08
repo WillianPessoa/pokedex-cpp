@@ -1,36 +1,36 @@
 # CONTEXT — Pokedex C++/QML
 
-> Glossário do domínio + decisões de vocabulário.
+> Domain glossary + vocabulary decisions.
 >
-> **Este arquivo é vivo.** Será populado durante a Fase 2 (Definir) via `/grill-with-docs`. Mantenha conciso — termos que tenham vocabulário oscilante (ex.: "tipo" vs "type", "BST" vs "stat total") merecem entrada; termos óbvios não.
+> **This file is alive.** It will be populated during Phase 2 (Define) via `/grill-with-docs`. Keep it concise — only entries for terms with shifting vocabulary (e.g. "type" vs "element", "BST" vs "stat total"). Skip the obvious.
 
-## Glossário (a preencher)
+## Glossary (to be filled)
 
-<!-- Exemplo de formato — substituir após /grill-with-docs:
+<!-- Format example — replace after /grill-with-docs:
 
 ### BST (Base Stat Total)
-Soma das 6 estatísticas-base de um Pokémon (HP, Atq, Def, Atq.Esp, Def.Esp, Vel). Range 175 (Sunkern) a 720 (Eternatus). **Sempre escrevemos "BST"**, nunca "stat total" ou "soma de stats".
+Sum of a Pokémon's six base stats (HP, Atk, Def, Sp.Atk, Sp.Def, Spd). Range 175 (Sunkern) to 720 (Eternatus). **Always written "BST"**, never "stat total" or "stat sum".
 
 -->
 
-## Decisões de produto fixadas
+## Product decisions (locked)
 
-<!-- Exemplo:
+<!-- Example:
 
-- **Idioma da UI**: Português (Brasil), com nomes de Pokémon em inglês (Pikachu, não "Pikachu" traduzido).
-- **Geração coberta**: Gen 1-9 inicialmente; mega/gigantamax fora do escopo do MVP.
+- **UI language**: English. Pokémon names stay in English (Pikachu, not localized).
+- **Generations covered**: Gen 1–9 for MVP; megas/gigantamax out of MVP scope.
 
 -->
 
-## Decisões técnicas fixadas
+## Technical decisions (locked)
 
-<!-- Mover para ADR quando decisão tem "porque" complexo. Aqui só o resumo. Exemplo:
+<!-- Move to ADR when the "why" is non-trivial. Keep summaries here. Example:
 
-- **Stack**: C++17 + Qt 6 + QML. Ver [ADR 0001](docs/adr/0001-stack-cpp-qml.md).
-- **Persistência**: SQLite local; PokéAPI como source of truth para sync.
+- **Stack**: C++17 + Qt 6 + QML. See [ADR 0001](docs/adr/0001-stack-cpp-qml.md).
+- **Persistence**: local SQLite; PokéAPI as source of truth for sync.
 
 -->
 
 ---
 
-*Preencher com `/grill-with-docs` na Fase 2 — Definir.*
+*Populate via `/grill-with-docs` in Phase 2 — Define.*

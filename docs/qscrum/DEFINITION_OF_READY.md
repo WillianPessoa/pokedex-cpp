@@ -1,19 +1,19 @@
 # Definition of Ready (DoR)
 
-> Toda issue precisa atender estes critérios **antes** de entrar em sprint.
+> Every issue must meet these criteria **before** entering a sprint.
 
-Uma issue está pronta para ser puxada quando:
+An issue is ready to be pulled when:
 
-- [ ] **Título imperativo** + 1 frase de contexto no corpo
-- [ ] **User story** ou JTBD: `Como <persona>, quero <objetivo>, para <benefício>` ou `Quando <situação>, eu quero <motivação>, para <resultado>`
-- [ ] **Critérios de aceite verificáveis** em formato Given/When/Then (ou checklist binário)
-- [ ] **Ligação com brief / IA / persona aplicável** (link para seção do `DESIGN_BRIEF.md` ou `INFORMATION_ARCHITECTURE.md`)
-- [ ] **Estimativa relativa**: P (≤2h), M (meio dia), G (1 dia), GG (>1 dia — quebrar)
-- [ ] **Dependências mapeadas** (link para issues bloqueadoras) ou marcadas explicitamente como sem dependências
-- [ ] **Definition of Done** referenciado (link para [DEFINITION_OF_DONE.md](DEFINITION_OF_DONE.md))
+- [ ] **Imperative title** + one sentence of context in the body
+- [ ] **User story** or JTBD: `As a <persona>, I want <goal>, so that <benefit>` or `When <situation>, I want <motivation>, so I can <outcome>`
+- [ ] **Verifiable acceptance criteria** in Given/When/Then form (or a binary checklist)
+- [ ] **Linked to brief / IA / persona** when applicable (link to a section of `DESIGN_BRIEF.md` or `INFORMATION_ARCHITECTURE.md`)
+- [ ] **Relative estimate**: S (≤2h), M (half day), L (1 day), XL (>1 day — split it)
+- [ ] **Dependencies mapped** (link to blocking issues) or explicitly marked as having none
+- [ ] **Definition of Done** referenced (link to [DEFINITION_OF_DONE.md](DEFINITION_OF_DONE.md))
 
-## Anti-padrões (issue NÃO está ready se):
+## Anti-patterns (issue is NOT ready when):
 
-- Critério de aceite vago ("funcionar bem", "ficar bonito") — refazer em termos verificáveis
-- Tamanho GG sem quebra — quebrar em vertical slices
-- Nenhum link para brief/IA — significa que a justificativa não está clara
+- Vague acceptance criterion ("works well", "looks nice") — rewrite in verifiable terms
+- XL with no breakdown — split into vertical slices
+- No link to brief/IA — means rationale isn't clear

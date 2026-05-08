@@ -1,22 +1,22 @@
 # Definition of Done (DoD)
 
-> Toda issue precisa atender estes critérios **antes de ser fechada**.
+> Every issue must meet these criteria **before** it's closed.
 
-Uma issue está done quando:
+An issue is done when:
 
-- [ ] **Todos os critérios de aceite** (DoR) verdes
-- [ ] **Código revisto** — auto-revisão com checklist; pares quando houver alguém disponível
-- [ ] **Testes** quando aplicável: ao menos um teste por feature de código (unit/integration/UI conforme natureza)
-- [ ] **Documentação atualizada**:
-  - `CONTEXT.md` se introduziu vocabulário novo
-  - ADR em `docs/adr/` se decisão arquitetural
-  - `QML_PORT_NOTES.md` se mexeu na ponte HTML↔QML
-- [ ] **Build limpo** — sem warnings novos
-- [ ] **Issue fechada via PR/commit**, não manualmente — rastreabilidade
+- [ ] **All acceptance criteria** (from DoR) are green
+- [ ] **Code reviewed** — self-review with checklist; peer-reviewed when someone is available
+- [ ] **Tests** when applicable: at least one test per code feature (unit/integration/UI as appropriate)
+- [ ] **Documentation updated**:
+  - `CONTEXT.md` if new vocabulary was introduced
+  - ADR in `docs/adr/` for any architectural decision
+  - `QML_PORT_NOTES.md` if the HTML↔QML bridge was touched
+- [ ] **Clean build** — no new warnings
+- [ ] **Issue closed via PR/commit**, not manually — preserves traceability
 
-## Anti-padrões (issue NÃO está done se):
+## Anti-patterns (issue is NOT done when):
 
-- "Funciona na minha máquina" sem teste reproduzível
-- Critério de aceite escrito em termos não-verificáveis foi marcado como atendido sem evidência
-- Documentação adiada para "depois"
-- Warnings novos suprimidos sem ADR justificando
+- "Works on my machine" with no reproducible test
+- Acceptance criterion written in non-verifiable terms was checked off without evidence
+- Documentation deferred to "later"
+- New warnings suppressed without an ADR justifying it

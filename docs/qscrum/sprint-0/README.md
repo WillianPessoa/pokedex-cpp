@@ -1,45 +1,45 @@
-# Sprint 0 — Kickoff via Design Thinking
+# Sprint 0 — Design Thinking Kickoff
 
-**Início**: 2026-05-08
+**Start**: 2026-05-08
 
-**Objetivo**: estabelecer brief, IA, design tokens, protótipos HTML+CSS navegáveis, e backlog QSCRUM priorizado para a Sprint 1, **sem escrever uma linha de C++/QML**.
+**Goal**: produce a brief, IA, design tokens, navigable HTML+CSS prototypes, and a prioritized QSCRUM backlog for Sprint 1, **without writing a line of C++/QML**.
 
-## Entregáveis (DoD do Sprint 0)
+## Deliverables (Sprint 0 DoD)
 
-- [ ] **Fase 1 — Empatizar**:
-  - [ ] `.design/research/EMPATHY.md` — etnografia da v1 + sessão `/grill-me`
-  - [ ] `.design/research/PERSONAS.md` — 2-3 personas com JTBD
-  - [ ] (opcional) `.design/research/COMPETITIVE.md` — Bulbapedia, HOME, Serebii
-- [ ] **Fase 2 — Definir**:
-  - [ ] `CONTEXT.md` populado (`/grill-with-docs`)
+- [ ] **Phase 1 — Empathize**:
+  - [ ] `.design/research/EMPATHY.md` — v1 ethnography + `/grill-me` session
+  - [ ] `.design/research/PERSONAS.md` — 2–3 personas with JTBD
+  - [ ] (optional) `.design/research/COMPETITIVE.md` — Bulbapedia, HOME, Serebii
+- [ ] **Phase 2 — Define**:
+  - [ ] `CONTEXT.md` populated (`/grill-with-docs`)
   - [ ] `.design/pokedex/DESIGN_BRIEF.md` (`/design-brief`)
   - [ ] `docs/adr/0001-stack-cpp-qml.md`
-  - [ ] PRD publicado como issue no GitHub Project (`/to-prd`)
-- [ ] **Fase 3 — Idear**:
+  - [ ] PRD published as a GitHub Project issue (`/to-prd`)
+- [ ] **Phase 3 — Ideate**:
   - [ ] `.design/pokedex/INFORMATION_ARCHITECTURE.md` (`/information-architecture`)
-  - [ ] `.design/pokedex/DESIGN_TOKENS.css` (`/design-tokens`) — light + dark, AA validado
-- [ ] **Fase 4 — Prototipar**:
+  - [ ] `.design/pokedex/DESIGN_TOKENS.css` (`/design-tokens`) — light + dark, AA validated
+- [ ] **Phase 4 — Prototype**:
   - [ ] `.design/pokedex/TASKS.md` (`/brief-to-tasks`)
-  - [ ] `prototypes/*.html` para 5 telas mínimas, mobile (375px) + desktop (1280px) na mesma página
-- [ ] **Fase 5 — Testar**:
+  - [ ] `prototypes/*.html` for the 5 minimal screens, mobile (375px) + desktop (1280px) on the same page
+- [ ] **Phase 5 — Test**:
   - [ ] `.design/pokedex/DESIGN_REVIEW.md` (`/design-review`)
-  - [ ] `.design/pokedex/USER_TEST.md` — ≥2 sessões com usuários reais
-  - [ ] `.design/pokedex/TASKS.md` revisado pós-testes
-  - [ ] Issues criadas no GitHub Project com DoR aplicado (`/to-issues`)
+  - [ ] `.design/pokedex/USER_TEST.md` — ≥2 sessions with real users
+  - [ ] `.design/pokedex/TASKS.md` revised after testing
+  - [ ] Issues created in the GitHub Project with DoR applied (`/to-issues`)
 - [ ] **Bridge**:
-  - [ ] `.design/pokedex/QML_PORT_NOTES.md` ao menos com plano de mapear tokens
+  - [ ] `.design/pokedex/QML_PORT_NOTES.md` at minimum with a token-mapping plan
 
-## Não-objetivos do Sprint 0
+## Out of scope for Sprint 0
 
-- Escrever código C++/QML
-- Decidir arquitetura interna (modelos, repositórios, serviços) — é Sprint 1
-- Setup de CMake / pipeline de build — é Sprint 1
-- Decidir provider de PokéAPI / cache strategy — é Sprint 1
+- Writing C++/QML code
+- Deciding internal architecture (models, repositories, services) — Sprint 1
+- CMake / build pipeline setup — Sprint 1
+- PokéAPI provider / cache strategy — Sprint 1
 
-Esses entram no backlog Sprint 1, nascem das decisões do brief.
+These move to the Sprint 1 backlog and are derived from brief decisions.
 
-## Retrospectiva (preencher ao fim)
+## Retrospective (fill at the end)
 
-- Funcionou:
-- Atrapalhou:
-- Mudaria:
+- Worked well:
+- Got in the way:
+- Would change:

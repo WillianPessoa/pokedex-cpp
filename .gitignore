@@ -1,7 +1,7 @@
 # macOS
 .DS_Store
 
-# Build artifacts (Sprint 1+, ainda não usados)
+# Build artifacts (Sprint 1+, not used yet)
 build/
 build-*/
 *.user
@@ -23,8 +23,8 @@ ui_*.h
 *.swp
 *~
 
-# Design tools (gerados localmente, não versionar enquanto Sprint 0)
+# Design tools (generated locally, not versioned during Sprint 0)
 .design/pokedex/screenshots/*.png
 
-# Skills cache (matt skills auto-gerado)
+# Skills cache (matt skills auto-generated)
 .skills-cache/
