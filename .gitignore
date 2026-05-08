@@ -1,0 +1,30 @@
+# macOS
+.DS_Store
+
+# Build artifacts (Sprint 1+, ainda não usados)
+build/
+build-*/
+*.user
+*.user.*
+CMakeCache.txt
+CMakeFiles/
+cmake-build-*/
+
+# Qt
+Makefile
+moc_*.cpp
+moc_*.h
+qrc_*.cpp
+ui_*.h
+
+# IDEs
+.idea/
+.vscode/
+*.swp
+*~
+
+# Design tools (gerados localmente, não versionar enquanto Sprint 0)
+.design/pokedex/screenshots/*.png
+
+# Skills cache (matt skills auto-gerado)
+.skills-cache/
