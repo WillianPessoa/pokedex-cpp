@@ -1,0 +1,157 @@
+/* ============================================================================
+   Shell — desktop sidebar + mobile bottom-nav scaffolding shared by all screens
+   ----------------------------------------------------------------------------
+   Pure CSS — no JS needed. Variant-agnostic; uses tokens for colors and spacing.
+
+   HTML pattern for any prototype screen using this shell:
+
+     <body>
+       <aside class="shell-sidebar" aria-label="Primary navigation">
+         <div class="shell-sidebar__game">…Active Game card…</div>
+         <nav class="shell-sidebar__nav">…4 nav links…</nav>
+       </aside>
+
+       <!-- existing content (topbar, main, etc.) -->
+
+       <nav class="shell-bottom-nav" aria-label="Primary navigation (mobile)">
+         …4 mobile nav items…
+       </nav>
+     </body>
+
+   Mobile (<768px): shell-sidebar hidden, shell-bottom-nav visible.
+   Desktop (≥768px): shell-sidebar visible (fixed left), shell-bottom-nav hidden,
+     body gains padding-left: 240px so content clears the sidebar.
+   ============================================================================ */
+
+
+/* ---- Sidebar (desktop only) ---- */
+
+.shell-sidebar {
+  display: none;
+}
+
+.shell-sidebar__game {
+  padding: var(--space-3);
+  border-radius: var(--border-radius-md);
+  background-color: var(--color-bg-tertiary);
+  cursor: pointer;
+  transition: background-color var(--duration-fast) var(--easing-default);
+}
+.shell-sidebar__game:hover {
+  background-color: var(--color-border-primary);
+}
+.shell-sidebar__game__label {
+  display: block;
+  font-size: var(--font-size-xs);
+  text-transform: uppercase;
+  letter-spacing: var(--letter-spacing-wide);
+  color: var(--color-text-tertiary);
+  margin-bottom: 4px;
+  font-weight: var(--font-weight-medium);
+}
+.shell-sidebar__game__current {
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+.shell-sidebar__nav {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.shell-sidebar__link {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border-radius: var(--border-radius-md);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
+  text-decoration: none;
+  transition: all var(--duration-fast) var(--easing-default);
+}
+.shell-sidebar__link svg {
+  width: 20px;
+  height: 20px;
+}
+.shell-sidebar__link:hover {
+  background-color: var(--color-bg-tertiary);
+  color: var(--color-text-primary);
+  text-decoration: none;
+}
+.shell-sidebar__link[aria-current="page"] {
+  background-color: var(--color-bg-tertiary);
+  color: var(--color-accent-primary);
+}
+
+
+/* ---- Mobile bottom nav (mobile only) ---- */
+
+.shell-bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  background-color: var(--color-bg-secondary);
+  border-top: 1px solid var(--color-border-primary);
+  box-shadow: var(--shadow-md);
+  z-index: 5;
+}
+
+.shell-bottom-nav__item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: var(--space-2);
+  min-height: 64px;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  text-decoration: none;
+  transition: color var(--duration-fast) var(--easing-default);
+}
+.shell-bottom-nav__item svg {
+  width: 22px;
+  height: 22px;
+}
+.shell-bottom-nav__item[aria-current="page"] {
+  color: var(--color-accent-primary);
+}
+.shell-bottom-nav__item:hover {
+  color: var(--color-text-primary);
+}
+
+
+/* ---- Desktop activation (≥768px) ---- */
+
+@media (min-width: 768px) {
+  body {
+    padding-left: 240px;
+  }
+
+  .shell-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 240px;
+    height: 100vh;
+    padding: var(--space-4) var(--space-3);
+    background-color: var(--color-bg-secondary);
+    border-right: 1px solid var(--color-border-primary);
+    z-index: 4;
+    overflow-y: auto;
+  }
+
+  .shell-bottom-nav {
+    display: none;
+  }
+}

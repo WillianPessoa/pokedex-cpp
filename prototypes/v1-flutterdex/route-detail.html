@@ -7,82 +7,98 @@
 
   <link rel="stylesheet" href="../styles/tokens-v1-flutterdex.css" />
   <link rel="stylesheet" href="../styles/reset.css" />
-
+  <link rel="stylesheet" href="../styles/shell.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 
   <style>
-    /* ====================================================================
-       V1-1 — Route detail (encounter table) — V1 FlutterDex variant
-       Maps to PRD Stories 5–10 (Feature 2 — Route detail).
-       ==================================================================== */
+    /* V1-1 — Route detail. Maps to PRD Stories 5–10.
+       Layout: mobile-only by default; desktop ≥768px adds a sidebar nav.
+       Demo: 4 state buttons at top toggle between visible state. */
 
-    body {
-      padding-bottom: 80px; /* leave room for fixed bottom nav */
+    body { padding-bottom: 80px; }
+
+    /* ==== State switcher (prototype demo aid — FAB bottom-right) ==== */
+    .demo-fab {
+      position: fixed;
+      bottom: calc(var(--space-4) + 70px); /* lift above mobile bottom nav */
+      right: var(--space-4);
+      z-index: 50;
+      display: flex; flex-direction: column-reverse; align-items: flex-end; gap: var(--space-2);
+    }
+    @media (min-width: 768px) {
+      .demo-fab { bottom: var(--space-4); }
     }
 
-    /* ==== Page anchor banner (this prototype shows multiple states) ==== */
-    .preview-banner {
-      position: sticky;
-      top: 0;
-      z-index: 20;
-      padding: var(--space-2) var(--space-4);
-      background-color: var(--color-accent-primary);
-      color: white;
-      font-size: var(--font-size-xs);
-      font-weight: var(--font-weight-medium);
-      letter-spacing: var(--letter-spacing-wide);
-      text-transform: uppercase;
-      text-align: center;
-    }
-    .preview-banner a { color: white; text-decoration: underline; }
-
-    /* ==== Layout shell: simple flex column ==== */
-    .layout {
-      display: flex;
-      flex-direction: column;
-      min-height: 100vh;
-    }
-
-    /* ==== Demo screen wrapper — each state is rendered as one screen ==== */
-    .demo-screen {
-      border-bottom: 8px solid var(--color-bg-tertiary);
-      background-color: var(--color-bg-primary);
-    }
-    .demo-screen__label {
-      padding: var(--space-3) var(--space-4);
+    .demo-fab__eye {
+      width: 48px; height: 48px;
+      display: inline-flex; align-items: center; justify-content: center;
+      border-radius: var(--border-radius-full);
       background-color: var(--color-bg-inverse);
       color: var(--color-text-inverse);
-      font-size: var(--font-size-xs);
+      box-shadow: var(--shadow-lg);
+      cursor: pointer;
+      transition: transform var(--duration-fast) var(--easing-default), background-color var(--duration-fast);
+    }
+    .demo-fab__eye:hover { transform: scale(1.05); }
+    .demo-fab__eye svg { width: 22px; height: 22px; }
+    .demo-fab__eye__open { display: none; }
+    .demo-fab[data-collapsed="true"] .demo-fab__eye__closed { display: none; }
+    .demo-fab[data-collapsed="true"] .demo-fab__eye__open { display: inline-block; }
+
+    .demo-fab__panel {
+      display: flex; flex-direction: column; gap: 6px;
+      padding: var(--space-3);
+      background-color: var(--color-bg-inverse);
+      color: var(--color-text-inverse);
+      border-radius: var(--border-radius-lg);
+      box-shadow: var(--shadow-lg);
+      min-width: 200px;
+    }
+    .demo-fab[data-collapsed="true"] .demo-fab__panel { display: none; }
+
+    .demo-fab__label {
+      font-size: 10px;
       font-weight: var(--font-weight-bold);
       letter-spacing: var(--letter-spacing-wide);
       text-transform: uppercase;
+      opacity: 0.6;
+      margin-bottom: 4px;
     }
-    .demo-screen__label__hint {
-      display: block;
-      margin-top: 4px;
-      opacity: 0.8;
-      font-weight: var(--font-weight-normal);
-      letter-spacing: 0;
-      text-transform: none;
+    .demo-fab__btn {
+      display: block; text-align: left;
+      padding: 8px 12px;
+      border-radius: var(--border-radius-md);
+      background-color: rgba(255, 255, 255, 0.08);
+      color: var(--color-text-inverse);
+      font-size: var(--font-size-sm);
+      font-weight: var(--font-weight-semibold);
+      cursor: pointer;
+      transition: background-color var(--duration-fast) var(--easing-default);
+    }
+    .demo-fab__btn:hover { background-color: rgba(255, 255, 255, 0.15); }
+    .demo-fab__btn[aria-pressed="true"] {
+      background-color: var(--color-accent-primary);
+      color: white;
+    }
+
+    /* ==== App layout shell ==== */
+    .app {
+      display: flex; flex-direction: column;
+      min-height: 100vh;
     }
 
     /* ==== TopBar ==== */
     .topbar {
-      display: flex;
-      align-items: center;
-      gap: var(--space-3);
+      display: flex; align-items: center; gap: var(--space-3);
       padding: var(--space-3) var(--space-4);
       background-color: var(--color-bg-secondary);
       border-bottom: 1px solid var(--color-border-primary);
     }
     .topbar__back {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 44px;
-      height: 44px;
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 44px; height: 44px;
       border-radius: var(--border-radius-full);
       color: var(--color-text-primary);
     }
@@ -104,17 +120,14 @@
 
     /* ==== Filter bar ==== */
     .filters {
-      display: flex;
-      gap: var(--space-2);
+      display: flex; gap: var(--space-2);
       padding: var(--space-3) var(--space-4);
       background-color: var(--color-bg-primary);
       border-bottom: 1px solid var(--color-border-primary);
       overflow-x: auto;
     }
     .filter-toggle {
-      display: inline-flex;
-      align-items: center;
-      gap: var(--space-2);
+      display: inline-flex; align-items: center; gap: var(--space-2);
       padding: 8px 14px;
       border-radius: var(--border-radius-full);
       background-color: var(--color-bg-secondary);
@@ -134,8 +147,7 @@
     }
     .filter-toggle__indicator {
       display: inline-block;
-      width: 14px;
-      height: 14px;
+      width: 14px; height: 14px;
       border-radius: 4px;
       border: 1.5px solid currentColor;
       position: relative;
@@ -146,28 +158,23 @@
     }
     .filter-toggle[aria-pressed="true"] .filter-toggle__indicator::after {
       content: "";
-      position: absolute;
-      top: 2px;
-      left: 5px;
-      width: 4px;
-      height: 7px;
+      position: absolute; top: 2px; left: 5px;
+      width: 4px; height: 7px;
       border: solid var(--color-accent-primary);
       border-width: 0 2px 2px 0;
       transform: rotate(45deg);
     }
+    .filter-toggle:disabled { opacity: 0.55; cursor: not-allowed; }
 
     /* ==== Encounter list ==== */
     .encounter-list {
       padding: var(--space-3) var(--space-4) var(--space-5);
-      display: flex;
-      flex-direction: column;
+      display: flex; flex-direction: column;
       gap: var(--space-2);
     }
     .encounter-row {
-      display: grid;
-      grid-template-columns: 64px 1fr auto;
-      align-items: center;
-      gap: var(--space-3);
+      display: grid; grid-template-columns: 64px 1fr auto;
+      align-items: center; gap: var(--space-3);
       padding: var(--space-3);
       background-color: var(--color-bg-secondary);
       border: 1px solid var(--color-border-primary);
@@ -178,27 +185,21 @@
     .encounter-row:hover { box-shadow: var(--shadow-md); }
 
     .encounter-row__sprite {
-      width: 64px;
-      height: 64px;
+      width: 64px; height: 64px;
       background-color: var(--color-bg-tertiary);
       border-radius: var(--border-radius-md);
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      display: flex; align-items: center; justify-content: center;
       overflow: hidden;
     }
     .encounter-row__sprite img {
-      width: 100%;
-      height: 100%;
+      width: 100%; height: 100%;
       object-fit: contain;
       image-rendering: pixelated;
     }
 
     .encounter-row__body {
       min-width: 0;
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
+      display: flex; flex-direction: column; gap: 4px;
     }
     .encounter-row__name {
       font-size: var(--font-size-md);
@@ -207,19 +208,12 @@
       letter-spacing: var(--letter-spacing-tight);
     }
     .encounter-row__meta {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: var(--space-2);
+      display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2);
       font-size: var(--font-size-sm);
       color: var(--color-text-secondary);
     }
-    .encounter-row__meta-item { display: inline-flex; align-items: center; gap: 4px; }
-    .encounter-row__meta-item svg { width: 14px; height: 14px; }
     .encounter-row__types {
-      display: flex;
-      gap: 4px;
-      margin-top: 2px;
+      display: flex; gap: 4px; margin-top: 2px;
     }
     .encounter-row__rate-display {
       font-size: var(--font-size-xl);
@@ -228,10 +222,9 @@
       letter-spacing: var(--letter-spacing-tight);
     }
 
-    /* ==== Type badges (V1 pastel pills) ==== */
+    /* ==== Type badges ==== */
     .type-badge {
-      display: inline-flex;
-      align-items: center;
+      display: inline-flex; align-items: center;
       padding: 3px 10px;
       border-radius: var(--border-radius-full);
       font-size: var(--font-size-xs);
@@ -240,28 +233,18 @@
       text-transform: uppercase;
     }
     .type-badge--normal   { background: var(--type-badge-bg-normal);   color: var(--type-badge-text-normal); }
-    .type-badge--fire     { background: var(--type-badge-bg-fire);     color: var(--type-badge-text-fire); }
-    .type-badge--water    { background: var(--type-badge-bg-water);    color: var(--type-badge-text-water); }
     .type-badge--electric { background: var(--type-badge-bg-electric); color: var(--type-badge-text-electric); }
-    .type-badge--grass    { background: var(--type-badge-bg-grass);    color: var(--type-badge-text-grass); }
     .type-badge--flying   { background: var(--type-badge-bg-flying);   color: var(--type-badge-text-flying); }
-    .type-badge--bug      { background: var(--type-badge-bg-bug);      color: var(--type-badge-text-bug); }
-    .type-badge--poison   { background: var(--type-badge-bg-poison);   color: var(--type-badge-text-poison); }
-    .type-badge--ground   { background: var(--type-badge-bg-ground);   color: var(--type-badge-text-ground); }
-    .type-badge--rock     { background: var(--type-badge-bg-rock);     color: var(--type-badge-text-rock); }
 
     /* ==== Empty state ==== */
     .empty-state-inline {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: var(--space-3);
+      display: flex; flex-direction: column; align-items: center; gap: var(--space-3);
       padding: var(--space-7) var(--space-4);
       text-align: center;
       background-color: var(--color-bg-secondary);
       border: 1px dashed var(--color-border-primary);
       border-radius: var(--border-radius-lg);
-      margin: var(--space-3) var(--space-4) var(--space-5);
+      margin: var(--space-4);
     }
     .empty-state-inline svg { width: 48px; height: 48px; color: var(--color-text-tertiary); }
     .empty-state-inline h3 { font-size: var(--font-size-md); font-weight: var(--font-weight-semibold); }
@@ -276,396 +259,313 @@
     }
     .skeleton-block::after {
       content: "";
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5), transparent);
+      position: absolute; inset: 0;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent);
       animation: shimmer 1.4s ease-in-out infinite;
     }
     @keyframes shimmer { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
-    @media (prefers-reduced-motion: reduce) {
-      .skeleton-block::after { animation: none; opacity: 0.4; }
-    }
+    @media (prefers-reduced-motion: reduce) { .skeleton-block::after { animation: none; opacity: 0.4; } }
 
-    /* ==== Mobile bottom nav ==== */
-    .bottom-nav {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      background-color: var(--color-bg-secondary);
-      border-top: 1px solid var(--color-border-primary);
-      box-shadow: var(--shadow-md);
-      z-index: 5;
-    }
-    .bottom-nav__item {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 2px;
-      padding: var(--space-2);
-      min-height: 64px;
-      color: var(--color-text-secondary);
-      font-size: var(--font-size-xs);
-      font-weight: var(--font-weight-medium);
-    }
-    .bottom-nav__item svg { width: 22px; height: 22px; }
-    .bottom-nav__item[aria-current="page"] { color: var(--color-accent-primary); }
+    /* ==== State visibility (button-driven) ==== */
+    [data-state-view] { display: none; }
+    body[data-state="default"]      [data-state-view="default"]      { display: block; }
+    body[data-state="first-only"]   [data-state-view="first-only"]   { display: block; }
+    body[data-state="empty"]        [data-state-view="empty"]        { display: block; }
+    body[data-state="loading"]      [data-state-view="loading"]      { display: block; }
 
-    /* ==== Desktop layout (≥768px) ==== */
+    /* Mobile bottom nav handled entirely by shell.css */
+
+    /* ==== Desktop layout ≥768px (shell.css handles sidebar + body padding) ==== */
     @media (min-width: 768px) {
-      .demo-screen {
-        max-width: 900px;
-        margin: 0 auto;
-      }
       .topbar { padding: var(--space-4) var(--space-6); }
       .topbar__title { font-size: var(--font-size-xl); }
       .filters { padding: var(--space-3) var(--space-6); }
-      .encounter-list { padding: var(--space-4) var(--space-6) var(--space-6); }
+      .encounter-list {
+        padding: var(--space-4) var(--space-6) var(--space-7);
+        max-width: 720px; margin: 0 auto;
+      }
       .encounter-row__rate-display { font-size: var(--font-size-2xl); }
-      .empty-state-inline { margin: var(--space-4) var(--space-6) var(--space-6); }
-      .bottom-nav { display: none; }
+      .empty-state-inline { margin: var(--space-4) var(--space-6); max-width: 720px; margin-left: auto; margin-right: auto; }
     }
   </style>
 </head>
+<body data-state="default">
 
-<body>
+  <aside class="shell-sidebar" aria-label="Primary navigation">
+    <div class="shell-sidebar__game" role="button" tabindex="0">
+      <span class="shell-sidebar__game__label">Active Game</span>
+      <span class="shell-sidebar__game__current">FireRed</span>
+    </div>
+    <nav class="shell-sidebar__nav">
+      <a class="shell-sidebar__link" href="route-browser.html" aria-current="page">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 12l2-2m0 0l7-7 7 7m-9-2v8m-4-4h12" /></svg>
+        Routes
+      </a>
+      <a class="shell-sidebar__link" href="pokemon-browser.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9" /><line x1="3" y1="12" x2="21" y2="12" /></svg>
+        Pokémon
+      </a>
+      <a class="shell-sidebar__link" href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polygon points="12 2 15 9 22 9 17 14 19 21 12 17 5 21 7 14 2 9 9 9" /></svg>
+        Favorites
+      </a>
+      <a class="shell-sidebar__link" href="settings.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="3" /></svg>
+        Settings
+      </a>
+    </nav>
+  </aside>
 
-  <div class="preview-banner">
-    Prototype demo — V1 FlutterDex · Route detail · 4 states stacked below
-  </div>
-
-  <div class="layout">
-
-    <!-- ==================================================================
-         STATE 1 — Default (loaded encounter table for FireRed Route 1)
-         ================================================================== -->
-
-    <section class="demo-screen">
-      <div class="demo-screen__label">
-        State 1 — Default (loaded)
-        <span class="demo-screen__label__hint">FireRed Route 1, no filters active. PRD Stories 5–6.</span>
-      </div>
+  <div class="content">
 
       <header class="topbar">
-        <a class="topbar__back" href="#" aria-label="Back to Route browser">
+        <a class="topbar__back" href="route-browser.html" aria-label="Back to Route browser">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
             <polyline points="15 18 9 12 15 6" />
           </svg>
         </a>
         <div class="topbar__heading">
           <h1 class="topbar__title">Route 1</h1>
-          <span class="topbar__subtitle">FireRed</span>
+          <span class="topbar__subtitle" id="subtitle-text">FireRed</span>
         </div>
       </header>
 
-      <div class="filters" role="group" aria-label="Encounter filters">
+      <!-- Filters: differs per state -->
+      <!-- Default: both off -->
+      <div class="filters" data-state-view="default" role="group" aria-label="Encounter filters">
         <button class="filter-toggle" type="button" aria-pressed="false">
-          <span class="filter-toggle__indicator"></span>
-          First encounter only
-        </button>
-        <button class="filter-toggle" type="button" aria-pressed="false">
-          <span class="filter-toggle__indicator"></span>
-          Dupes clause: hide caught
-        </button>
-      </div>
-
-      <ol class="encounter-list" role="list">
-        <li class="encounter-row">
-          <div class="encounter-row__sprite">
-            <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/16.png" alt="" aria-hidden="true" loading="lazy" />
-          </div>
-          <div class="encounter-row__body">
-            <span class="encounter-row__name">Pidgey</span>
-            <div class="encounter-row__meta">
-              <span class="num">Lv 2&ndash;5</span>
-              <span aria-hidden="true">·</span>
-              <span>Grass</span>
-            </div>
-            <div class="encounter-row__types">
-              <span class="type-badge type-badge--normal">Normal</span>
-              <span class="type-badge type-badge--flying">Flying</span>
-            </div>
-          </div>
-          <span class="encounter-row__rate-display num">50%</span>
-        </li>
-
-        <li class="encounter-row">
-          <div class="encounter-row__sprite">
-            <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/19.png" alt="" aria-hidden="true" loading="lazy" />
-          </div>
-          <div class="encounter-row__body">
-            <span class="encounter-row__name">Rattata</span>
-            <div class="encounter-row__meta">
-              <span class="num">Lv 2&ndash;5</span>
-              <span aria-hidden="true">·</span>
-              <span>Grass</span>
-            </div>
-            <div class="encounter-row__types">
-              <span class="type-badge type-badge--normal">Normal</span>
-            </div>
-          </div>
-          <span class="encounter-row__rate-display num">50%</span>
-        </li>
-
-        <li class="encounter-row">
-          <div class="encounter-row__sprite">
-            <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png" alt="" aria-hidden="true" loading="lazy" />
-          </div>
-          <div class="encounter-row__body">
-            <span class="encounter-row__name">Pikachu</span>
-            <div class="encounter-row__meta">
-              <span class="num">Lv 3&ndash;5</span>
-              <span aria-hidden="true">·</span>
-              <span>Grass (rare)</span>
-            </div>
-            <div class="encounter-row__types">
-              <span class="type-badge type-badge--electric">Electric</span>
-            </div>
-          </div>
-          <span class="encounter-row__rate-display num">5%</span>
-        </li>
-
-        <li class="encounter-row">
-          <div class="encounter-row__sprite">
-            <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/16.png" alt="" aria-hidden="true" loading="lazy" />
-          </div>
-          <div class="encounter-row__body">
-            <span class="encounter-row__name">Pidgey</span>
-            <div class="encounter-row__meta">
-              <span class="num">Lv 4&ndash;6</span>
-              <span aria-hidden="true">·</span>
-              <span>Tall Grass</span>
-            </div>
-            <div class="encounter-row__types">
-              <span class="type-badge type-badge--normal">Normal</span>
-              <span class="type-badge type-badge--flying">Flying</span>
-            </div>
-          </div>
-          <span class="encounter-row__rate-display num">35%</span>
-        </li>
-
-        <li class="encounter-row">
-          <div class="encounter-row__sprite">
-            <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/19.png" alt="" aria-hidden="true" loading="lazy" />
-          </div>
-          <div class="encounter-row__body">
-            <span class="encounter-row__name">Rattata</span>
-            <div class="encounter-row__meta">
-              <span class="num">Lv 4&ndash;6</span>
-              <span aria-hidden="true">·</span>
-              <span>Tall Grass</span>
-            </div>
-            <div class="encounter-row__types">
-              <span class="type-badge type-badge--normal">Normal</span>
-            </div>
-          </div>
-          <span class="encounter-row__rate-display num">15%</span>
-        </li>
-      </ol>
-    </section>
-
-    <!-- ==================================================================
-         STATE 2 — "First encounter only" toggled on (Nuzlocke filter)
-         ================================================================== -->
-
-    <section class="demo-screen">
-      <div class="demo-screen__label">
-        State 2 — "First encounter only" filter on
-        <span class="demo-screen__label__hint">Classic Nuzlocke rule narrows the list to a single first encounter. PRD Story 7.</span>
-      </div>
-
-      <header class="topbar">
-        <a class="topbar__back" href="#" aria-label="Back">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-            <polyline points="15 18 9 12 15 6" />
-          </svg>
-        </a>
-        <div class="topbar__heading">
-          <h1 class="topbar__title">Route 1</h1>
-          <span class="topbar__subtitle">FireRed</span>
-        </div>
-      </header>
-
-      <div class="filters">
-        <button class="filter-toggle" type="button" aria-pressed="true">
-          <span class="filter-toggle__indicator"></span>
-          First encounter only
+          <span class="filter-toggle__indicator"></span>First encounter only
         </button>
         <button class="filter-toggle" type="button" aria-pressed="false">
-          <span class="filter-toggle__indicator"></span>
-          Dupes clause: hide caught
+          <span class="filter-toggle__indicator"></span>Dupes clause: hide caught
         </button>
       </div>
-
-      <ol class="encounter-list" role="list">
-        <li class="encounter-row">
-          <div class="encounter-row__sprite">
-            <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/16.png" alt="" aria-hidden="true" loading="lazy" />
-          </div>
-          <div class="encounter-row__body">
-            <span class="encounter-row__name">Pidgey</span>
-            <div class="encounter-row__meta">
-              <span class="num">Lv 2&ndash;5</span>
-              <span aria-hidden="true">·</span>
-              <span>Grass · most likely first</span>
-            </div>
-            <div class="encounter-row__types">
-              <span class="type-badge type-badge--normal">Normal</span>
-              <span class="type-badge type-badge--flying">Flying</span>
-            </div>
-          </div>
-          <span class="encounter-row__rate-display num">50%</span>
-        </li>
-      </ol>
-    </section>
-
-    <!-- ==================================================================
-         STATE 3 — Empty (both filters on, no matches)
-         ================================================================== -->
-
-    <section class="demo-screen">
-      <div class="demo-screen__label">
-        State 3 — Empty (filter excludes everything)
-        <span class="demo-screen__label__hint">Both Nuzlocke filters on; all candidates already caught. PRD Stories 7, 8.</span>
-      </div>
-
-      <header class="topbar">
-        <a class="topbar__back" href="#" aria-label="Back">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-            <polyline points="15 18 9 12 15 6" />
-          </svg>
-        </a>
-        <div class="topbar__heading">
-          <h1 class="topbar__title">Route 1</h1>
-          <span class="topbar__subtitle">FireRed</span>
-        </div>
-      </header>
-
-      <div class="filters">
+      <!-- First-only: first toggle pressed -->
+      <div class="filters" data-state-view="first-only" role="group">
         <button class="filter-toggle" type="button" aria-pressed="true">
-          <span class="filter-toggle__indicator"></span>
-          First encounter only
+          <span class="filter-toggle__indicator"></span>First encounter only
+        </button>
+        <button class="filter-toggle" type="button" aria-pressed="false">
+          <span class="filter-toggle__indicator"></span>Dupes clause: hide caught
+        </button>
+      </div>
+      <!-- Empty: both pressed -->
+      <div class="filters" data-state-view="empty" role="group">
+        <button class="filter-toggle" type="button" aria-pressed="true">
+          <span class="filter-toggle__indicator"></span>First encounter only
         </button>
         <button class="filter-toggle" type="button" aria-pressed="true">
-          <span class="filter-toggle__indicator"></span>
-          Dupes clause: hide caught
+          <span class="filter-toggle__indicator"></span>Dupes clause: hide caught
+        </button>
+      </div>
+      <!-- Loading: disabled -->
+      <div class="filters" data-state-view="loading" role="group">
+        <button class="filter-toggle" type="button" aria-pressed="false" disabled>
+          <span class="filter-toggle__indicator"></span>First encounter only
+        </button>
+        <button class="filter-toggle" type="button" aria-pressed="false" disabled>
+          <span class="filter-toggle__indicator"></span>Dupes clause: hide caught
         </button>
       </div>
 
-      <div class="empty-state-inline">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
-          <circle cx="11" cy="11" r="7" />
-          <line x1="21" y1="21" x2="16.65" y2="16.65" />
-        </svg>
-        <h3>No Encounters match this filter</h3>
-        <p>Toggle filters off, or pick another Route to see what's available there.</p>
-      </div>
-    </section>
+      <main>
+        <!-- ===== Default state ===== -->
+        <ol class="encounter-list" data-state-view="default" role="list">
+          <li class="encounter-row">
+            <div class="encounter-row__sprite">
+              <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/16.png" alt="" aria-hidden="true" loading="lazy" />
+            </div>
+            <div class="encounter-row__body">
+              <span class="encounter-row__name">Pidgey</span>
+              <div class="encounter-row__meta"><span class="num">Lv 2&ndash;5</span><span aria-hidden="true">·</span><span>Grass</span></div>
+              <div class="encounter-row__types">
+                <span class="type-badge type-badge--normal">Normal</span>
+                <span class="type-badge type-badge--flying">Flying</span>
+              </div>
+            </div>
+            <span class="encounter-row__rate-display num">50%</span>
+          </li>
+          <li class="encounter-row">
+            <div class="encounter-row__sprite">
+              <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/19.png" alt="" aria-hidden="true" loading="lazy" />
+            </div>
+            <div class="encounter-row__body">
+              <span class="encounter-row__name">Rattata</span>
+              <div class="encounter-row__meta"><span class="num">Lv 2&ndash;5</span><span aria-hidden="true">·</span><span>Grass</span></div>
+              <div class="encounter-row__types"><span class="type-badge type-badge--normal">Normal</span></div>
+            </div>
+            <span class="encounter-row__rate-display num">50%</span>
+          </li>
+          <li class="encounter-row">
+            <div class="encounter-row__sprite">
+              <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png" alt="" aria-hidden="true" loading="lazy" />
+            </div>
+            <div class="encounter-row__body">
+              <span class="encounter-row__name">Pikachu</span>
+              <div class="encounter-row__meta"><span class="num">Lv 3&ndash;5</span><span aria-hidden="true">·</span><span>Grass (rare)</span></div>
+              <div class="encounter-row__types"><span class="type-badge type-badge--electric">Electric</span></div>
+            </div>
+            <span class="encounter-row__rate-display num">5%</span>
+          </li>
+          <li class="encounter-row">
+            <div class="encounter-row__sprite">
+              <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/16.png" alt="" aria-hidden="true" loading="lazy" />
+            </div>
+            <div class="encounter-row__body">
+              <span class="encounter-row__name">Pidgey</span>
+              <div class="encounter-row__meta"><span class="num">Lv 4&ndash;6</span><span aria-hidden="true">·</span><span>Tall Grass</span></div>
+              <div class="encounter-row__types">
+                <span class="type-badge type-badge--normal">Normal</span>
+                <span class="type-badge type-badge--flying">Flying</span>
+              </div>
+            </div>
+            <span class="encounter-row__rate-display num">35%</span>
+          </li>
+          <li class="encounter-row">
+            <div class="encounter-row__sprite">
+              <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/19.png" alt="" aria-hidden="true" loading="lazy" />
+            </div>
+            <div class="encounter-row__body">
+              <span class="encounter-row__name">Rattata</span>
+              <div class="encounter-row__meta"><span class="num">Lv 4&ndash;6</span><span aria-hidden="true">·</span><span>Tall Grass</span></div>
+              <div class="encounter-row__types"><span class="type-badge type-badge--normal">Normal</span></div>
+            </div>
+            <span class="encounter-row__rate-display num">15%</span>
+          </li>
+        </ol>
 
-    <!-- ==================================================================
-         STATE 4 — Loading (Game not yet cached)
-         ================================================================== -->
+        <!-- ===== First-only state ===== -->
+        <ol class="encounter-list" data-state-view="first-only" role="list">
+          <li class="encounter-row">
+            <div class="encounter-row__sprite">
+              <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/16.png" alt="" aria-hidden="true" loading="lazy" />
+            </div>
+            <div class="encounter-row__body">
+              <span class="encounter-row__name">Pidgey</span>
+              <div class="encounter-row__meta"><span class="num">Lv 2&ndash;5</span><span aria-hidden="true">·</span><span>Grass · most likely first</span></div>
+              <div class="encounter-row__types">
+                <span class="type-badge type-badge--normal">Normal</span>
+                <span class="type-badge type-badge--flying">Flying</span>
+              </div>
+            </div>
+            <span class="encounter-row__rate-display num">50%</span>
+          </li>
+        </ol>
 
-    <section class="demo-screen">
-      <div class="demo-screen__label">
-        State 4 — Loading (Game not cached, fetching)
-        <span class="demo-screen__label__hint">First time the user opens this Game. PRD Story 31.</span>
-      </div>
-
-      <header class="topbar">
-        <a class="topbar__back" href="#" aria-label="Back">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-            <polyline points="15 18 9 12 15 6" />
-          </svg>
-        </a>
-        <div class="topbar__heading">
-          <h1 class="topbar__title">Route 1</h1>
-          <span class="topbar__subtitle">FireRed · fetching…</span>
+        <!-- ===== Empty state ===== -->
+        <div data-state-view="empty">
+          <div class="empty-state-inline">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+              <circle cx="11" cy="11" r="7" />
+              <line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
+            <h3>No Encounters match this filter</h3>
+            <p>Toggle filters off, or pick another Route to see what's available there.</p>
+          </div>
         </div>
-      </header>
 
-      <div class="filters">
-        <button class="filter-toggle" type="button" aria-pressed="false" disabled style="opacity: 0.6">
-          <span class="filter-toggle__indicator"></span>
-          First encounter only
-        </button>
-        <button class="filter-toggle" type="button" aria-pressed="false" disabled style="opacity: 0.6">
-          <span class="filter-toggle__indicator"></span>
-          Dupes clause: hide caught
-        </button>
-      </div>
+        <!-- ===== Loading state ===== -->
+        <ol class="encounter-list" data-state-view="loading" role="list" aria-busy="true">
+          <li class="encounter-row">
+            <div class="skeleton-block" style="width: 64px; height: 64px;"></div>
+            <div class="encounter-row__body" style="gap: 8px;">
+              <div class="skeleton-block" style="height: 18px; width: 60%;"></div>
+              <div class="skeleton-block" style="height: 14px; width: 40%;"></div>
+            </div>
+            <div class="skeleton-block" style="height: 24px; width: 56px;"></div>
+          </li>
+          <li class="encounter-row">
+            <div class="skeleton-block" style="width: 64px; height: 64px;"></div>
+            <div class="encounter-row__body" style="gap: 8px;">
+              <div class="skeleton-block" style="height: 18px; width: 50%;"></div>
+              <div class="skeleton-block" style="height: 14px; width: 35%;"></div>
+            </div>
+            <div class="skeleton-block" style="height: 24px; width: 56px;"></div>
+          </li>
+          <li class="encounter-row">
+            <div class="skeleton-block" style="width: 64px; height: 64px;"></div>
+            <div class="encounter-row__body" style="gap: 8px;">
+              <div class="skeleton-block" style="height: 18px; width: 45%;"></div>
+              <div class="skeleton-block" style="height: 14px; width: 30%;"></div>
+            </div>
+            <div class="skeleton-block" style="height: 24px; width: 56px;"></div>
+          </li>
+        </ol>
+      </main>
 
-      <ol class="encounter-list" role="list" aria-busy="true">
-        <li class="encounter-row">
-          <div class="skeleton-block" style="width: 64px; height: 64px;"></div>
-          <div class="encounter-row__body" style="gap: 8px;">
-            <div class="skeleton-block" style="height: 18px; width: 60%;"></div>
-            <div class="skeleton-block" style="height: 14px; width: 40%;"></div>
-          </div>
-          <div class="skeleton-block" style="height: 24px; width: 56px;"></div>
-        </li>
-        <li class="encounter-row">
-          <div class="skeleton-block" style="width: 64px; height: 64px;"></div>
-          <div class="encounter-row__body" style="gap: 8px;">
-            <div class="skeleton-block" style="height: 18px; width: 50%;"></div>
-            <div class="skeleton-block" style="height: 14px; width: 35%;"></div>
-          </div>
-          <div class="skeleton-block" style="height: 24px; width: 56px;"></div>
-        </li>
-        <li class="encounter-row">
-          <div class="skeleton-block" style="width: 64px; height: 64px;"></div>
-          <div class="encounter-row__body" style="gap: 8px;">
-            <div class="skeleton-block" style="height: 18px; width: 45%;"></div>
-            <div class="skeleton-block" style="height: 14px; width: 30%;"></div>
-          </div>
-          <div class="skeleton-block" style="height: 24px; width: 56px;"></div>
-        </li>
-      </ol>
-    </section>
+  </div><!-- /.content -->
 
-  </div>
-
-  <!-- Mobile bottom nav (single instance for the whole page) -->
-  <nav class="bottom-nav" aria-label="Primary navigation (mobile)">
-    <a class="bottom-nav__item" href="#" aria-current="page">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-        <path d="M3 12l2-2m0 0l7-7 7 7m-9-2v8m-4-4h12" />
-      </svg>
-      Routes
-    </a>
-    <a class="bottom-nav__item" href="#">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-        <circle cx="12" cy="12" r="9" />
-        <line x1="3" y1="12" x2="21" y2="12" />
-      </svg>
-      Pokémon
-    </a>
-    <a class="bottom-nav__item" href="#">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-        <polygon points="12 2 15 9 22 9 17 14 19 21 12 17 5 21 7 14 2 9 9 9" />
-      </svg>
-      Favorites
-    </a>
-    <a class="bottom-nav__item" href="#">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+  <!-- Demo state switcher (prototype-only — FAB bottom-right with eye toggle) -->
+  <div class="demo-fab" data-collapsed="false" aria-label="Demo state switcher">
+    <div class="demo-fab__panel" role="group" aria-label="Switch demonstrated state">
+      <span class="demo-fab__label">Demo · show state</span>
+      <button class="demo-fab__btn" type="button" data-state-target="default" aria-pressed="true">Default</button>
+      <button class="demo-fab__btn" type="button" data-state-target="first-only" aria-pressed="false">First encounter on</button>
+      <button class="demo-fab__btn" type="button" data-state-target="empty" aria-pressed="false">Empty</button>
+      <button class="demo-fab__btn" type="button" data-state-target="loading" aria-pressed="false">Loading</button>
+    </div>
+    <button class="demo-fab__eye" type="button" id="demo-fab-toggle" aria-label="Toggle demo controls" aria-expanded="true">
+      <!-- open eye (panel visible) -->
+      <svg class="demo-fab__eye__closed" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
         <circle cx="12" cy="12" r="3" />
-        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
       </svg>
-      Settings
+      <!-- closed eye (panel hidden) -->
+      <svg class="demo-fab__eye__open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+        <line x1="1" y1="1" x2="23" y2="23" />
+      </svg>
+    </button>
+  </div>
+
+  <!-- Mobile bottom nav -->
+  <nav class="shell-bottom-nav" aria-label="Primary navigation (mobile)">
+    <a class="shell-bottom-nav__item" href="route-browser.html" aria-current="page">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 12l2-2m0 0l7-7 7 7m-9-2v8m-4-4h12" /></svg>Routes
+    </a>
+    <a class="shell-bottom-nav__item" href="pokemon-browser.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9" /><line x1="3" y1="12" x2="21" y2="12" /></svg>Pokémon
+    </a>
+    <a class="shell-bottom-nav__item" href="#">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polygon points="12 2 15 9 22 9 17 14 19 21 12 17 5 21 7 14 2 9 9 9" /></svg>Favorites
+    </a>
+    <a class="shell-bottom-nav__item" href="settings.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="3" /></svg>Settings
     </a>
   </nav>
 
   <script>
-    // Pure visual interaction — clicking a toggle flips its aria-pressed state.
-    document.querySelectorAll('.filter-toggle').forEach(btn => {
+    // ==== State switcher (prototype-only) ====
+    const subtitleText = document.getElementById('subtitle-text');
+    const subtitles = {
+      'default':    'FireRed',
+      'first-only': 'FireRed · 1 result under filter',
+      'empty':      'FireRed · no results',
+      'loading':    'FireRed · fetching…'
+    };
+    document.querySelectorAll('[data-state-target]').forEach(btn => {
       btn.addEventListener('click', () => {
-        if (btn.disabled) return;
-        const pressed = btn.getAttribute('aria-pressed') === 'true';
-        btn.setAttribute('aria-pressed', String(!pressed));
+        const target = btn.getAttribute('data-state-target');
+        document.body.setAttribute('data-state', target);
+        document.querySelectorAll('[data-state-target]').forEach(b => b.setAttribute('aria-pressed', 'false'));
+        btn.setAttribute('aria-pressed', 'true');
+        subtitleText.textContent = subtitles[target];
       });
+    });
+
+    // Filter toggles within the visible state
+    document.querySelectorAll('.filter-toggle').forEach(t => t.addEventListener('click', () => {
+      if (t.disabled) return;
+      t.setAttribute('aria-pressed', t.getAttribute('aria-pressed') === 'true' ? 'false' : 'true');
+    }));
+
+    // Eye toggle (collapse/expand the demo FAB)
+    const fab = document.querySelector('.demo-fab');
+    const fabToggle = document.getElementById('demo-fab-toggle');
+    fabToggle.addEventListener('click', () => {
+      const collapsed = fab.getAttribute('data-collapsed') === 'true';
+      fab.setAttribute('data-collapsed', String(!collapsed));
+      fabToggle.setAttribute('aria-expanded', String(collapsed)); // expanded == not collapsed
     });
   </script>
 </body>
