@@ -161,3 +161,6 @@ This brief explicitly does **not** cover, and the MVP does **not** include, the 
 - **ROMhack-specific data**: encounter tables for Radical Red / Unbound / etc. The vanilla games are MVP scope; ROMhacks roadmap.
 - **Pokémon comparator**: side-by-side comparison of 2–6 Pokémon. Was in v1 plan; cut from MVP to keep prototype scope manageable.
 - **Sprite color extraction**: V2 variant suggests cards using sprite-derived colors (per v1 research). The *extraction pipeline* is out of MVP for the prototype phase — Phase 4 prototypes can use placeholder colors. Production C++/QML implements extraction in Sprint 1+.
+- **Team-based recommendation engine**: "best counters from my team" — when the user opens a Pokémon detail of an opponent, surface highest-damage Pokémon from the user's caught set with recommended moves. Requires moveset dataset, damage estimator, ranking UI, and "Team" as a first-class entity (extends Favorites). Roadmap, post Run tracker.
+
+> **In scope clarification (added Phase 3, 2026-05-08)**: Type effectiveness *for an individual Pokémon* IS in MVP — surfaced as a section at the bottom of the Info tab in Pokémon detail. Only a top-level **Type matchup matrix browser** (browse-anywhere chart) is out of MVP scope.
