@@ -1,0 +1,716 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Route 1 — FireRed · Pokedex (V1 FlutterDex)</title>
+
+  <link rel="stylesheet" href="../styles/tokens-v1-flutterdex.css" />
+  <link rel="stylesheet" href="../styles/reset.css" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ====================================================================
+       V1-1 — Route detail (encounter table) — V1 FlutterDex variant
+       Maps to PRD Stories 5–10 (Feature 2 — Route detail).
+       ==================================================================== */
+
+    .app {
+      min-height: 100vh;
+      display: grid;
+      grid-template-rows: auto 1fr;
+    }
+
+    /* ==== TopBar ==== */
+    .topbar {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      padding: var(--space-3) var(--space-4);
+      background-color: var(--color-bg-secondary);
+      border-bottom: 1px solid var(--color-border-primary);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .topbar__back {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 44px;
+      height: 44px;
+      border-radius: var(--border-radius-full);
+      color: var(--color-text-primary);
+    }
+    .topbar__back:hover { background-color: var(--color-bg-tertiary); }
+    .topbar__back svg { width: 24px; height: 24px; }
+    .topbar__heading {
+      flex: 1;
+      min-width: 0;
+    }
+    .topbar__title {
+      font-size: var(--font-size-lg);
+      font-weight: var(--font-weight-bold);
+      letter-spacing: var(--letter-spacing-tight);
+      margin: 0;
+    }
+    .topbar__subtitle {
+      font-size: var(--font-size-xs);
+      color: var(--color-text-secondary);
+      text-transform: uppercase;
+      letter-spacing: var(--letter-spacing-wide);
+    }
+
+    /* ==== Filter bar (sticky below TopBar) ==== */
+    .filters {
+      position: sticky;
+      top: 64px;
+      z-index: 9;
+      display: flex;
+      gap: var(--space-2);
+      padding: var(--space-3) var(--space-4);
+      background-color: var(--color-bg-primary);
+      border-bottom: 1px solid var(--color-border-primary);
+      overflow-x: auto;
+    }
+    .filter-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+      padding: 8px 14px;
+      border-radius: var(--border-radius-full);
+      background-color: var(--color-bg-secondary);
+      border: 1px solid var(--color-border-primary);
+      color: var(--color-text-secondary);
+      font-size: var(--font-size-sm);
+      font-weight: var(--font-weight-medium);
+      white-space: nowrap;
+      cursor: pointer;
+      transition: all var(--duration-fast) var(--easing-default);
+    }
+    .filter-toggle:hover {
+      background-color: var(--color-bg-tertiary);
+    }
+    .filter-toggle[aria-pressed="true"] {
+      background-color: var(--color-accent-primary);
+      border-color: var(--color-accent-primary);
+      color: white;
+    }
+    .filter-toggle__indicator {
+      display: inline-block;
+      width: 14px;
+      height: 14px;
+      border-radius: 4px;
+      border: 1.5px solid currentColor;
+      position: relative;
+    }
+    .filter-toggle[aria-pressed="true"] .filter-toggle__indicator {
+      background-color: white;
+      border-color: white;
+    }
+    .filter-toggle[aria-pressed="true"] .filter-toggle__indicator::after {
+      content: "";
+      position: absolute;
+      top: 2px;
+      left: 5px;
+      width: 4px;
+      height: 7px;
+      border: solid var(--color-accent-primary);
+      border-width: 0 2px 2px 0;
+      transform: rotate(45deg);
+    }
+
+    /* ==== Encounter list ==== */
+    .encounter-list {
+      padding: var(--space-3) var(--space-4) var(--space-9);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+    }
+
+    .encounter-row {
+      display: grid;
+      grid-template-columns: 64px 1fr auto;
+      align-items: center;
+      gap: var(--space-3);
+      padding: var(--space-3);
+      background-color: var(--color-bg-secondary);
+      border: 1px solid var(--color-border-primary);
+      border-radius: var(--border-radius-md);
+      box-shadow: var(--shadow-sm);
+      transition: box-shadow var(--duration-fast) var(--easing-default);
+    }
+    .encounter-row:hover {
+      box-shadow: var(--shadow-md);
+    }
+
+    .encounter-row__sprite {
+      width: 64px;
+      height: 64px;
+      background-color: var(--color-bg-tertiary);
+      border-radius: var(--border-radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .encounter-row__sprite img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      image-rendering: pixelated; /* preserves pixel-art sprites */
+    }
+
+    .encounter-row__body {
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .encounter-row__name {
+      font-size: var(--font-size-md);
+      font-weight: var(--font-weight-bold);
+      color: var(--color-text-primary);
+      letter-spacing: var(--letter-spacing-tight);
+    }
+    .encounter-row__meta {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: var(--space-2);
+      font-size: var(--font-size-sm);
+      color: var(--color-text-secondary);
+    }
+    .encounter-row__meta-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .encounter-row__meta-item svg {
+      width: 14px;
+      height: 14px;
+    }
+    .encounter-row__rate {
+      font-weight: var(--font-weight-semibold);
+      color: var(--color-text-primary);
+    }
+    .encounter-row__types {
+      display: flex;
+      gap: 4px;
+      margin-top: 2px;
+    }
+    .encounter-row__rate-display {
+      font-size: var(--font-size-xl);
+      font-weight: var(--font-weight-bold);
+      color: var(--color-accent-primary);
+      letter-spacing: var(--letter-spacing-tight);
+    }
+
+    /* ==== Type badges (V1 pastel pills) ==== */
+    .type-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 3px 10px;
+      border-radius: var(--border-radius-full);
+      font-size: var(--font-size-xs);
+      font-weight: var(--font-weight-semibold);
+      letter-spacing: var(--letter-spacing-wide);
+      text-transform: uppercase;
+    }
+    .type-badge--normal   { background: var(--type-badge-bg-normal);   color: var(--type-badge-text-normal); }
+    .type-badge--fire     { background: var(--type-badge-bg-fire);     color: var(--type-badge-text-fire); }
+    .type-badge--water    { background: var(--type-badge-bg-water);    color: var(--type-badge-text-water); }
+    .type-badge--electric { background: var(--type-badge-bg-electric); color: var(--type-badge-text-electric); }
+    .type-badge--grass    { background: var(--type-badge-bg-grass);    color: var(--type-badge-text-grass); }
+    .type-badge--flying   { background: var(--type-badge-bg-flying);   color: var(--type-badge-text-flying); }
+    .type-badge--bug      { background: var(--type-badge-bg-bug);      color: var(--type-badge-text-bug); }
+    .type-badge--poison   { background: var(--type-badge-bg-poison);   color: var(--type-badge-text-poison); }
+    .type-badge--ground   { background: var(--type-badge-bg-ground);   color: var(--type-badge-text-ground); }
+    .type-badge--rock     { background: var(--type-badge-bg-rock);     color: var(--type-badge-text-rock); }
+
+    /* ==== Empty state ==== */
+    .empty-state-block {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--space-3);
+      padding: var(--space-7) var(--space-4);
+      text-align: center;
+      background-color: var(--color-bg-secondary);
+      border: 1px dashed var(--color-border-primary);
+      border-radius: var(--border-radius-lg);
+      margin: 0 var(--space-4);
+    }
+    .empty-state-block.is-visible { display: flex; }
+    .empty-state-block svg {
+      width: 48px;
+      height: 48px;
+      color: var(--color-text-tertiary);
+    }
+    .empty-state-block h3 {
+      font-size: var(--font-size-md);
+      font-weight: var(--font-weight-semibold);
+    }
+    .empty-state-block p {
+      font-size: var(--font-size-sm);
+      color: var(--color-text-secondary);
+      max-width: 32ch;
+    }
+
+    /* ==== Mobile bottom nav (≤767px) ==== */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      background-color: var(--color-bg-secondary);
+      border-top: 1px solid var(--color-border-primary);
+      box-shadow: var(--shadow-md);
+      z-index: 5;
+    }
+    .bottom-nav__item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      padding: var(--space-2);
+      min-height: 64px;
+      color: var(--color-text-secondary);
+      font-size: var(--font-size-xs);
+      font-weight: var(--font-weight-medium);
+    }
+    .bottom-nav__item svg { width: 22px; height: 22px; }
+    .bottom-nav__item[aria-current="page"] { color: var(--color-accent-primary); }
+
+    /* ==== Sidebar (desktop ≥768px) ==== */
+    .sidebar { display: none; }
+
+    /* ==== Sectioned demo helpers (annotates state variations) ==== */
+    .section-label {
+      margin: var(--space-7) var(--space-4) var(--space-3);
+      font-size: var(--font-size-xs);
+      text-transform: uppercase;
+      letter-spacing: var(--letter-spacing-wide);
+      color: var(--color-text-tertiary);
+      font-weight: var(--font-weight-bold);
+      padding: var(--space-2) 0;
+      border-top: 1px dashed var(--color-border-primary);
+    }
+    .section-label:first-of-type { margin-top: 0; border-top: 0; }
+
+    /* ==== Desktop layout ==== */
+    @media (min-width: 768px) {
+      .app {
+        grid-template-columns: 240px 1fr;
+        grid-template-rows: auto 1fr;
+        grid-template-areas:
+          "sidebar topbar"
+          "sidebar content";
+      }
+      .topbar { grid-area: topbar; }
+      .filters { top: 64px; padding: var(--space-3) var(--space-6); }
+      .encounter-list {
+        grid-area: content;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: var(--space-5) var(--space-6) var(--space-7);
+      }
+      .bottom-nav { display: none; }
+      .sidebar {
+        display: flex;
+        flex-direction: column;
+        grid-area: sidebar;
+        background-color: var(--color-bg-secondary);
+        border-right: 1px solid var(--color-border-primary);
+        padding: var(--space-4) var(--space-3);
+        gap: var(--space-4);
+        position: sticky;
+        top: 0;
+        height: 100vh;
+      }
+      .sidebar__game {
+        padding: var(--space-3);
+        border-radius: var(--border-radius-md);
+        background-color: var(--color-bg-tertiary);
+      }
+      .sidebar__game__label {
+        display: block;
+        font-size: var(--font-size-xs);
+        text-transform: uppercase;
+        letter-spacing: var(--letter-spacing-wide);
+        color: var(--color-text-tertiary);
+        margin-bottom: 4px;
+      }
+      .sidebar__game__current {
+        font-weight: var(--font-weight-semibold);
+        color: var(--color-text-primary);
+      }
+      .sidebar__nav { display: flex; flex-direction: column; gap: 4px; }
+      .sidebar__link {
+        display: flex;
+        align-items: center;
+        gap: var(--space-3);
+        padding: var(--space-3);
+        border-radius: var(--border-radius-md);
+        color: var(--color-text-secondary);
+        font-size: var(--font-size-base);
+        font-weight: var(--font-weight-medium);
+      }
+      .sidebar__link svg { width: 20px; height: 20px; }
+      .sidebar__link:hover { background-color: var(--color-bg-tertiary); color: var(--color-text-primary); }
+      .sidebar__link[aria-current="page"] {
+        background-color: var(--color-bg-tertiary);
+        color: var(--color-accent-primary);
+      }
+
+      /* Headings desktop */
+      .topbar__title { font-size: var(--font-size-xl); }
+
+      /* Encounter row tighter on desktop */
+      .encounter-row__rate-display { font-size: var(--font-size-2xl); }
+
+      /* Section label spans content area */
+      .section-label { margin-left: 0; margin-right: 0; }
+      .empty-state-block { margin: 0; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="app">
+
+    <!-- Sidebar (desktop only) -->
+    <aside class="sidebar" aria-label="Primary navigation">
+      <div class="sidebar__game" role="button" tabindex="0">
+        <span class="sidebar__game__label">Active Game</span>
+        <span class="sidebar__game__current">FireRed</span>
+      </div>
+      <nav class="sidebar__nav">
+        <a class="sidebar__link" href="#" aria-current="page">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M3 12l2-2m0 0l7-7 7 7m-9-2v8m-4-4h12" />
+          </svg>
+          Routes
+        </a>
+        <a class="sidebar__link" href="#">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <circle cx="12" cy="12" r="9" />
+            <line x1="3" y1="12" x2="21" y2="12" />
+          </svg>
+          Pokémon
+        </a>
+        <a class="sidebar__link" href="#">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <polygon points="12 2 15 9 22 9 17 14 19 21 12 17 5 21 7 14 2 9 9 9" />
+          </svg>
+          Favorites
+        </a>
+        <a class="sidebar__link" href="#">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <circle cx="12" cy="12" r="3" />
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+          </svg>
+          Settings
+        </a>
+      </nav>
+    </aside>
+
+    <!-- TopBar -->
+    <header class="topbar">
+      <a class="topbar__back" href="#" aria-label="Back to Route browser">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <polyline points="15 18 9 12 15 6" />
+        </svg>
+      </a>
+      <div class="topbar__heading">
+        <h1 class="topbar__title">Route 1</h1>
+        <span class="topbar__subtitle">FireRed</span>
+      </div>
+    </header>
+
+    <!-- Filter toggles (Nuzlocke-aware, sticky) -->
+    <div class="filters" role="group" aria-label="Encounter filters">
+      <button class="filter-toggle" type="button" aria-pressed="false">
+        <span class="filter-toggle__indicator"></span>
+        First encounter only
+      </button>
+      <button class="filter-toggle" type="button" aria-pressed="false">
+        <span class="filter-toggle__indicator"></span>
+        Dupes clause: hide caught
+      </button>
+    </div>
+
+    <!-- Encounter list — default loaded state -->
+    <main>
+      <p class="section-label">Default state — 5 encounters</p>
+      <ol class="encounter-list" role="list">
+
+        <li class="encounter-row" role="listitem">
+          <div class="encounter-row__sprite">
+            <img
+              src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/16.png"
+              alt=""
+              aria-hidden="true"
+              loading="lazy"
+            />
+          </div>
+          <div class="encounter-row__body">
+            <span class="encounter-row__name">Pidgey</span>
+            <div class="encounter-row__meta">
+              <span class="encounter-row__meta-item num">Lv 2&ndash;5</span>
+              <span aria-hidden="true">·</span>
+              <span class="encounter-row__meta-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                  <path d="M12 2L4 22h16L12 2z" />
+                </svg>
+                Grass
+              </span>
+            </div>
+            <div class="encounter-row__types">
+              <span class="type-badge type-badge--normal">Normal</span>
+              <span class="type-badge type-badge--flying">Flying</span>
+            </div>
+          </div>
+          <span class="encounter-row__rate-display num" aria-label="Encounter rate 50%">50%</span>
+        </li>
+
+        <li class="encounter-row" role="listitem">
+          <div class="encounter-row__sprite">
+            <img
+              src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/19.png"
+              alt=""
+              aria-hidden="true"
+              loading="lazy"
+            />
+          </div>
+          <div class="encounter-row__body">
+            <span class="encounter-row__name">Rattata</span>
+            <div class="encounter-row__meta">
+              <span class="encounter-row__meta-item num">Lv 2&ndash;5</span>
+              <span aria-hidden="true">·</span>
+              <span class="encounter-row__meta-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                  <path d="M12 2L4 22h16L12 2z" />
+                </svg>
+                Grass
+              </span>
+            </div>
+            <div class="encounter-row__types">
+              <span class="type-badge type-badge--normal">Normal</span>
+            </div>
+          </div>
+          <span class="encounter-row__rate-display num">50%</span>
+        </li>
+
+        <li class="encounter-row" role="listitem">
+          <div class="encounter-row__sprite">
+            <img
+              src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png"
+              alt=""
+              aria-hidden="true"
+              loading="lazy"
+            />
+          </div>
+          <div class="encounter-row__body">
+            <span class="encounter-row__name">Pikachu</span>
+            <div class="encounter-row__meta">
+              <span class="encounter-row__meta-item num">Lv 3&ndash;5</span>
+              <span aria-hidden="true">·</span>
+              <span class="encounter-row__meta-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                  <path d="M12 2L4 22h16L12 2z" />
+                </svg>
+                Grass
+              </span>
+            </div>
+            <div class="encounter-row__types">
+              <span class="type-badge type-badge--electric">Electric</span>
+            </div>
+          </div>
+          <span class="encounter-row__rate-display num">5%</span>
+        </li>
+
+        <li class="encounter-row" role="listitem">
+          <div class="encounter-row__sprite">
+            <img
+              src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/16.png"
+              alt=""
+              aria-hidden="true"
+              loading="lazy"
+            />
+          </div>
+          <div class="encounter-row__body">
+            <span class="encounter-row__name">Pidgey</span>
+            <div class="encounter-row__meta">
+              <span class="encounter-row__meta-item num">Lv 4&ndash;6</span>
+              <span aria-hidden="true">·</span>
+              <span class="encounter-row__meta-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                  <path d="M12 2L4 22h16L12 2z" />
+                </svg>
+                Tall Grass
+              </span>
+            </div>
+            <div class="encounter-row__types">
+              <span class="type-badge type-badge--normal">Normal</span>
+              <span class="type-badge type-badge--flying">Flying</span>
+            </div>
+          </div>
+          <span class="encounter-row__rate-display num">35%</span>
+        </li>
+
+        <li class="encounter-row" role="listitem">
+          <div class="encounter-row__sprite">
+            <img
+              src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/19.png"
+              alt=""
+              aria-hidden="true"
+              loading="lazy"
+            />
+          </div>
+          <div class="encounter-row__body">
+            <span class="encounter-row__name">Rattata</span>
+            <div class="encounter-row__meta">
+              <span class="encounter-row__meta-item num">Lv 4&ndash;6</span>
+              <span aria-hidden="true">·</span>
+              <span class="encounter-row__meta-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                  <path d="M12 2L4 22h16L12 2z" />
+                </svg>
+                Tall Grass
+              </span>
+            </div>
+            <div class="encounter-row__types">
+              <span class="type-badge type-badge--normal">Normal</span>
+            </div>
+          </div>
+          <span class="encounter-row__rate-display num">15%</span>
+        </li>
+      </ol>
+
+      <!-- ====================================================================
+           Below: state demonstrations for design review.
+           In a real app these are alternative renders, not stacked.
+           ==================================================================== -->
+
+      <p class="section-label">"First encounter only" toggled on — narrows to 1</p>
+      <ol class="encounter-list" role="list">
+        <li class="encounter-row" role="listitem">
+          <div class="encounter-row__sprite">
+            <img
+              src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/16.png"
+              alt=""
+              aria-hidden="true"
+              loading="lazy"
+            />
+          </div>
+          <div class="encounter-row__body">
+            <span class="encounter-row__name">Pidgey</span>
+            <div class="encounter-row__meta">
+              <span class="encounter-row__meta-item num">Lv 2&ndash;5</span>
+              <span aria-hidden="true">·</span>
+              <span class="encounter-row__meta-item">Grass · first method</span>
+            </div>
+            <div class="encounter-row__types">
+              <span class="type-badge type-badge--normal">Normal</span>
+              <span class="type-badge type-badge--flying">Flying</span>
+            </div>
+          </div>
+          <span class="encounter-row__rate-display num">50%</span>
+        </li>
+      </ol>
+
+      <p class="section-label">Empty state — both filters on, no matches</p>
+      <div class="empty-state-block is-visible">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+          <circle cx="11" cy="11" r="7" />
+          <line x1="21" y1="21" x2="16.65" y2="16.65" />
+        </svg>
+        <h3>No Encounters match this filter</h3>
+        <p>Toggle filters off, or pick another Route to see what's available there.</p>
+      </div>
+
+      <p class="section-label">Loading state — Game not yet cached</p>
+      <ol class="encounter-list" role="list" aria-busy="true">
+        <li class="encounter-row" style="opacity: 0.7">
+          <div class="encounter-row__sprite" style="background-color: var(--color-bg-tertiary)"></div>
+          <div class="encounter-row__body">
+            <span class="encounter-row__name" style="background-color: var(--color-bg-tertiary); color: transparent; border-radius: 4px; height: 18px; width: 60%; display: block;">·</span>
+            <div class="encounter-row__meta">
+              <span style="background-color: var(--color-bg-tertiary); color: transparent; border-radius: 4px; height: 12px; width: 40%; display: inline-block;">·</span>
+            </div>
+          </div>
+          <span class="encounter-row__rate-display" style="background-color: var(--color-bg-tertiary); color: transparent; border-radius: 4px; height: 22px; width: 48px; display: inline-block;">·</span>
+        </li>
+        <li class="encounter-row" style="opacity: 0.55">
+          <div class="encounter-row__sprite" style="background-color: var(--color-bg-tertiary)"></div>
+          <div class="encounter-row__body">
+            <span class="encounter-row__name" style="background-color: var(--color-bg-tertiary); color: transparent; border-radius: 4px; height: 18px; width: 50%; display: block;">·</span>
+            <div class="encounter-row__meta">
+              <span style="background-color: var(--color-bg-tertiary); color: transparent; border-radius: 4px; height: 12px; width: 35%; display: inline-block;">·</span>
+            </div>
+          </div>
+          <span class="encounter-row__rate-display" style="background-color: var(--color-bg-tertiary); color: transparent; border-radius: 4px; height: 22px; width: 48px; display: inline-block;">·</span>
+        </li>
+        <li class="encounter-row" style="opacity: 0.4">
+          <div class="encounter-row__sprite" style="background-color: var(--color-bg-tertiary)"></div>
+          <div class="encounter-row__body">
+            <span class="encounter-row__name" style="background-color: var(--color-bg-tertiary); color: transparent; border-radius: 4px; height: 18px; width: 45%; display: block;">·</span>
+            <div class="encounter-row__meta">
+              <span style="background-color: var(--color-bg-tertiary); color: transparent; border-radius: 4px; height: 12px; width: 30%; display: inline-block;">·</span>
+            </div>
+          </div>
+          <span class="encounter-row__rate-display" style="background-color: var(--color-bg-tertiary); color: transparent; border-radius: 4px; height: 22px; width: 48px; display: inline-block;">·</span>
+        </li>
+      </ol>
+    </main>
+
+    <!-- Mobile bottom nav -->
+    <nav class="bottom-nav" aria-label="Primary navigation (mobile)">
+      <a class="bottom-nav__item" href="#" aria-current="page">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <path d="M3 12l2-2m0 0l7-7 7 7m-9-2v8m-4-4h12" />
+        </svg>
+        Routes
+      </a>
+      <a class="bottom-nav__item" href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <circle cx="12" cy="12" r="9" />
+          <line x1="3" y1="12" x2="21" y2="12" />
+        </svg>
+        Pokémon
+      </a>
+      <a class="bottom-nav__item" href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <polygon points="12 2 15 9 22 9 17 14 19 21 12 17 5 21 7 14 2 9 9 9" />
+        </svg>
+        Favorites
+      </a>
+      <a class="bottom-nav__item" href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <circle cx="12" cy="12" r="3" />
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+        </svg>
+        Settings
+      </a>
+    </nav>
+
+  </div>
+
+  <script>
+    // Pure-prototype interaction — toggles filter visual state on click.
+    // No actual filtering logic; just demonstrates aria-pressed swap.
+    document.querySelectorAll('.filter-toggle').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const pressed = btn.getAttribute('aria-pressed') === 'true';
+        btn.setAttribute('aria-pressed', String(!pressed));
+      });
+    });
+  </script>
+</body>
+</html>

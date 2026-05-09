@@ -1,0 +1,289 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>TypeBadge — Pokedex C++/QML prototype</title>
+
+  <!--
+    F4 — TypeBadge component pattern across all 3 variants.
+    Same HTML markup; visual differs because each section links a different
+    tokens file via a class qualifier on the wrapping <div>.
+    This file demonstrates how the same component renders in V1, V2, V3.
+  -->
+  <link rel="stylesheet" href="../styles/reset.css" />
+  <link rel="stylesheet" href="../styles/tokens-v1-flutterdex.css" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ==== Page layout ==== */
+    body {
+      padding: var(--space-5);
+      background-color: #f0eee9;
+    }
+
+    .demo-section {
+      margin-bottom: var(--space-7);
+      padding: var(--space-5);
+      border-radius: var(--border-radius-lg, 12px);
+      background-color: var(--color-bg-primary);
+      box-shadow: var(--shadow-md);
+    }
+    .demo-section h2 {
+      margin-bottom: var(--space-4);
+      font-size: var(--font-size-xl);
+      color: var(--color-text-primary);
+    }
+    .demo-section h3 {
+      margin: var(--space-4) 0 var(--space-3);
+      font-size: var(--font-size-sm);
+      font-weight: var(--font-weight-medium);
+      text-transform: uppercase;
+      letter-spacing: var(--letter-spacing-wide);
+      color: var(--color-text-secondary);
+    }
+    .demo-section p {
+      color: var(--color-text-secondary);
+      margin-bottom: var(--space-3);
+    }
+
+    .badge-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-2);
+      align-items: center;
+    }
+
+    /* ==== TypeBadge (V1 — Scandinavian, pastel pill) ==== */
+
+    .v1 .type-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 10px;
+      border-radius: var(--border-radius-full, 999px);
+      font-family: "Plus Jakarta Sans", sans-serif;
+      font-size: var(--font-size-xs);
+      font-weight: var(--font-weight-semibold, 600);
+      letter-spacing: var(--letter-spacing-wide);
+      text-transform: uppercase;
+    }
+    .v1 .type-badge--lg {
+      font-size: var(--font-size-sm);
+      padding: 6px 14px;
+    }
+
+    /* Type-specific styling — V1 (pastel pill) */
+    .v1 .type-badge--normal   { background: var(--type-badge-bg-normal);   color: var(--type-badge-text-normal); }
+    .v1 .type-badge--fire     { background: var(--type-badge-bg-fire);     color: var(--type-badge-text-fire); }
+    .v1 .type-badge--water    { background: var(--type-badge-bg-water);    color: var(--type-badge-text-water); }
+    .v1 .type-badge--electric { background: var(--type-badge-bg-electric); color: var(--type-badge-text-electric); }
+    .v1 .type-badge--grass    { background: var(--type-badge-bg-grass);    color: var(--type-badge-text-grass); }
+    .v1 .type-badge--ice      { background: var(--type-badge-bg-ice);      color: var(--type-badge-text-ice); }
+    .v1 .type-badge--fighting { background: var(--type-badge-bg-fighting); color: var(--type-badge-text-fighting); }
+    .v1 .type-badge--poison   { background: var(--type-badge-bg-poison);   color: var(--type-badge-text-poison); }
+    .v1 .type-badge--ground   { background: var(--type-badge-bg-ground);   color: var(--type-badge-text-ground); }
+    .v1 .type-badge--flying   { background: var(--type-badge-bg-flying);   color: var(--type-badge-text-flying); }
+    .v1 .type-badge--psychic  { background: var(--type-badge-bg-psychic);  color: var(--type-badge-text-psychic); }
+    .v1 .type-badge--bug      { background: var(--type-badge-bg-bug);      color: var(--type-badge-text-bug); }
+    .v1 .type-badge--rock     { background: var(--type-badge-bg-rock);     color: var(--type-badge-text-rock); }
+    .v1 .type-badge--ghost    { background: var(--type-badge-bg-ghost);    color: var(--type-badge-text-ghost); }
+    .v1 .type-badge--dragon   { background: var(--type-badge-bg-dragon);   color: var(--type-badge-text-dragon); }
+    .v1 .type-badge--dark     { background: var(--type-badge-bg-dark);     color: var(--type-badge-text-dark); }
+    .v1 .type-badge--steel    { background: var(--type-badge-bg-steel);    color: var(--type-badge-text-steel); }
+    .v1 .type-badge--fairy    { background: var(--type-badge-bg-fairy);    color: var(--type-badge-text-fairy); }
+
+    /* ==== TypeBadge (V2 — solid bold block) ==== */
+
+    .v2 .type-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-family: "Inter", sans-serif;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+    .v2 .type-badge--lg {
+      font-size: 13px;
+      padding: 6px 12px;
+    }
+
+    .v2 .type-badge--normal   { background: #A8A77A; color: #1F1F1F; }
+    .v2 .type-badge--fire     { background: #EE8130; color: #1F1F1F; }
+    .v2 .type-badge--water    { background: #6390F0; color: #1F1F1F; }
+    .v2 .type-badge--electric { background: #F7D02C; color: #1F1F1F; }
+    .v2 .type-badge--grass    { background: #7AC74C; color: #1F1F1F; }
+    .v2 .type-badge--ice      { background: #96D9D6; color: #1F1F1F; }
+    .v2 .type-badge--fighting { background: #C22E28; color: #FFFFFF; }
+    .v2 .type-badge--poison   { background: #A33EA1; color: #FFFFFF; }
+    .v2 .type-badge--ground   { background: #E2BF65; color: #1F1F1F; }
+    .v2 .type-badge--flying   { background: #A98FF3; color: #1F1F1F; }
+    .v2 .type-badge--psychic  { background: #F95587; color: #1F1F1F; }
+    .v2 .type-badge--bug      { background: #A6B91A; color: #1F1F1F; }
+    .v2 .type-badge--rock     { background: #B6A136; color: #1F1F1F; }
+    .v2 .type-badge--ghost    { background: #735797; color: #FFFFFF; }
+    .v2 .type-badge--dragon   { background: #6F35FC; color: #FFFFFF; }
+    .v2 .type-badge--dark     { background: #705746; color: #FFFFFF; }
+    .v2 .type-badge--steel    { background: #B7B7CE; color: #1F1F1F; }
+    .v2 .type-badge--fairy    { background: #D685AD; color: #1F1F1F; }
+
+    /* ==== TypeBadge (V3 — outline only, dark canvas) ==== */
+
+    .v3 {
+      background-color: #0B0F12;
+      color: #E8EAED;
+    }
+    .v3 h2, .v3 h3 { color: #E8EAED; }
+    .v3 p { color: #9CA3AF; }
+    .v3 .type-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 3px 8px;
+      border-radius: 4px;
+      background: transparent;
+      border: 1.5px solid currentColor;
+      font-family: "Inter", sans-serif;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+    .v3 .type-badge--lg {
+      font-size: 13px;
+      padding: 5px 12px;
+    }
+
+    /* V3 type colors — lightened for AA on dark canvas */
+    .v3 .type-badge--normal   { color: #C7C695; }
+    .v3 .type-badge--fire     { color: #FF9F4A; }
+    .v3 .type-badge--water    { color: #8AB0F7; }
+    .v3 .type-badge--electric { color: #F7D02C; }
+    .v3 .type-badge--grass    { color: #95D86A; }
+    .v3 .type-badge--ice      { color: #B5E3E0; }
+    .v3 .type-badge--fighting { color: #DD5750; }
+    .v3 .type-badge--poison   { color: #C76FC4; }
+    .v3 .type-badge--ground   { color: #E2BF65; }
+    .v3 .type-badge--flying   { color: #BBA7F5; }
+    .v3 .type-badge--psychic  { color: #FA7BA0; }
+    .v3 .type-badge--bug      { color: #C2D435; }
+    .v3 .type-badge--rock     { color: #C7B458; }
+    .v3 .type-badge--ghost    { color: #9079B5; }
+    .v3 .type-badge--dragon   { color: #9168FA; }
+    .v3 .type-badge--dark     { color: #9C7E6B; }
+    .v3 .type-badge--steel    { color: #C9C9DC; }
+    .v3 .type-badge--fairy    { color: #E2A0BD; }
+  </style>
+</head>
+
+<body>
+  <!-- V1 — FlutterDex (pastel pills) -->
+  <section class="demo-section v1">
+    <h2>V1 — FlutterDex (pastel pills)</h2>
+    <p>Soft pastel backgrounds, full pill rounding (999px), Plus Jakarta Sans, all-caps wide letterspacing. Friendly, approachable.</p>
+
+    <h3>Small (~12px)</h3>
+    <div class="badge-row">
+      <span class="type-badge type-badge--normal">Normal</span>
+      <span class="type-badge type-badge--fire">Fire</span>
+      <span class="type-badge type-badge--water">Water</span>
+      <span class="type-badge type-badge--electric">Electric</span>
+      <span class="type-badge type-badge--grass">Grass</span>
+      <span class="type-badge type-badge--ice">Ice</span>
+      <span class="type-badge type-badge--fighting">Fighting</span>
+      <span class="type-badge type-badge--poison">Poison</span>
+      <span class="type-badge type-badge--ground">Ground</span>
+      <span class="type-badge type-badge--flying">Flying</span>
+      <span class="type-badge type-badge--psychic">Psychic</span>
+      <span class="type-badge type-badge--bug">Bug</span>
+      <span class="type-badge type-badge--rock">Rock</span>
+      <span class="type-badge type-badge--ghost">Ghost</span>
+      <span class="type-badge type-badge--dragon">Dragon</span>
+      <span class="type-badge type-badge--dark">Dark</span>
+      <span class="type-badge type-badge--steel">Steel</span>
+      <span class="type-badge type-badge--fairy">Fairy</span>
+    </div>
+
+    <h3>Large (~14px)</h3>
+    <div class="badge-row">
+      <span class="type-badge type-badge--lg type-badge--fire">Fire</span>
+      <span class="type-badge type-badge--lg type-badge--flying">Flying</span>
+      <span class="type-badge type-badge--lg type-badge--electric">Electric</span>
+    </div>
+  </section>
+
+  <!-- V2 — DataDex (solid bold blocks) -->
+  <section class="demo-section v2">
+    <h2 style="color: #1F1F1F;">V2 — DataDex (solid bold blocks)</h2>
+    <p style="color: #4A4540;">Canonical type colors as solid backgrounds, square 4px corners, Inter bold, very wide letterspacing. White text on deep types (Fighting/Poison/Ghost/Dragon/Dark); charcoal on lighter types for AA.</p>
+
+    <h3 style="color: #4A4540;">Small (~11px)</h3>
+    <div class="badge-row">
+      <span class="type-badge type-badge--normal">Normal</span>
+      <span class="type-badge type-badge--fire">Fire</span>
+      <span class="type-badge type-badge--water">Water</span>
+      <span class="type-badge type-badge--electric">Electric</span>
+      <span class="type-badge type-badge--grass">Grass</span>
+      <span class="type-badge type-badge--ice">Ice</span>
+      <span class="type-badge type-badge--fighting">Fighting</span>
+      <span class="type-badge type-badge--poison">Poison</span>
+      <span class="type-badge type-badge--ground">Ground</span>
+      <span class="type-badge type-badge--flying">Flying</span>
+      <span class="type-badge type-badge--psychic">Psychic</span>
+      <span class="type-badge type-badge--bug">Bug</span>
+      <span class="type-badge type-badge--rock">Rock</span>
+      <span class="type-badge type-badge--ghost">Ghost</span>
+      <span class="type-badge type-badge--dragon">Dragon</span>
+      <span class="type-badge type-badge--dark">Dark</span>
+      <span class="type-badge type-badge--steel">Steel</span>
+      <span class="type-badge type-badge--fairy">Fairy</span>
+    </div>
+
+    <h3 style="color: #4A4540;">Large (~13px)</h3>
+    <div class="badge-row">
+      <span class="type-badge type-badge--lg type-badge--fire">Fire</span>
+      <span class="type-badge type-badge--lg type-badge--flying">Flying</span>
+      <span class="type-badge type-badge--lg type-badge--electric">Electric</span>
+    </div>
+  </section>
+
+  <!-- V3 — Linear (outline only, dark canvas) -->
+  <section class="demo-section v3">
+    <h2>V3 — Linear (outline only, dark canvas)</h2>
+    <p>Transparent background, 1.5px border + matching text color. Inter Display, square 4px corners, very wide letterspacing. Works on the dark V3 canvas; lightened type colors for AA.</p>
+
+    <h3>Small (~11px)</h3>
+    <div class="badge-row">
+      <span class="type-badge type-badge--normal">Normal</span>
+      <span class="type-badge type-badge--fire">Fire</span>
+      <span class="type-badge type-badge--water">Water</span>
+      <span class="type-badge type-badge--electric">Electric</span>
+      <span class="type-badge type-badge--grass">Grass</span>
+      <span class="type-badge type-badge--ice">Ice</span>
+      <span class="type-badge type-badge--fighting">Fighting</span>
+      <span class="type-badge type-badge--poison">Poison</span>
+      <span class="type-badge type-badge--ground">Ground</span>
+      <span class="type-badge type-badge--flying">Flying</span>
+      <span class="type-badge type-badge--psychic">Psychic</span>
+      <span class="type-badge type-badge--bug">Bug</span>
+      <span class="type-badge type-badge--rock">Rock</span>
+      <span class="type-badge type-badge--ghost">Ghost</span>
+      <span class="type-badge type-badge--dragon">Dragon</span>
+      <span class="type-badge type-badge--dark">Dark</span>
+      <span class="type-badge type-badge--steel">Steel</span>
+      <span class="type-badge type-badge--fairy">Fairy</span>
+    </div>
+
+    <h3>Large (~13px)</h3>
+    <div class="badge-row">
+      <span class="type-badge type-badge--lg type-badge--fire">Fire</span>
+      <span class="type-badge type-badge--lg type-badge--flying">Flying</span>
+      <span class="type-badge type-badge--lg type-badge--electric">Electric</span>
+    </div>
+  </section>
+</body>
+</html>

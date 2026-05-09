@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>States (Loading + Empty + Error) — Pokedex prototype</title>
+
+  <!--
+    F5 — LoadingState (skeleton) and EmptyState patterns.
+    Variant-agnostic; tokens drive the colors. Demonstrated here against
+    V1 tokens; the same markup works under V2 / V3 by swapping the linked
+    tokens file.
+  -->
+  <link rel="stylesheet" href="../styles/reset.css" />
+  <link rel="stylesheet" href="../styles/tokens-v1-flutterdex.css" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <style>
+    body {
+      padding: var(--space-5);
+    }
+
+    section {
+      margin-bottom: var(--space-7);
+    }
+    section h2 {
+      margin-bottom: var(--space-3);
+      font-size: var(--font-size-xl);
+    }
+    section p {
+      margin-bottom: var(--space-4);
+      color: var(--color-text-secondary);
+    }
+
+    /* ==== Skeleton ==== */
+
+    .skeleton {
+      position: relative;
+      background-color: var(--color-bg-tertiary);
+      border-radius: var(--border-radius-md);
+      overflow: hidden;
+    }
+
+    .skeleton::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        90deg,
+        transparent 0%,
+        rgba(255, 255, 255, 0.45) 50%,
+        transparent 100%
+      );
+      animation: shimmer 1.4s ease-in-out infinite;
+    }
+
+    [data-theme="dark"] .skeleton::after {
+      background: linear-gradient(
+        90deg,
+        transparent 0%,
+        rgba(255, 255, 255, 0.06) 50%,
+        transparent 100%
+      );
+    }
+
+    @keyframes shimmer {
+      0%   { transform: translateX(-100%); }
+      100% { transform: translateX(100%); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .skeleton::after { animation: none; opacity: 0.4; }
+    }
+
+    /* Skeleton sizes — match the real components they stand in for */
+    .skeleton-row {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      padding: var(--space-3);
+      background-color: var(--color-bg-secondary);
+      border: 1px solid var(--color-border-primary);
+      border-radius: var(--border-radius-md);
+      margin-bottom: var(--space-2);
+    }
+    .skeleton-row__sprite {
+      width: 56px;
+      height: 56px;
+      border-radius: var(--border-radius-md);
+    }
+    .skeleton-row__body {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .skeleton-row__line {
+      height: 14px;
+    }
+    .skeleton-row__line--short  { width: 35%; }
+    .skeleton-row__line--medium { width: 60%; }
+
+    .skeleton-card {
+      padding: var(--space-4);
+      background-color: var(--color-bg-secondary);
+      border: 1px solid var(--color-border-primary);
+      border-radius: var(--border-radius-lg);
+      margin-bottom: var(--space-3);
+    }
+    .skeleton-card__title {
+      height: 22px;
+      width: 50%;
+      margin-bottom: var(--space-2);
+    }
+    .skeleton-card__line {
+      height: 14px;
+      margin-bottom: 6px;
+    }
+    .skeleton-card__line--full   { width: 100%; }
+    .skeleton-card__line--medium { width: 75%; }
+    .skeleton-card__line--short  { width: 40%; }
+
+    /* ==== EmptyState ==== */
+
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-3);
+      padding: var(--space-7) var(--space-4);
+      text-align: center;
+      background-color: var(--color-bg-secondary);
+      border-radius: var(--border-radius-lg);
+      border: 1px dashed var(--color-border-primary);
+    }
+    .empty-state__icon {
+      width: 48px;
+      height: 48px;
+      color: var(--color-text-tertiary);
+    }
+    .empty-state__title {
+      font-size: var(--font-size-md);
+      font-weight: var(--font-weight-semibold);
+      color: var(--color-text-primary);
+    }
+    .empty-state__message {
+      font-size: var(--font-size-sm);
+      color: var(--color-text-secondary);
+      max-width: 32ch;
+    }
+    .empty-state__action {
+      margin-top: var(--space-2);
+      padding: var(--space-2) var(--space-4);
+      background-color: var(--color-accent-primary);
+      color: white;
+      border-radius: var(--border-radius-md);
+      font-size: var(--font-size-sm);
+      font-weight: var(--font-weight-semibold);
+    }
+    .empty-state__action:hover {
+      background-color: var(--color-accent-primary-hover);
+    }
+  </style>
+</head>
+
+<body>
+
+  <section>
+    <h2>LoadingState — list rows (skeleton)</h2>
+    <p>Used while encounters or Pokémon list is being fetched. Matches the row shape so layout doesn't jump when content arrives.</p>
+
+    <div class="skeleton-row">
+      <div class="skeleton skeleton-row__sprite"></div>
+      <div class="skeleton-row__body">
+        <div class="skeleton skeleton-row__line skeleton-row__line--medium"></div>
+        <div class="skeleton skeleton-row__line skeleton-row__line--short"></div>
+      </div>
+    </div>
+    <div class="skeleton-row">
+      <div class="skeleton skeleton-row__sprite"></div>
+      <div class="skeleton-row__body">
+        <div class="skeleton skeleton-row__line skeleton-row__line--medium"></div>
+        <div class="skeleton skeleton-row__line skeleton-row__line--short"></div>
+      </div>
+    </div>
+    <div class="skeleton-row">
+      <div class="skeleton skeleton-row__sprite"></div>
+      <div class="skeleton-row__body">
+        <div class="skeleton skeleton-row__line skeleton-row__line--medium"></div>
+        <div class="skeleton skeleton-row__line skeleton-row__line--short"></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>LoadingState — Pokémon detail card (skeleton)</h2>
+    <p>Used while Pokémon detail body loads.</p>
+
+    <div class="skeleton-card">
+      <div class="skeleton skeleton-card__title"></div>
+      <div class="skeleton skeleton-card__line skeleton-card__line--full"></div>
+      <div class="skeleton skeleton-card__line skeleton-card__line--full"></div>
+      <div class="skeleton skeleton-card__line skeleton-card__line--medium"></div>
+      <div class="skeleton skeleton-card__line skeleton-card__line--short"></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>EmptyState — no encounters under filter</h2>
+    <p>Used in Route detail when filter excludes everything.</p>
+
+    <div class="empty-state">
+      <svg class="empty-state__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+        <circle cx="11" cy="11" r="7" />
+        <line x1="21" y1="21" x2="16.65" y2="16.65" />
+      </svg>
+      <h3 class="empty-state__title">No Encounters match this filter</h3>
+      <p class="empty-state__message">Toggle filters off, or pick another Route to see what's available there.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>EmptyState — no Favorites yet</h2>
+    <p>Used in Favorites view on first load.</p>
+
+    <div class="empty-state">
+      <svg class="empty-state__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+        <polygon points="12 2 15 9 22 9 17 14 19 21 12 17 5 21 7 14 2 9 9 9" />
+      </svg>
+      <h3 class="empty-state__title">No Favorites yet</h3>
+      <p class="empty-state__message">Tap the ★ on any Pokémon card or detail screen to add it here for quick access.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>EmptyState — Game not cached (offline)</h2>
+    <p>Used in Route browser when the active Game has no encounter data on device and the device is offline.</p>
+
+    <div class="empty-state">
+      <svg class="empty-state__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+        <path d="M1 1l22 22" />
+        <path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55" />
+        <path d="M5 12.55a10.94 10.94 0 0 1 5.17-2.39" />
+        <path d="M10.71 5.05A16 16 0 0 1 22.58 9" />
+        <path d="M1.42 9a15.91 15.91 0 0 1 4.7-2.88" />
+        <path d="M8.53 16.11a6 6 0 0 1 6.95 0" />
+        <line x1="12" y1="20" x2="12.01" y2="20" />
+      </svg>
+      <h3 class="empty-state__title">FireRed Encounter tables not yet downloaded</h3>
+      <p class="empty-state__message">Connect to the internet on first load to cache this Game's data. Catalog browsing is available offline in the Pokémon tab.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>EmptyState — error fallback (catalog read failure)</h2>
+    <p>Used as fallback when something unexpected happens. EmptyState absorbs error states in MVP — no separate ErrorState component.</p>
+
+    <div class="empty-state">
+      <svg class="empty-state__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+        <circle cx="12" cy="12" r="10" />
+        <line x1="12" y1="8" x2="12" y2="12" />
+        <line x1="12" y1="16" x2="12.01" y2="16" />
+      </svg>
+      <h3 class="empty-state__title">Couldn't load this content</h3>
+      <p class="empty-state__message">Try again, or restart the app if the problem persists.</p>
+      <button class="empty-state__action">Retry</button>
+    </div>
+  </section>
+
+</body>
+</html>
