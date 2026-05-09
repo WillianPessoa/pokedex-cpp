@@ -76,12 +76,16 @@
     }
 
     .pokemon-card {
+      display: block;
       background-color: var(--color-bg-secondary); border: 1px solid var(--color-border-primary);
       border-radius: var(--border-radius-lg); padding: var(--space-3);
       box-shadow: var(--shadow-sm); position: relative;
-      transition: box-shadow var(--duration-fast) var(--easing-default);
+      color: var(--color-text-primary);
+      text-decoration: none;
+      transition: box-shadow var(--duration-fast) var(--easing-default), transform var(--duration-fast) var(--easing-default);
     }
-    .pokemon-card:hover { box-shadow: var(--shadow-md); }
+    .pokemon-card:hover { box-shadow: var(--shadow-md); text-decoration: none; transform: translateY(-1px); }
+    .pokemon-card:focus-visible { box-shadow: var(--shadow-focus); outline: none; }
     .pokemon-card__fav {
       position: absolute; top: 8px; right: 8px; width: 32px; height: 32px;
       display: flex; align-items: center; justify-content: center;
@@ -148,7 +152,7 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9" /><line x1="3" y1="12" x2="21" y2="12" /></svg>
         Pokémon
       </a>
-      <a class="shell-sidebar__link" href="#">
+      <a class="shell-sidebar__link" href="favorites.html">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polygon points="12 2 15 9 22 9 17 14 19 21 12 17 5 21 7 14 2 9 9 9" /></svg>
         Favorites
       </a>
@@ -194,97 +198,101 @@
   </div>
 
   <main class="grid">
-    <article class="pokemon-card">
+    <a class="pokemon-card" href="pokemon-detail.html">
       <button class="pokemon-card__fav" aria-pressed="false" aria-label="Favorite Bulbasaur"><svg viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15 9 22 9 17 14 19 21 12 17 5 21 7 14 2 9 9 9" /></svg></button>
       <div class="pokemon-card__sprite"><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.png" alt="" loading="lazy" /></div>
       <span class="pokemon-card__id">No. 0001</span>
       <div class="pokemon-card__name">Bulbasaur</div>
       <div class="pokemon-card__types"><span class="type-badge type-badge--grass">Grass</span><span class="type-badge type-badge--poison">Poison</span></div>
-    </article>
+    </a>
 
-    <article class="pokemon-card">
+    <a class="pokemon-card" href="pokemon-detail.html">
       <button class="pokemon-card__fav" aria-pressed="false" aria-label="Favorite Charmander"><svg viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15 9 22 9 17 14 19 21 12 17 5 21 7 14 2 9 9 9" /></svg></button>
       <div class="pokemon-card__sprite"><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/4.png" alt="" loading="lazy" /></div>
       <span class="pokemon-card__id">No. 0004</span>
       <div class="pokemon-card__name">Charmander</div>
       <div class="pokemon-card__types"><span class="type-badge type-badge--fire">Fire</span></div>
-    </article>
+    </a>
 
-    <article class="pokemon-card">
+    <a class="pokemon-card" href="pokemon-detail.html">
       <button class="pokemon-card__fav" aria-pressed="false" aria-label="Favorite Squirtle"><svg viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15 9 22 9 17 14 19 21 12 17 5 21 7 14 2 9 9 9" /></svg></button>
       <div class="pokemon-card__sprite"><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/7.png" alt="" loading="lazy" /></div>
       <span class="pokemon-card__id">No. 0007</span>
       <div class="pokemon-card__name">Squirtle</div>
       <div class="pokemon-card__types"><span class="type-badge type-badge--water">Water</span></div>
-    </article>
+    </a>
 
-    <article class="pokemon-card">
+    <a class="pokemon-card" href="pokemon-detail.html">
       <button class="pokemon-card__fav" aria-pressed="false" aria-label="Favorite Pidgey"><svg viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15 9 22 9 17 14 19 21 12 17 5 21 7 14 2 9 9 9" /></svg></button>
       <div class="pokemon-card__sprite"><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/16.png" alt="" loading="lazy" /></div>
       <span class="pokemon-card__id">No. 0016</span>
       <div class="pokemon-card__name">Pidgey</div>
       <div class="pokemon-card__types"><span class="type-badge type-badge--normal">Normal</span><span class="type-badge type-badge--flying">Flying</span></div>
-    </article>
+    </a>
 
-    <article class="pokemon-card">
+    <a class="pokemon-card" href="pokemon-detail.html">
       <button class="pokemon-card__fav" aria-pressed="false" aria-label="Favorite Rattata"><svg viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15 9 22 9 17 14 19 21 12 17 5 21 7 14 2 9 9 9" /></svg></button>
       <div class="pokemon-card__sprite"><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/19.png" alt="" loading="lazy" /></div>
       <span class="pokemon-card__id">No. 0019</span>
       <div class="pokemon-card__name">Rattata</div>
       <div class="pokemon-card__types"><span class="type-badge type-badge--normal">Normal</span></div>
-    </article>
+    </a>
 
-    <article class="pokemon-card">
+    <a class="pokemon-card" href="pokemon-detail.html">
       <button class="pokemon-card__fav" aria-pressed="true" aria-label="Favorite Pikachu"><svg viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15 9 22 9 17 14 19 21 12 17 5 21 7 14 2 9 9 9" /></svg></button>
       <div class="pokemon-card__sprite"><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png" alt="" loading="lazy" /></div>
       <span class="pokemon-card__id">No. 0025</span>
       <div class="pokemon-card__name">Pikachu</div>
       <div class="pokemon-card__types"><span class="type-badge type-badge--electric">Electric</span></div>
-    </article>
+    </a>
 
-    <article class="pokemon-card">
+    <a class="pokemon-card" href="pokemon-detail.html">
       <button class="pokemon-card__fav" aria-pressed="false" aria-label="Favorite Geodude"><svg viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15 9 22 9 17 14 19 21 12 17 5 21 7 14 2 9 9 9" /></svg></button>
       <div class="pokemon-card__sprite"><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/74.png" alt="" loading="lazy" /></div>
       <span class="pokemon-card__id">No. 0074</span>
       <div class="pokemon-card__name">Geodude</div>
       <div class="pokemon-card__types"><span class="type-badge type-badge--rock">Rock</span><span class="type-badge type-badge--ground">Ground</span></div>
-    </article>
+    </a>
 
-    <article class="pokemon-card">
+    <a class="pokemon-card" href="pokemon-detail.html">
       <button class="pokemon-card__fav" aria-pressed="false" aria-label="Favorite Onix"><svg viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15 9 22 9 17 14 19 21 12 17 5 21 7 14 2 9 9 9" /></svg></button>
       <div class="pokemon-card__sprite"><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/95.png" alt="" loading="lazy" /></div>
       <span class="pokemon-card__id">No. 0095</span>
       <div class="pokemon-card__name">Onix</div>
       <div class="pokemon-card__types"><span class="type-badge type-badge--rock">Rock</span><span class="type-badge type-badge--ground">Ground</span></div>
-    </article>
+    </a>
 
-    <article class="pokemon-card">
+    <a class="pokemon-card" href="pokemon-detail.html">
       <button class="pokemon-card__fav" aria-pressed="false" aria-label="Favorite Magikarp"><svg viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15 9 22 9 17 14 19 21 12 17 5 21 7 14 2 9 9 9" /></svg></button>
       <div class="pokemon-card__sprite"><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/129.png" alt="" loading="lazy" /></div>
       <span class="pokemon-card__id">No. 0129</span>
       <div class="pokemon-card__name">Magikarp</div>
       <div class="pokemon-card__types"><span class="type-badge type-badge--water">Water</span></div>
-    </article>
+    </a>
 
-    <article class="pokemon-card">
+    <a class="pokemon-card" href="pokemon-detail.html">
       <button class="pokemon-card__fav" aria-pressed="true" aria-label="Favorite Eevee"><svg viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15 9 22 9 17 14 19 21 12 17 5 21 7 14 2 9 9 9" /></svg></button>
       <div class="pokemon-card__sprite"><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/133.png" alt="" loading="lazy" /></div>
       <span class="pokemon-card__id">No. 0133</span>
       <div class="pokemon-card__name">Eevee</div>
       <div class="pokemon-card__types"><span class="type-badge type-badge--normal">Normal</span></div>
-    </article>
+    </a>
   </main>
 
   <nav class="bottom-nav" aria-label="Primary navigation">
-    <a class="bottom-nav__item" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 12l2-2m0 0l7-7 7 7m-9-2v8m-4-4h12" /></svg>Routes</a>
-    <a class="bottom-nav__item" href="#" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9" /><line x1="3" y1="12" x2="21" y2="12" /></svg>Pokémon</a>
-    <a class="bottom-nav__item" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polygon points="12 2 15 9 22 9 17 14 19 21 12 17 5 21 7 14 2 9 9 9" /></svg>Favorites</a>
-    <a class="bottom-nav__item" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="3" /></svg>Settings</a>
+    <a class="bottom-nav__item" href="route-browser.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 12l2-2m0 0l7-7 7 7m-9-2v8m-4-4h12" /></svg>Routes</a>
+    <a class="bottom-nav__item" href="pokemon-browser.html" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9" /><line x1="3" y1="12" x2="21" y2="12" /></svg>Pokémon</a>
+    <a class="bottom-nav__item" href="favorites.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polygon points="12 2 15 9 22 9 17 14 19 21 12 17 5 21 7 14 2 9 9 9" /></svg>Favorites</a>
+    <a class="bottom-nav__item" href="settings.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="3" /></svg>Settings</a>
   </nav>
 
   <script>
     document.querySelectorAll('.type-chip').forEach(c => c.addEventListener('click', () => c.setAttribute('aria-pressed', c.getAttribute('aria-pressed') === 'true' ? 'false' : 'true')));
-    document.querySelectorAll('.pokemon-card__fav').forEach(b => b.addEventListener('click', e => { e.preventDefault(); b.setAttribute('aria-pressed', b.getAttribute('aria-pressed') === 'true' ? 'false' : 'true'); }));
+    document.querySelectorAll('.pokemon-card__fav').forEach(b => b.addEventListener('click', e => {
+      e.preventDefault();
+      e.stopPropagation();
+      b.setAttribute('aria-pressed', b.getAttribute('aria-pressed') === 'true' ? 'false' : 'true');
+    }));
   </script>
 </body>
 </html>
