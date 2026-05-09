@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Routes — FireRed · Pokedex (V1 FlutterDex)</title>
+
+  <link rel="stylesheet" href="../styles/tokens-v1-flutterdex.css" />
+  <link rel="stylesheet" href="../styles/reset.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <style>
+    /* V1-4 — Route browser. Maps to PRD Stories 1–4. */
+
+    body { padding-bottom: 80px; }
+
+    .topbar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: var(--space-3) var(--space-4); background-color: var(--color-bg-secondary);
+      border-bottom: 1px solid var(--color-border-primary); position: sticky; top: 0; z-index: 10;
+    }
+    .topbar__title { font-size: var(--font-size-lg); font-weight: var(--font-weight-bold); letter-spacing: var(--letter-spacing-tight); }
+    .topbar__actions { display: flex; gap: var(--space-2); }
+    .icon-button { display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: var(--border-radius-full); color: var(--color-text-primary); }
+    .icon-button:hover { background-color: var(--color-bg-tertiary); }
+    .icon-button svg { width: 22px; height: 22px; }
+
+    .game-banner {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: var(--space-3) var(--space-4);
+      background: linear-gradient(135deg, #FFE0CC 0%, #FFD4B8 100%);
+      border-bottom: 1px solid var(--color-border-primary);
+    }
+    .game-banner__label {
+      font-size: var(--font-size-xs); text-transform: uppercase;
+      letter-spacing: var(--letter-spacing-wide); font-weight: var(--font-weight-medium);
+      color: #C2410C;
+    }
+    .game-banner__name {
+      font-size: var(--font-size-lg); font-weight: var(--font-weight-bold);
+      color: #92340A; margin-top: 2px;
+    }
+    .game-banner__change {
+      font-size: var(--font-size-sm); font-weight: var(--font-weight-semibold);
+      color: #C2410C; padding: 8px 14px;
+      background-color: rgba(255, 255, 255, 0.4); border-radius: var(--border-radius-full);
+      border: 1px solid #FFB088;
+    }
+    .game-banner__change:hover { background-color: rgba(255, 255, 255, 0.7); }
+
+    .routes-list {
+      padding: var(--space-3) var(--space-4) var(--space-7);
+      display: flex; flex-direction: column; gap: var(--space-2);
+    }
+
+    .route-card {
+      display: grid; grid-template-columns: 1fr auto; align-items: center; gap: var(--space-3);
+      padding: var(--space-4);
+      background-color: var(--color-bg-secondary); border: 1px solid var(--color-border-primary);
+      border-radius: var(--border-radius-lg); box-shadow: var(--shadow-sm);
+      transition: box-shadow var(--duration-fast) var(--easing-default);
+    }
+    .route-card:hover { box-shadow: var(--shadow-md); }
+    .route-card__name { font-size: var(--font-size-md); font-weight: var(--font-weight-bold); color: var(--color-text-primary); margin-bottom: 4px; letter-spacing: var(--letter-spacing-tight); }
+    .route-card__meta { font-size: var(--font-size-sm); color: var(--color-text-secondary); display: flex; align-items: center; gap: var(--space-2); }
+    .route-card__count {
+      font-weight: var(--font-weight-bold); color: var(--color-accent-primary);
+    }
+    .route-card__types { display: flex; gap: 4px; margin-top: var(--space-2); }
+    .route-card__chevron { color: var(--color-text-tertiary); }
+    .route-card__chevron svg { width: 20px; height: 20px; }
+
+    .type-badge {
+      display: inline-flex; padding: 2px 8px; border-radius: var(--border-radius-full);
+      font-size: 10px; font-weight: var(--font-weight-semibold);
+      letter-spacing: var(--letter-spacing-wide); text-transform: uppercase;
+    }
+    .type-badge--normal   { background: var(--type-badge-bg-normal);   color: var(--type-badge-text-normal); }
+    .type-badge--fire     { background: var(--type-badge-bg-fire);     color: var(--type-badge-text-fire); }
+    .type-badge--water    { background: var(--type-badge-bg-water);    color: var(--type-badge-text-water); }
+    .type-badge--electric { background: var(--type-badge-bg-electric); color: var(--type-badge-text-electric); }
+    .type-badge--grass    { background: var(--type-badge-bg-grass);    color: var(--type-badge-text-grass); }
+    .type-badge--bug      { background: var(--type-badge-bg-bug);      color: var(--type-badge-text-bug); }
+    .type-badge--poison   { background: var(--type-badge-bg-poison);   color: var(--type-badge-text-poison); }
+    .type-badge--ground   { background: var(--type-badge-bg-ground);   color: var(--type-badge-text-ground); }
+    .type-badge--rock     { background: var(--type-badge-bg-rock);     color: var(--type-badge-text-rock); }
+    .type-badge--flying   { background: var(--type-badge-bg-flying);   color: var(--type-badge-text-flying); }
+    .type-badge--fairy    { background: var(--type-badge-bg-fairy);    color: var(--type-badge-text-fairy); }
+    .type-badge--ghost    { background: var(--type-badge-bg-ghost);    color: var(--type-badge-text-ghost); }
+    .type-badge--psychic  { background: var(--type-badge-bg-psychic);  color: var(--type-badge-text-psychic); }
+    .type-badge--ice      { background: var(--type-badge-bg-ice);      color: var(--type-badge-text-ice); }
+
+    .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; display: grid; grid-template-columns: repeat(4, 1fr); background-color: var(--color-bg-secondary); border-top: 1px solid var(--color-border-primary); box-shadow: var(--shadow-md); z-index: 5; }
+    .bottom-nav__item { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; padding: var(--space-2); min-height: 64px; color: var(--color-text-secondary); font-size: var(--font-size-xs); font-weight: var(--font-weight-medium); }
+    .bottom-nav__item svg { width: 22px; height: 22px; }
+    .bottom-nav__item[aria-current="page"] { color: var(--color-accent-primary); }
+
+    @media (min-width: 768px) {
+      .topbar, .game-banner, .routes-list { max-width: 900px; margin-left: auto; margin-right: auto; }
+      .topbar { padding: var(--space-4) var(--space-6); }
+      .game-banner { padding: var(--space-4) var(--space-6); }
+      .routes-list { padding: var(--space-5) var(--space-6) var(--space-7); display: grid; grid-template-columns: repeat(2, 1fr); }
+      .bottom-nav { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="topbar">
+    <h1 class="topbar__title">Routes</h1>
+    <div class="topbar__actions">
+      <button class="icon-button" aria-label="Search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <circle cx="11" cy="11" r="7" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <section class="game-banner" role="region" aria-label="Active Game">
+    <div>
+      <div class="game-banner__label">Active Game</div>
+      <div class="game-banner__name">FireRed</div>
+    </div>
+    <button class="game-banner__change" type="button">Change</button>
+  </section>
+
+  <main class="routes-list">
+    <a class="route-card" href="route-detail.html">
+      <div>
+        <div class="route-card__name">Route 1</div>
+        <div class="route-card__meta"><span class="route-card__count num">5</span><span>distinct Pokémon</span></div>
+        <div class="route-card__types"><span class="type-badge type-badge--normal">Normal</span><span class="type-badge type-badge--flying">Flying</span><span class="type-badge type-badge--electric">Electric</span></div>
+      </div>
+      <span class="route-card__chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="9 18 15 12 9 6" /></svg></span>
+    </a>
+
+    <a class="route-card" href="#">
+      <div>
+        <div class="route-card__name">Route 2</div>
+        <div class="route-card__meta"><span class="route-card__count num">4</span><span>distinct Pokémon</span></div>
+        <div class="route-card__types"><span class="type-badge type-badge--normal">Normal</span><span class="type-badge type-badge--bug">Bug</span></div>
+      </div>
+      <span class="route-card__chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="9 18 15 12 9 6" /></svg></span>
+    </a>
+
+    <a class="route-card" href="#">
+      <div>
+        <div class="route-card__name">Viridian Forest</div>
+        <div class="route-card__meta"><span class="route-card__count num">7</span><span>distinct Pokémon</span></div>
+        <div class="route-card__types"><span class="type-badge type-badge--bug">Bug</span><span class="type-badge type-badge--poison">Poison</span><span class="type-badge type-badge--electric">Electric</span></div>
+      </div>
+      <span class="route-card__chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="9 18 15 12 9 6" /></svg></span>
+    </a>
+
+    <a class="route-card" href="#">
+      <div>
+        <div class="route-card__name">Route 3</div>
+        <div class="route-card__meta"><span class="route-card__count num">5</span><span>distinct Pokémon</span></div>
+        <div class="route-card__types"><span class="type-badge type-badge--normal">Normal</span><span class="type-badge type-badge--fire">Fire</span></div>
+      </div>
+      <span class="route-card__chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="9 18 15 12 9 6" /></svg></span>
+    </a>
+
+    <a class="route-card" href="#">
+      <div>
+        <div class="route-card__name">Mt. Moon</div>
+        <div class="route-card__meta"><span class="route-card__count num">8</span><span>distinct Pokémon</span></div>
+        <div class="route-card__types"><span class="type-badge type-badge--rock">Rock</span><span class="type-badge type-badge--ground">Ground</span><span class="type-badge type-badge--fairy">Fairy</span></div>
+      </div>
+      <span class="route-card__chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="9 18 15 12 9 6" /></svg></span>
+    </a>
+
+    <a class="route-card" href="#">
+      <div>
+        <div class="route-card__name">Route 4</div>
+        <div class="route-card__meta"><span class="route-card__count num">3</span><span>distinct Pokémon</span></div>
+        <div class="route-card__types"><span class="type-badge type-badge--normal">Normal</span><span class="type-badge type-badge--ground">Ground</span></div>
+      </div>
+      <span class="route-card__chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="9 18 15 12 9 6" /></svg></span>
+    </a>
+
+    <a class="route-card" href="#">
+      <div>
+        <div class="route-card__name">Cerulean City</div>
+        <div class="route-card__meta"><span class="route-card__count num">2</span><span>Pokémon (Surf)</span></div>
+        <div class="route-card__types"><span class="type-badge type-badge--water">Water</span></div>
+      </div>
+      <span class="route-card__chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="9 18 15 12 9 6" /></svg></span>
+    </a>
+
+    <a class="route-card" href="#">
+      <div>
+        <div class="route-card__name">Route 24</div>
+        <div class="route-card__meta"><span class="route-card__count num">6</span><span>distinct Pokémon</span></div>
+        <div class="route-card__types"><span class="type-badge type-badge--normal">Normal</span><span class="type-badge type-badge--bug">Bug</span><span class="type-badge type-badge--electric">Electric</span></div>
+      </div>
+      <span class="route-card__chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="9 18 15 12 9 6" /></svg></span>
+    </a>
+  </main>
+
+  <nav class="bottom-nav" aria-label="Primary navigation">
+    <a class="bottom-nav__item" href="#" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 12l2-2m0 0l7-7 7 7m-9-2v8m-4-4h12" /></svg>Routes</a>
+    <a class="bottom-nav__item" href="pokemon-browser.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9" /><line x1="3" y1="12" x2="21" y2="12" /></svg>Pokémon</a>
+    <a class="bottom-nav__item" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polygon points="12 2 15 9 22 9 17 14 19 21 12 17 5 21 7 14 2 9 9 9" /></svg>Favorites</a>
+    <a class="bottom-nav__item" href="settings.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="3" /></svg>Settings</a>
+  </nav>
+</body>
+</html>

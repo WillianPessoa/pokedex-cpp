@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Pokémon — Pokedex (V1 FlutterDex)</title>
+
+  <link rel="stylesheet" href="../styles/tokens-v1-flutterdex.css" />
+  <link rel="stylesheet" href="../styles/reset.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <style>
+    /* V1-3 — Pokémon browser. Maps to PRD Stories 11–13, 19, 20. */
+
+    body { padding-bottom: 80px; }
+
+    .topbar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: var(--space-3) var(--space-4); background-color: var(--color-bg-secondary);
+      border-bottom: 1px solid var(--color-border-primary); position: sticky; top: 0; z-index: 10;
+    }
+    .topbar__title { font-size: var(--font-size-lg); font-weight: var(--font-weight-bold); letter-spacing: var(--letter-spacing-tight); }
+    .topbar__actions { display: flex; gap: var(--space-2); }
+    .icon-button { display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: var(--border-radius-full); color: var(--color-text-primary); }
+    .icon-button:hover { background-color: var(--color-bg-tertiary); }
+    .icon-button svg { width: 22px; height: 22px; }
+
+    .filter-bar {
+      padding: var(--space-3) var(--space-4); background-color: var(--color-bg-primary);
+      border-bottom: 1px solid var(--color-border-primary);
+      position: sticky; top: 64px; z-index: 9;
+    }
+    .filter-bar__row {
+      display: flex; gap: var(--space-2); overflow-x: auto;
+      padding-bottom: 2px;
+    }
+    .filter-bar__row::-webkit-scrollbar { height: 0; }
+
+    .type-chip {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 4px 10px; border-radius: var(--border-radius-full);
+      font-size: var(--font-size-xs); font-weight: var(--font-weight-semibold);
+      letter-spacing: var(--letter-spacing-wide); text-transform: uppercase;
+      cursor: pointer; white-space: nowrap;
+      border: 1.5px solid transparent;
+      transition: all var(--duration-fast) var(--easing-default);
+    }
+    .type-chip[aria-pressed="true"] {
+      box-shadow: 0 0 0 2px var(--color-bg-primary), 0 0 0 4px currentColor;
+    }
+    .type-chip[data-type="normal"]   { background: var(--type-badge-bg-normal);   color: var(--type-badge-text-normal); }
+    .type-chip[data-type="fire"]     { background: var(--type-badge-bg-fire);     color: var(--type-badge-text-fire); }
+    .type-chip[data-type="water"]    { background: var(--type-badge-bg-water);    color: var(--type-badge-text-water); }
+    .type-chip[data-type="electric"] { background: var(--type-badge-bg-electric); color: var(--type-badge-text-electric); }
+    .type-chip[data-type="grass"]    { background: var(--type-badge-bg-grass);    color: var(--type-badge-text-grass); }
+    .type-chip[data-type="ice"]      { background: var(--type-badge-bg-ice);      color: var(--type-badge-text-ice); }
+    .type-chip[data-type="fighting"] { background: var(--type-badge-bg-fighting); color: var(--type-badge-text-fighting); }
+    .type-chip[data-type="poison"]   { background: var(--type-badge-bg-poison);   color: var(--type-badge-text-poison); }
+    .type-chip[data-type="ground"]   { background: var(--type-badge-bg-ground);   color: var(--type-badge-text-ground); }
+    .type-chip[data-type="flying"]   { background: var(--type-badge-bg-flying);   color: var(--type-badge-text-flying); }
+    .type-chip[data-type="psychic"]  { background: var(--type-badge-bg-psychic);  color: var(--type-badge-text-psychic); }
+    .type-chip[data-type="bug"]      { background: var(--type-badge-bg-bug);      color: var(--type-badge-text-bug); }
+    .type-chip[data-type="rock"]     { background: var(--type-badge-bg-rock);     color: var(--type-badge-text-rock); }
+    .type-chip[data-type="ghost"]    { background: var(--type-badge-bg-ghost);    color: var(--type-badge-text-ghost); }
+    .type-chip[data-type="dragon"]   { background: var(--type-badge-bg-dragon);   color: var(--type-badge-text-dragon); }
+    .type-chip[data-type="dark"]     { background: var(--type-badge-bg-dark);     color: var(--type-badge-text-dark); }
+    .type-chip[data-type="steel"]    { background: var(--type-badge-bg-steel);    color: var(--type-badge-text-steel); }
+    .type-chip[data-type="fairy"]    { background: var(--type-badge-bg-fairy);    color: var(--type-badge-text-fairy); }
+
+    .grid {
+      display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--space-3);
+      padding: var(--space-4);
+    }
+
+    .pokemon-card {
+      background-color: var(--color-bg-secondary); border: 1px solid var(--color-border-primary);
+      border-radius: var(--border-radius-lg); padding: var(--space-3);
+      box-shadow: var(--shadow-sm); position: relative;
+      transition: box-shadow var(--duration-fast) var(--easing-default);
+    }
+    .pokemon-card:hover { box-shadow: var(--shadow-md); }
+    .pokemon-card__fav {
+      position: absolute; top: 8px; right: 8px; width: 32px; height: 32px;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--color-text-tertiary); cursor: pointer; border-radius: var(--border-radius-full);
+    }
+    .pokemon-card__fav:hover { background-color: var(--color-bg-tertiary); }
+    .pokemon-card__fav[aria-pressed="true"] { color: #C58E3A; }
+    .pokemon-card__fav svg { width: 20px; height: 20px; }
+    .pokemon-card__sprite {
+      width: 100%; aspect-ratio: 1; background-color: var(--color-bg-tertiary);
+      border-radius: var(--border-radius-md); margin-bottom: var(--space-2);
+      display: flex; align-items: center; justify-content: center; overflow: hidden;
+    }
+    .pokemon-card__sprite img { width: 80%; height: 80%; object-fit: contain; image-rendering: pixelated; }
+    .pokemon-card__id { font-size: var(--font-size-xs); color: var(--color-text-tertiary); letter-spacing: var(--letter-spacing-wide); text-transform: uppercase; font-weight: var(--font-weight-medium); }
+    .pokemon-card__name { font-size: var(--font-size-md); font-weight: var(--font-weight-bold); margin: 2px 0 var(--space-2); }
+    .pokemon-card__types { display: flex; gap: 4px; flex-wrap: wrap; }
+    .type-badge {
+      display: inline-flex; align-items: center; padding: 2px 8px;
+      border-radius: var(--border-radius-full);
+      font-size: 10px; font-weight: var(--font-weight-semibold);
+      letter-spacing: var(--letter-spacing-wide); text-transform: uppercase;
+    }
+    .type-badge--normal   { background: var(--type-badge-bg-normal);   color: var(--type-badge-text-normal); }
+    .type-badge--fire     { background: var(--type-badge-bg-fire);     color: var(--type-badge-text-fire); }
+    .type-badge--water    { background: var(--type-badge-bg-water);    color: var(--type-badge-text-water); }
+    .type-badge--electric { background: var(--type-badge-bg-electric); color: var(--type-badge-text-electric); }
+    .type-badge--grass    { background: var(--type-badge-bg-grass);    color: var(--type-badge-text-grass); }
+    .type-badge--flying   { background: var(--type-badge-bg-flying);   color: var(--type-badge-text-flying); }
+    .type-badge--bug      { background: var(--type-badge-bg-bug);      color: var(--type-badge-text-bug); }
+    .type-badge--poison   { background: var(--type-badge-bg-poison);   color: var(--type-badge-text-poison); }
+    .type-badge--ground   { background: var(--type-badge-bg-ground);   color: var(--type-badge-text-ground); }
+    .type-badge--rock     { background: var(--type-badge-bg-rock);     color: var(--type-badge-text-rock); }
+
+    .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; display: grid; grid-template-columns: repeat(4, 1fr); background-color: var(--color-bg-secondary); border-top: 1px solid var(--color-border-primary); box-shadow: var(--shadow-md); z-index: 5; }
+    .bottom-nav__item { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; padding: var(--space-2); min-height: 64px; color: var(--color-text-secondary); font-size: var(--font-size-xs); font-weight: var(--font-weight-medium); }
+    .bottom-nav__item svg { width: 22px; height: 22px; }
+    .bottom-nav__item[aria-current="page"] { color: var(--color-accent-primary); }
+
+    @media (min-width: 768px) {
+      .grid { grid-template-columns: repeat(4, 1fr); max-width: 1100px; margin: 0 auto; padding: var(--space-6); }
+      .topbar { padding: var(--space-4) var(--space-6); }
+      .filter-bar { padding: var(--space-3) var(--space-6); }
+      .bottom-nav { display: none; }
+    }
+    @media (min-width: 1024px) {
+      .grid { grid-template-columns: repeat(5, 1fr); }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="topbar">
+    <h1 class="topbar__title">Pokémon</h1>
+    <div class="topbar__actions">
+      <button class="icon-button" aria-label="Search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <circle cx="11" cy="11" r="7" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <div class="filter-bar">
+    <div class="filter-bar__row" role="group" aria-label="Filter by type">
+      <button class="type-chip" data-type="normal"   aria-pressed="false">Normal</button>
+      <button class="type-chip" data-type="fire"     aria-pressed="false">Fire</button>
+      <button class="type-chip" data-type="water"    aria-pressed="false">Water</button>
+      <button class="type-chip" data-type="electric" aria-pressed="true">Electric</button>
+      <button class="type-chip" data-type="grass"    aria-pressed="false">Grass</button>
+      <button class="type-chip" data-type="ice"      aria-pressed="false">Ice</button>
+      <button class="type-chip" data-type="fighting" aria-pressed="false">Fighting</button>
+      <button class="type-chip" data-type="poison"   aria-pressed="false">Poison</button>
+      <button class="type-chip" data-type="ground"   aria-pressed="false">Ground</button>
+      <button class="type-chip" data-type="flying"   aria-pressed="false">Flying</button>
+      <button class="type-chip" data-type="psychic"  aria-pressed="false">Psychic</button>
+      <button class="type-chip" data-type="bug"      aria-pressed="false">Bug</button>
+      <button class="type-chip" data-type="rock"     aria-pressed="false">Rock</button>
+      <button class="type-chip" data-type="ghost"    aria-pressed="false">Ghost</button>
+      <button class="type-chip" data-type="dragon"   aria-pressed="false">Dragon</button>
+      <button class="type-chip" data-type="dark"     aria-pressed="false">Dark</button>
+      <button class="type-chip" data-type="steel"    aria-pressed="false">Steel</button>
+      <button class="type-chip" data-type="fairy"    aria-pressed="false">Fairy</button>
+    </div>
+  </div>
+
+  <main class="grid">
+    <article class="pokemon-card">
+      <button class="pokemon-card__fav" aria-pressed="false" aria-label="Favorite Bulbasaur"><svg viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15 9 22 9 17 14 19 21 12 17 5 21 7 14 2 9 9 9" /></svg></button>
+      <div class="pokemon-card__sprite"><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.png" alt="" loading="lazy" /></div>
+      <span class="pokemon-card__id">No. 0001</span>
+      <div class="pokemon-card__name">Bulbasaur</div>
+      <div class="pokemon-card__types"><span class="type-badge type-badge--grass">Grass</span><span class="type-badge type-badge--poison">Poison</span></div>
+    </article>
+
+    <article class="pokemon-card">
+      <button class="pokemon-card__fav" aria-pressed="false" aria-label="Favorite Charmander"><svg viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15 9 22 9 17 14 19 21 12 17 5 21 7 14 2 9 9 9" /></svg></button>
+      <div class="pokemon-card__sprite"><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/4.png" alt="" loading="lazy" /></div>
+      <span class="pokemon-card__id">No. 0004</span>
+      <div class="pokemon-card__name">Charmander</div>
+      <div class="pokemon-card__types"><span class="type-badge type-badge--fire">Fire</span></div>
+    </article>
+
+    <article class="pokemon-card">
+      <button class="pokemon-card__fav" aria-pressed="false" aria-label="Favorite Squirtle"><svg viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15 9 22 9 17 14 19 21 12 17 5 21 7 14 2 9 9 9" /></svg></button>
+      <div class="pokemon-card__sprite"><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/7.png" alt="" loading="lazy" /></div>
+      <span class="pokemon-card__id">No. 0007</span>
+      <div class="pokemon-card__name">Squirtle</div>
+      <div class="pokemon-card__types"><span class="type-badge type-badge--water">Water</span></div>
+    </article>
+
+    <article class="pokemon-card">
+      <button class="pokemon-card__fav" aria-pressed="false" aria-label="Favorite Pidgey"><svg viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15 9 22 9 17 14 19 21 12 17 5 21 7 14 2 9 9 9" /></svg></button>
+      <div class="pokemon-card__sprite"><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/16.png" alt="" loading="lazy" /></div>
+      <span class="pokemon-card__id">No. 0016</span>
+      <div class="pokemon-card__name">Pidgey</div>
+      <div class="pokemon-card__types"><span class="type-badge type-badge--normal">Normal</span><span class="type-badge type-badge--flying">Flying</span></div>
+    </article>
+
+    <article class="pokemon-card">
+      <button class="pokemon-card__fav" aria-pressed="false" aria-label="Favorite Rattata"><svg viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15 9 22 9 17 14 19 21 12 17 5 21 7 14 2 9 9 9" /></svg></button>
+      <div class="pokemon-card__sprite"><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/19.png" alt="" loading="lazy" /></div>
+      <span class="pokemon-card__id">No. 0019</span>
+      <div class="pokemon-card__name">Rattata</div>
+      <div class="pokemon-card__types"><span class="type-badge type-badge--normal">Normal</span></div>
+    </article>
+
+    <article class="pokemon-card">
+      <button class="pokemon-card__fav" aria-pressed="true" aria-label="Favorite Pikachu"><svg viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15 9 22 9 17 14 19 21 12 17 5 21 7 14 2 9 9 9" /></svg></button>
+      <div class="pokemon-card__sprite"><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png" alt="" loading="lazy" /></div>
+      <span class="pokemon-card__id">No. 0025</span>
+      <div class="pokemon-card__name">Pikachu</div>
+      <div class="pokemon-card__types"><span class="type-badge type-badge--electric">Electric</span></div>
+    </article>
+
+    <article class="pokemon-card">
+      <button class="pokemon-card__fav" aria-pressed="false" aria-label="Favorite Geodude"><svg viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15 9 22 9 17 14 19 21 12 17 5 21 7 14 2 9 9 9" /></svg></button>
+      <div class="pokemon-card__sprite"><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/74.png" alt="" loading="lazy" /></div>
+      <span class="pokemon-card__id">No. 0074</span>
+      <div class="pokemon-card__name">Geodude</div>
+      <div class="pokemon-card__types"><span class="type-badge type-badge--rock">Rock</span><span class="type-badge type-badge--ground">Ground</span></div>
+    </article>
+
+    <article class="pokemon-card">
+      <button class="pokemon-card__fav" aria-pressed="false" aria-label="Favorite Onix"><svg viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15 9 22 9 17 14 19 21 12 17 5 21 7 14 2 9 9 9" /></svg></button>
+      <div class="pokemon-card__sprite"><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/95.png" alt="" loading="lazy" /></div>
+      <span class="pokemon-card__id">No. 0095</span>
+      <div class="pokemon-card__name">Onix</div>
+      <div class="pokemon-card__types"><span class="type-badge type-badge--rock">Rock</span><span class="type-badge type-badge--ground">Ground</span></div>
+    </article>
+
+    <article class="pokemon-card">
+      <button class="pokemon-card__fav" aria-pressed="false" aria-label="Favorite Magikarp"><svg viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15 9 22 9 17 14 19 21 12 17 5 21 7 14 2 9 9 9" /></svg></button>
+      <div class="pokemon-card__sprite"><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/129.png" alt="" loading="lazy" /></div>
+      <span class="pokemon-card__id">No. 0129</span>
+      <div class="pokemon-card__name">Magikarp</div>
+      <div class="pokemon-card__types"><span class="type-badge type-badge--water">Water</span></div>
+    </article>
+
+    <article class="pokemon-card">
+      <button class="pokemon-card__fav" aria-pressed="true" aria-label="Favorite Eevee"><svg viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15 9 22 9 17 14 19 21 12 17 5 21 7 14 2 9 9 9" /></svg></button>
+      <div class="pokemon-card__sprite"><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/133.png" alt="" loading="lazy" /></div>
+      <span class="pokemon-card__id">No. 0133</span>
+      <div class="pokemon-card__name">Eevee</div>
+      <div class="pokemon-card__types"><span class="type-badge type-badge--normal">Normal</span></div>
+    </article>
+  </main>
+
+  <nav class="bottom-nav" aria-label="Primary navigation">
+    <a class="bottom-nav__item" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 12l2-2m0 0l7-7 7 7m-9-2v8m-4-4h12" /></svg>Routes</a>
+    <a class="bottom-nav__item" href="#" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9" /><line x1="3" y1="12" x2="21" y2="12" /></svg>Pokémon</a>
+    <a class="bottom-nav__item" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polygon points="12 2 15 9 22 9 17 14 19 21 12 17 5 21 7 14 2 9 9 9" /></svg>Favorites</a>
+    <a class="bottom-nav__item" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="3" /></svg>Settings</a>
+  </nav>
+
+  <script>
+    document.querySelectorAll('.type-chip').forEach(c => c.addEventListener('click', () => c.setAttribute('aria-pressed', c.getAttribute('aria-pressed') === 'true' ? 'false' : 'true')));
+    document.querySelectorAll('.pokemon-card__fav').forEach(b => b.addEventListener('click', e => { e.preventDefault(); b.setAttribute('aria-pressed', b.getAttribute('aria-pressed') === 'true' ? 'false' : 'true'); }));
+  </script>
+</body>
+</html>
