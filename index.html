@@ -819,6 +819,20 @@ const Q = {
             { v: 'outro',      l: 'Outro', outro: true },
         ],
     },
+    d3c: {
+        section: 'motiv', num: 'D3c',
+        text: 'Você joga ou já jogou outras modalidades de challenge run?',
+        hint: 'Pode marcar mais de uma opção.',
+        type: 'multi', pokemon: 196,
+        opts: [
+            { v: 'genlock',    l: 'Genlock — só Pokémons da geração do jogo' },
+            { v: 'randomizer', l: 'Randomizer — encounters e/ou Pokémons aleatórios' },
+            { v: 'soul-link',  l: 'Soul Link — run cooperativa pareada com outra pessoa' },
+            { v: 'bingo',      l: 'Nuzlocke Bingo — completar objetivos num cartão' },
+            { v: 'nao',        l: 'Não, só Nuzlocke padrão' },
+            { v: 'outro',      l: 'Outro', outro: true },
+        ],
+    },
     d4: {
         section: 'motiv', num: 'D4',
         text: 'Como você reage quando perde um Pokémon importante?',
@@ -948,8 +962,8 @@ const Q = {
 const PROFILE_FLOWS = {
     'nao-conhece':        ['a1', 'a2', 'a2b', 'b1', 'b3', 'c1'],
     'conhece-nao-tentou': ['a1', 'a2', 'a2b', 'b1', 'b3', 'c1', 'f1'],
-    'tentou':             ['a1', 'a2', 'a2b', 'a3', 'b1', 'b2', 'b3', 'c1', 'c2', 'd1', 'd2', 'd3', 'd4', 'd5', 'e1', 'e2', 'e3', 'g1'],
-    'completou':          ['a1', 'a2', 'a2b', 'a3', 'b1', 'b2', 'b3', 'c1', 'c2', 'd1', 'd2', 'd3', 'd4', 'd5', 'e1', 'e2', 'e3', 'h1', 'h2'],
+    'tentou':             ['a1', 'a2', 'a2b', 'a3', 'b1', 'b2', 'b3', 'c1', 'c2', 'd1', 'd2', 'd3', 'd3c', 'd4', 'd5', 'e1', 'e2', 'e3', 'g1'],
+    'completou':          ['a1', 'a2', 'a2b', 'a3', 'b1', 'b2', 'b3', 'c1', 'c2', 'd1', 'd2', 'd3', 'd3c', 'd4', 'd5', 'e1', 'e2', 'e3', 'h1', 'h2'],
 };
 
 /* =====================================================================
