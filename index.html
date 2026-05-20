@@ -662,6 +662,23 @@ const Q = {
             { v: 'nao-lembro', l: 'Não lembro ao certo' },
         ],
     },
+    a2c: {
+        section: 'demo', num: 'A2c',
+        text: 'Qual é o seu jogo de Pokémon favorito?',
+        type: 'single', pokemon: 384,
+        opts: [
+            { v: 'gen1',  l: 'Red / Blue / Yellow' },
+            { v: 'gen2',  l: 'Gold / Silver / Crystal' },
+            { v: 'gen3',  l: 'Ruby / Sapphire / Emerald / FireRed / LeafGreen' },
+            { v: 'gen4',  l: 'Diamond / Pearl / Platinum / HeartGold / SoulSilver' },
+            { v: 'gen5',  l: 'Black / White / Black 2 / White 2' },
+            { v: 'gen6',  l: 'X / Y / Omega Ruby / Alpha Sapphire' },
+            { v: 'gen7',  l: 'Sun / Moon / Ultra Sun / Ultra Moon' },
+            { v: 'gen8',  l: 'Sword / Shield / Brilliant Diamond / Shining Pearl / Legends: Arceus' },
+            { v: 'gen9',  l: 'Scarlet / Violet' },
+            { v: 'hack',  l: 'Um ROM hack', outro: true },
+        ],
+    },
     a3: {
         section: 'demo', num: 'A3',
         text: 'Quando você fez sua primeira tentativa de Nuzlocke?',
@@ -960,10 +977,10 @@ const Q = {
    FLOWS PER PROFILE
 ===================================================================== */
 const PROFILE_FLOWS = {
-    'nao-conhece':        ['a1', 'a2', 'a2b', 'b1', 'b3', 'c1'],
-    'conhece-nao-tentou': ['a1', 'a2', 'a2b', 'b1', 'b3', 'c1', 'f1'],
-    'tentou':             ['a1', 'a2', 'a2b', 'a3', 'b1', 'b2', 'b3', 'c1', 'c2', 'd1', 'd2', 'd3', 'd3c', 'd4', 'd5', 'e1', 'e2', 'e3', 'g1'],
-    'completou':          ['a1', 'a2', 'a2b', 'a3', 'b1', 'b2', 'b3', 'c1', 'c2', 'd1', 'd2', 'd3', 'd3c', 'd4', 'd5', 'e1', 'e2', 'e3', 'h1', 'h2'],
+    'nao-conhece':        ['a1', 'a2', 'a2b', 'a2c', 'b1', 'b3', 'c1'],
+    'conhece-nao-tentou': ['a1', 'a2', 'a2b', 'a2c', 'b1', 'b3', 'c1', 'f1'],
+    'tentou':             ['a1', 'a2', 'a2b', 'a2c', 'a3', 'b1', 'b2', 'b3', 'c1', 'c2', 'd1', 'd2', 'd3', 'd3c', 'd4', 'd5', 'e1', 'e2', 'e3', 'g1'],
+    'completou':          ['a1', 'a2', 'a2b', 'a2c', 'a3', 'b1', 'b2', 'b3', 'c1', 'c2', 'd1', 'd2', 'd3', 'd3c', 'd4', 'd5', 'e1', 'e2', 'e3', 'h1', 'h2'],
 };
 
 /* =====================================================================
