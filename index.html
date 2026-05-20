@@ -1329,7 +1329,7 @@ function submitForm() {
 
     fetch(APPS_SCRIPT_URL, {
         method:  'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'text/plain' },
         body:    JSON.stringify(lastPayload),
     })
     .then(r => { if (!r.ok) throw new Error('status ' + r.status); return r.json(); })
@@ -1347,7 +1347,7 @@ function retrySubmit() {
 
     fetch(APPS_SCRIPT_URL, {
         method:  'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'text/plain' },
         body:    JSON.stringify(lastPayload),
     })
     .then(r => r.json())
