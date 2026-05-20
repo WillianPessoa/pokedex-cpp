@@ -423,6 +423,63 @@
         }
 
         /* =====================
+           TOOLTIPS
+        ===================== */
+        .tip {
+            border-bottom: 1.5px dotted var(--acc);
+            cursor: help;
+            position: relative;
+            display: inline-block;
+        }
+
+        .tip::after {
+            content: attr(data-tip);
+            position: absolute;
+            bottom: calc(100% + 10px);
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1a202c;
+            color: #ffffff;
+            font-size: 13px;
+            font-weight: 600;
+            line-height: 1.5;
+            padding: 10px 14px;
+            border-radius: 10px;
+            width: 230px;
+            text-align: left;
+            pointer-events: none;
+            white-space: normal;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity .15s, visibility .15s;
+            z-index: 50;
+        }
+
+        .tip::before {
+            content: '';
+            position: absolute;
+            bottom: calc(100% + 4px);
+            left: 50%;
+            transform: translateX(-50%);
+            border: 6px solid transparent;
+            border-top-color: #1a202c;
+            pointer-events: none;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity .15s, visibility .15s;
+            z-index: 50;
+        }
+
+        @media (hover: hover) {
+            .tip:hover::after,
+            .tip:hover::before { opacity: 1; visibility: visible; }
+        }
+
+        .tip.open::after,
+        .tip.open::before { opacity: 1; visibility: visible; }
+
+        /* =====================
            LOADING / SUBMIT STATE
         ===================== */
         .spinner {
@@ -588,15 +645,32 @@ const Q = {
     },
     a2: {
         section: 'demo', num: 'A2',
-        text: 'Quando você começou a jogar Pokémon?',
+        text: 'Em que período você começou a jogar Pokémon?',
         type: 'single', pokemon: 142,
         opts: [
-            { v: 'gen1',     l: 'Antes de 2000 — Gen 1 (Red, Blue, Yellow)' },
-            { v: 'gen2-3',   l: '2000–2005 — Gen 2–3 (Gold, Silver, Ruby, Emerald)' },
-            { v: 'gen4-5',   l: '2006–2010 — Gen 4–5 (Diamond, Pearl, Black, White)' },
-            { v: 'gen6-7',   l: '2011–2016 — Gen 6–7 (X, Y, Sun, Moon)' },
-            { v: 'gen8',     l: '2017–2022 — Gen 8 (Sword, Shield)' },
-            { v: 'gen9',     l: '2023 em diante — Gen 9 (Scarlet, Violet)' },
+            { v: 'antes-2000', l: 'Antes de 2000' },
+            { v: '2000-2005',  l: '2000–2005' },
+            { v: '2006-2010',  l: '2006–2010' },
+            { v: '2011-2016',  l: '2011–2016' },
+            { v: '2017-2022',  l: '2017–2022' },
+            { v: '2023+',      l: '2023 em diante' },
+            { v: 'nao-lembro', l: 'Não lembro ao certo' },
+        ],
+    },
+    a2b: {
+        section: 'demo', num: 'A2b',
+        text: 'Qual foi o primeiro jogo de Pokémon que você jogou?',
+        type: 'single', pokemon: 143,
+        opts: [
+            { v: 'gen1',  l: 'Red / Blue / Yellow' },
+            { v: 'gen2',  l: 'Gold / Silver / Crystal' },
+            { v: 'gen3',  l: 'Ruby / Sapphire / Emerald / FireRed / LeafGreen' },
+            { v: 'gen4',  l: 'Diamond / Pearl / Platinum / HeartGold / SoulSilver' },
+            { v: 'gen5',  l: 'Black / White / Black 2 / White 2' },
+            { v: 'gen6',  l: 'X / Y / Omega Ruby / Alpha Sapphire' },
+            { v: 'gen7',  l: 'Sun / Moon / Ultra Sun / Ultra Moon' },
+            { v: 'gen8',  l: 'Sword / Shield / Brilliant Diamond / Shining Pearl / Legends: Arceus' },
+            { v: 'gen9',  l: 'Scarlet / Violet' },
             { v: 'nao-lembro', l: 'Não lembro ao certo' },
         ],
     },
@@ -676,11 +750,13 @@ const Q = {
         text: 'Com que frequência você joga Pokémon atualmente?',
         type: 'single', pokemon: 143,
         opts: [
-            { v: 'diario',     l: 'Todo dia' },
-            { v: 'semana',     l: 'Algumas vezes por semana' },
-            { v: 'mes',        l: 'Algumas vezes por mês' },
-            { v: 'raramente',  l: 'Raramente' },
-            { v: 'so-nuzlocke',l: 'Só jogo quando estou numa run de Nuzlocke' },
+            { v: 'diario',      l: 'Todo dia' },
+            { v: 'semana',      l: 'Algumas vezes por semana' },
+            { v: 'mes',         l: 'Algumas vezes por mês' },
+            { v: 'ano-intenso', l: 'Uma vez por ano (alguns dias intensos e depois paro)' },
+            { v: '>1ano',       l: 'Levo mais de um ano para terminar um jogo' },
+            { v: 'raramente',   l: 'Raramente (sem frequência definida)' },
+            { v: 'so-nuzlocke', l: 'Só jogo quando estou numa run de Nuzlocke' },
         ],
     },
     c2: {
@@ -726,7 +802,7 @@ const Q = {
     },
     d3: {
         section: 'motiv', num: 'D3',
-        text: 'Você usa regras extras além das básicas (permadeath + first encounter)?',
+        text: 'Você usa regras extras além das básicas (<span class="tip" data-tip="Pokémon que desmaia é eliminado da run permanentemente — deve ser liberado ou guardado.">permadeath</span> + <span class="tip" data-tip="Só é permitido capturar o primeiro Pokémon encontrado em cada rota.">first encounter</span>)?',
         type: 'single', pokemon: 282,
         opts: [
             { v: 'so-basicas',   l: 'Não, só as regras básicas' },
@@ -862,10 +938,10 @@ const Q = {
    FLOWS PER PROFILE
 ===================================================================== */
 const PROFILE_FLOWS = {
-    'nao-conhece':        ['a1', 'a2', 'b1', 'b3', 'c1'],
-    'conhece-nao-tentou': ['a1', 'a2', 'b1', 'b3', 'c1', 'f1'],
-    'tentou':             ['a1', 'a2', 'a3', 'b1', 'b2', 'b3', 'c1', 'c2', 'd1', 'd2', 'd3', 'd4', 'd5', 'e1', 'e2', 'e3', 'g1'],
-    'completou':          ['a1', 'a2', 'a3', 'b1', 'b2', 'b3', 'c1', 'c2', 'd1', 'd2', 'd3', 'd4', 'd5', 'e1', 'e2', 'e3', 'h1', 'h2'],
+    'nao-conhece':        ['a1', 'a2', 'a2b', 'b1', 'b3', 'c1'],
+    'conhece-nao-tentou': ['a1', 'a2', 'a2b', 'b1', 'b3', 'c1', 'f1'],
+    'tentou':             ['a1', 'a2', 'a2b', 'a3', 'b1', 'b2', 'b3', 'c1', 'c2', 'd1', 'd2', 'd3', 'd4', 'd5', 'e1', 'e2', 'e3', 'g1'],
+    'completou':          ['a1', 'a2', 'a2b', 'a3', 'b1', 'b2', 'b3', 'c1', 'c2', 'd1', 'd2', 'd3', 'd4', 'd5', 'e1', 'e2', 'e3', 'h1', 'h2'],
 };
 
 /* =====================================================================
@@ -1226,6 +1302,15 @@ function retrySubmit() {
     .then(() => showScreen('screen-end-ok'))
     .catch(() => showScreen('screen-end-err'));
 }
+
+/* =====================================================================
+   TOOLTIP — tap handler for mobile
+===================================================================== */
+document.addEventListener('click', e => {
+    const tip = e.target.closest('.tip');
+    document.querySelectorAll('.tip.open').forEach(t => { if (t !== tip) t.classList.remove('open'); });
+    if (tip) { e.stopPropagation(); tip.classList.toggle('open'); }
+});
 
 /* =====================================================================
    SHAKE KEYFRAME (injected via JS to avoid style conflicts)
