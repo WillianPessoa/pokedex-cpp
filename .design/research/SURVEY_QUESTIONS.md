@@ -85,16 +85,15 @@ Mapear quem são os jogadores de Pokémon em relação ao Nuzlocke: desde quem n
 > *Aplicável apenas a: tentou ou completou Nuzlocke*
 > *Traz: distingue onde jogam Pokémon no geral de onde fazem o desafio especificamente*
 
-**B3. Nos seus Nuzlockes, você joga principalmente em jogos oficiais ou ROM hacks?**
-- Só jogos oficiais
-- Principalmente oficiais, mas já experimentei algum ROM hack
-- Uso os dois igualmente
-- Principalmente ROM hacks
-- Só ROM hacks
-> *Aplicável apenas a: tentou ou completou Nuzlocke*
-> *Traz: penetração dos ROM hacks no público de Nuzlocke — muitos são feitos especificamente para o desafio*
+**B3. Você joga ou já jogou algum ROM hack de Pokémon?**
+- Não, nunca joguei ROM hack
+- Sim, mas prefiro os jogos oficiais
+- Jogo os dois igualmente
+- Prefiro ROM hacks
+> *Aplicável a: todos os perfis*
+> *Traz: penetração dos ROM hacks no público geral de Pokémon — permite cruzar com quem faz Nuzlocke*
 
-**B4. Se você joga ROM hacks, quais você já usou numa run?** *(múltipla escolha)*
+**B4. Quais ROM hacks você já usou?** *(múltipla escolha)*
 - Radical Red
 - Pokémon Unbound
 - Emerald Kaizo
@@ -103,9 +102,8 @@ Mapear quem são os jogadores de Pokémon em relação ao Nuzlocke: desde quem n
 - Pokémon Gaia
 - Pokémon Glazed
 - Pokémon Insurgence
-- Nunca joguei ROM hack
 - Outro: ________
-> *Aplicável apenas a: quem respondeu que joga ROM hacks em B3*
+> *Aplicável a: quem respondeu que joga ROM hacks em B3*
 > *Traz: quais títulos têm mais tração — útil para entender o ecossistema*
 
 ---
@@ -261,10 +259,13 @@ Mapear quem são os jogadores de Pokémon em relação ao Nuzlocke: desde quem n
 
 | Perfil | Blocos |
 |---|---|
-| Joga Pokémon, nunca ouviu falar em Nuzlocke | A, B (só B1), C (só C1) |
-| Conhece Nuzlocke, mas nunca tentou | A, B (só B1), C (só C1), F |
+| Joga Pokémon, nunca ouviu falar em Nuzlocke | A, B (B1 + B3 + B4 cond.), C (só C1) |
+| Conhece Nuzlocke, mas nunca tentou | A, B (B1 + B3 + B4 cond.), C (só C1), F |
 | Tentou Nuzlocke, mas nunca completou | A, B, C, D, E, G |
 | Completou pelo menos uma run | A, B, C, D, E, H |
+
+> B4 é condicional em todos os perfis: aparece somente se B3 indicar uso de ROM hacks.
+> B2 (dispositivo específico para Nuzlocke) aparece apenas para quem tentou ou completou.
 
 ---
 
@@ -272,7 +273,7 @@ Mapear quem são os jogadores de Pokémon em relação ao Nuzlocke: desde quem n
 
 | Perfil | Nº de perguntas |
 |---|---|
-| Nunca ouviu falar | 5 |
-| Conhece mas nunca tentou | 8 |
-| Tentou mas não completou | 17–18 |
-| Completou pelo menos uma run | 18–19 |
+| Nunca ouviu falar | 6–7 |
+| Conhece mas nunca tentou | 9–10 |
+| Tentou mas não completou | 18–19 |
+| Completou pelo menos uma run | 19–20 |
