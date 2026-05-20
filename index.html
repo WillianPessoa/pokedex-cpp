@@ -428,56 +428,42 @@
         .tip {
             border-bottom: 1.5px dotted var(--acc);
             cursor: help;
-            position: relative;
-            display: inline-block;
+            display: inline;
         }
 
-        .tip::after {
-            content: attr(data-tip);
-            position: absolute;
-            bottom: calc(100% + 10px);
-            left: 50%;
-            transform: translateX(-50%);
+        #tip-popup {
+            position: fixed;
             background: #1a202c;
             color: #ffffff;
+            font-family: var(--font);
             font-size: 13px;
             font-weight: 600;
             line-height: 1.5;
             padding: 10px 14px;
             border-radius: 10px;
-            width: 230px;
-            text-align: left;
+            max-width: 240px;
             pointer-events: none;
-            white-space: normal;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+            z-index: 9999;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.25);
             opacity: 0;
             visibility: hidden;
             transition: opacity .15s, visibility .15s;
-            z-index: 50;
         }
 
-        .tip::before {
+        #tip-popup.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        #tip-popup::after {
             content: '';
             position: absolute;
-            bottom: calc(100% + 4px);
-            left: 50%;
+            top: 100%;
+            left: var(--arrow, 50%);
             transform: translateX(-50%);
             border: 6px solid transparent;
             border-top-color: #1a202c;
-            pointer-events: none;
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity .15s, visibility .15s;
-            z-index: 50;
         }
-
-        @media (hover: hover) {
-            .tip:hover::after,
-            .tip:hover::before { opacity: 1; visibility: visible; }
-        }
-
-        .tip.open::after,
-        .tip.open::before { opacity: 1; visibility: visible; }
 
         /* =====================
            LOADING / SUBMIT STATE
@@ -498,6 +484,8 @@
     </style>
 </head>
 <body>
+
+<div id="tip-popup"></div>
 
 <div class="page">
 <div class="wrap">
@@ -811,6 +799,26 @@ const Q = {
             { v: 'terceiros',    l: 'Uso rulesets prontos de terceiros' },
         ],
     },
+    d3b: {
+        section: 'motiv', num: 'D3b',
+        text: 'Quais regras extras você costuma usar?',
+        hint: 'Pode marcar mais de uma opção.',
+        type: 'multi', pokemon: 282,
+        opts: [
+            { v: 'dupes',      l: 'Dupes clause — pode trocar se já tem o Pokémon da rota' },
+            { v: 'shiny',      l: 'Shiny clause — shiny encontrado sempre pode ser capturado' },
+            { v: 'level-cap',  l: 'Level cap — não nivela acima do ace do próximo gym' },
+            { v: 'set-mode',   l: 'Set mode — sem troca de Pokémon antes de batalha' },
+            { v: 'sem-itens',  l: 'Sem itens de cura durante batalhas' },
+            { v: 'blackout',   l: 'Blackout = fim da run (perder todos encerra)' },
+            { v: 'lendarios',  l: 'Lendários não podem ser capturados ou usados' },
+            { v: 'gifts',      l: 'Pokémons de presente contam como encounter da rota' },
+            { v: 'hardcore',   l: 'Hardcore Nuzlocke (level cap + sem itens + set mode)' },
+            { v: 'wedlocke',   l: 'Wedlocke — Pokémons em pares macho/fêmea' },
+            { v: 'monotype',   l: 'Monotype — só Pokémons de um único tipo' },
+            { v: 'outro',      l: 'Outro', outro: true },
+        ],
+    },
     d4: {
         section: 'motiv', num: 'D4',
         text: 'Como você reage quando perde um Pokémon importante?',
@@ -975,6 +983,12 @@ function buildFlow() {
     const b3idx = base.indexOf('b3');
     if (b3idx !== -1 && romSelected()) {
         base.splice(b3idx + 1, 0, 'b4');
+    }
+    // Insert d3b after d3 only if player uses extra rules
+    const d3ans = getAns('d3');
+    const d3idx = base.indexOf('d3');
+    if (d3idx !== -1 && d3ans && d3ans !== 'so-basicas') {
+        base.splice(d3idx + 1, 0, 'd3b');
     }
     // Skip e3 if user said "nada" in e2
     const e2ans = getAns('e2') || [];
@@ -1181,7 +1195,14 @@ function goNext() {
 
     // After b3 — check if we need to insert b4
     if (qid === 'b3') {
-        buildFlow();  // rebuild to include/exclude b4
+        buildFlow();
+    }
+
+    // After d3 — check if we need to insert d3b
+    if (qid === 'd3') {
+        const oldIdx = state.flowIdx;
+        buildFlow();
+        state.flowIdx = oldIdx;
     }
 
     // After e2 — rebuild to conditionally exclude e3
@@ -1304,12 +1325,55 @@ function retrySubmit() {
 }
 
 /* =====================================================================
-   TOOLTIP — tap handler for mobile
+   TOOLTIP — fixed-position popup (escapes overflow:hidden on .card)
 ===================================================================== */
+const tipPopup = document.getElementById('tip-popup');
+
+function showTip(tip) {
+    const r    = tip.getBoundingClientRect();
+    const text = tip.dataset.tip;
+    tipPopup.textContent = text;
+    tipPopup.classList.add('visible');
+
+    // Measure after making visible
+    const pw = tipPopup.offsetWidth;
+    const ph = tipPopup.offsetHeight;
+    const cx = r.left + r.width / 2;
+
+    let left = cx - pw / 2;
+    left = Math.max(8, Math.min(left, window.innerWidth - pw - 8));
+
+    let top = r.top - ph - 12;
+    const flipBelow = top < 8;
+    if (flipBelow) top = r.bottom + 12;
+
+    tipPopup.style.left = left + 'px';
+    tipPopup.style.top  = top  + 'px';
+
+    // Arrow offset relative to popup
+    const arrowPct = Math.round(((cx - left) / pw) * 100);
+    tipPopup.style.setProperty('--arrow', arrowPct + '%');
+
+    // Flip arrow if tooltip is below
+    tipPopup.style.setProperty('--arrow-dir', flipBelow ? 'bottom' : 'top');
+    tipPopup.style.cssText += flipBelow
+        ? '; --arrow-top: auto; border-top-color: transparent;'
+        : '';
+}
+
+function hideTip() { tipPopup.classList.remove('visible'); }
+
+// Desktop hover
+document.addEventListener('mouseover', e => {
+    const tip = e.target.closest('.tip');
+    if (tip) showTip(tip); else hideTip();
+});
+
+// Mobile tap
 document.addEventListener('click', e => {
     const tip = e.target.closest('.tip');
-    document.querySelectorAll('.tip.open').forEach(t => { if (t !== tip) t.classList.remove('open'); });
-    if (tip) { e.stopPropagation(); tip.classList.toggle('open'); }
+    if (tip) { e.stopPropagation(); showTip(tip); }
+    else hideTip();
 });
 
 /* =====================================================================
