@@ -28,3 +28,7 @@ ui_*.h
 
 # Skills cache (matt skills auto-generated)
 .skills-cache/
+
+# Local tool configs
+.obsidian/
+.claude/

@@ -1,0 +1,674 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Route 1 — FireRed · Pokedex (V3 Linear)</title>
+
+  <link rel="stylesheet" href="../styles/tokens-v3-linear.css" />
+  <link rel="stylesheet" href="../styles/reset.css" />
+  <link rel="stylesheet" href="../styles/shell.css" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+  <style>
+    main {
+      max-width: var(--max-width-page);
+      margin: 0 auto;
+    }
+
+    /* ---- Command bar (sticky) ---- */
+    .commandbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-4);
+      padding: var(--space-4) var(--space-5);
+      border-bottom: 1px solid var(--color-border-primary);
+      background-color: var(--color-bg-primary);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      backdrop-filter: blur(8px);
+    }
+    .breadcrumb {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      font-size: var(--font-size-sm);
+      color: var(--color-text-secondary);
+      min-width: 0;
+    }
+    .breadcrumb__back {
+      width: 28px;
+      height: 28px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid var(--color-border-primary);
+      border-radius: var(--border-radius-sm);
+      color: var(--color-text-secondary);
+    }
+    .breadcrumb__back svg { width: 14px; height: 14px; }
+    .breadcrumb__back:hover { color: var(--color-text-primary); border-color: var(--color-text-tertiary); }
+    .breadcrumb__item { font-weight: var(--font-weight-medium); }
+    .breadcrumb__item--active {
+      color: var(--color-text-primary);
+      font-weight: var(--font-weight-semibold);
+    }
+    .breadcrumb__sep { color: var(--color-text-tertiary); font-size: 11px; }
+    .breadcrumb__game-dot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: var(--border-radius-xs);
+      background: linear-gradient(135deg, #DC2626 0%, #F87171 100%);
+      margin-right: 6px;
+      vertical-align: -1px;
+    }
+    .commandbar__actions { display: flex; gap: var(--space-2); }
+    .icon-btn {
+      width: 32px;
+      height: 32px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid var(--color-border-primary);
+      border-radius: var(--border-radius-sm);
+      color: var(--color-text-secondary);
+      transition: all var(--duration-fast) var(--easing-default);
+    }
+    .icon-btn svg { width: 16px; height: 16px; }
+    .icon-btn:hover { color: var(--color-text-primary); border-color: var(--color-text-tertiary); }
+    .kbd {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 5px;
+      background-color: var(--color-bg-tertiary);
+      border: 1px solid var(--color-border-primary);
+      border-bottom-width: 2px;
+      border-radius: var(--border-radius-xs);
+      font-family: var(--font-family-mono);
+      font-size: 10px;
+      color: var(--color-text-secondary);
+      line-height: 1;
+    }
+
+    /* ---- Page head ---- */
+    .page-head {
+      padding: var(--space-7) var(--space-5) var(--space-5);
+      border-bottom: 1px solid var(--color-border-primary);
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: var(--space-5);
+      align-items: end;
+    }
+    .page-head__eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-3);
+      font-size: var(--font-size-xs);
+      text-transform: uppercase;
+      letter-spacing: var(--letter-spacing-widest);
+      color: var(--color-text-tertiary);
+      font-weight: var(--font-weight-semibold);
+      margin-bottom: var(--space-3);
+    }
+    .terrain-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+      padding: 2px var(--space-2);
+      background-color: var(--color-bg-tertiary);
+      border-radius: var(--border-radius-xs);
+      letter-spacing: 0;
+      text-transform: none;
+      font-size: 10px;
+      color: var(--color-text-secondary);
+    }
+    .terrain-tag__dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background-color: var(--color-type-grass);
+    }
+    .page-head__title {
+      font-size: var(--font-size-2xl);
+      font-weight: var(--font-weight-bold);
+      letter-spacing: var(--letter-spacing-tight);
+      line-height: var(--line-height-tight);
+    }
+    .page-head__sub {
+      margin-top: var(--space-3);
+      font-size: var(--font-size-sm);
+      color: var(--color-text-secondary);
+    }
+
+    /* Stats strip on the right */
+    .stats-strip {
+      display: grid;
+      grid-template-columns: repeat(3, auto);
+      gap: var(--space-7);
+      padding-bottom: 4px;
+    }
+    .stat {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .stat__label {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: var(--letter-spacing-widest);
+      color: var(--color-text-tertiary);
+      font-weight: var(--font-weight-semibold);
+    }
+    .stat__value {
+      font-family: var(--font-family-mono);
+      font-size: var(--font-size-lg);
+      font-weight: var(--font-weight-semibold);
+      color: var(--color-text-primary);
+      font-feature-settings: var(--font-feature-numbers);
+      font-variant-numeric: tabular-nums slashed-zero;
+      letter-spacing: -0.01em;
+    }
+    .stat__value-sub {
+      font-family: var(--font-family-body);
+      font-size: var(--font-size-xs);
+      font-weight: var(--font-weight-normal);
+      color: var(--color-text-tertiary);
+      margin-left: 2px;
+    }
+
+    /* ---- Filter bar (Nuzlocke toggles) ---- */
+    .filter-bar {
+      position: sticky;
+      top: 65px;
+      z-index: 9;
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      padding: var(--space-3) var(--space-5);
+      border-bottom: 1px solid var(--color-border-primary);
+      background-color: var(--color-bg-primary);
+      backdrop-filter: blur(8px);
+    }
+    .toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-3);
+      padding: 5px var(--space-3);
+      background-color: transparent;
+      border: 1px solid var(--color-border-primary);
+      border-radius: var(--border-radius-sm);
+      font-size: var(--font-size-sm);
+      color: var(--color-text-secondary);
+      font-weight: var(--font-weight-medium);
+      transition: all var(--duration-fast) var(--easing-default);
+    }
+    .toggle:hover {
+      color: var(--color-text-primary);
+      border-color: var(--color-text-tertiary);
+    }
+    .toggle[aria-pressed="true"] {
+      color: var(--color-accent-primary);
+      border-color: var(--color-accent-primary);
+      background-color: rgba(192, 132, 252, 0.08);
+    }
+    .toggle__switch {
+      position: relative;
+      width: 22px;
+      height: 12px;
+      background-color: var(--color-bg-tertiary);
+      border-radius: 999px;
+      flex-shrink: 0;
+      transition: background-color var(--duration-fast) var(--easing-default);
+    }
+    .toggle__switch::after {
+      content: '';
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 8px;
+      height: 8px;
+      background-color: var(--color-text-secondary);
+      border-radius: 50%;
+      transition: all var(--duration-fast) var(--easing-default);
+    }
+    .toggle[aria-pressed="true"] .toggle__switch {
+      background-color: var(--color-accent-primary);
+    }
+    .toggle[aria-pressed="true"] .toggle__switch::after {
+      left: 12px;
+      background-color: var(--color-bg-primary);
+    }
+    .toggle__hint {
+      color: var(--color-text-tertiary);
+      font-weight: var(--font-weight-normal);
+    }
+    .filter-bar__count {
+      margin-left: auto;
+      font-size: var(--font-size-sm);
+      color: var(--color-text-tertiary);
+    }
+    .filter-bar__count strong {
+      color: var(--color-text-primary);
+      font-weight: var(--font-weight-semibold);
+      font-feature-settings: var(--font-feature-numbers);
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* ---- Encounter table header ---- */
+    .table-header {
+      display: grid;
+      grid-template-columns: 56px 1fr 96px 96px 64px 56px;
+      gap: var(--space-4);
+      align-items: center;
+      padding: var(--space-3) var(--space-5);
+      border-bottom: 1px solid var(--color-border-primary);
+      background-color: var(--color-bg-secondary);
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: var(--letter-spacing-widest);
+      color: var(--color-text-tertiary);
+      font-weight: var(--font-weight-semibold);
+    }
+    .th-right { text-align: right; justify-self: end; }
+
+    /* ---- Encounter rows ---- */
+    .encounter-row {
+      display: grid;
+      grid-template-columns: 56px 1fr 96px 96px 64px 56px;
+      gap: var(--space-4);
+      align-items: center;
+      padding: var(--space-3) var(--space-5);
+      border-bottom: 1px solid var(--color-border-secondary);
+      transition: background-color var(--duration-fast) var(--easing-default);
+      color: var(--color-text-primary);
+    }
+    .encounter-row:hover { background-color: var(--color-bg-secondary); }
+
+    .sprite {
+      width: 48px;
+      height: 48px;
+      background-color: var(--color-bg-secondary);
+      border: 1px solid var(--color-border-primary);
+      border-radius: var(--border-radius-sm);
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+    }
+    .sprite img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      image-rendering: pixelated;
+    }
+
+    .pkmn-cell {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      min-width: 0;
+    }
+    .pkmn-cell__name {
+      font-size: var(--font-size-base);
+      font-weight: var(--font-weight-semibold);
+      letter-spacing: -0.005em;
+    }
+    .pkmn-cell__id {
+      color: var(--color-text-tertiary);
+      font-family: var(--font-family-mono);
+      font-size: var(--font-size-xs);
+      margin-left: 6px;
+      font-weight: var(--font-weight-normal);
+      font-feature-settings: var(--font-feature-numbers);
+      font-variant-numeric: tabular-nums slashed-zero;
+    }
+    .pkmn-cell__types {
+      display: flex;
+      gap: 4px;
+    }
+
+    /* ---- Outline-style type badges (V3 signature) ---- */
+    .type-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 1px 6px;
+      background-color: transparent;
+      border: var(--type-badge-border-width) solid currentColor;
+      border-radius: var(--border-radius-sm);
+      font-size: var(--font-size-xs);
+      font-weight: var(--font-weight-bold);
+      letter-spacing: var(--letter-spacing-widest);
+      text-transform: uppercase;
+      line-height: 1.4;
+    }
+    .type-badge--normal   { color: var(--type-badge-color-normal); }
+    .type-badge--fire     { color: var(--type-badge-color-fire); }
+    .type-badge--water    { color: var(--type-badge-color-water); }
+    .type-badge--electric { color: var(--type-badge-color-electric); }
+    .type-badge--grass    { color: var(--type-badge-color-grass); }
+    .type-badge--ice      { color: var(--type-badge-color-ice); }
+    .type-badge--fighting { color: var(--type-badge-color-fighting); }
+    .type-badge--poison   { color: var(--type-badge-color-poison); }
+    .type-badge--ground   { color: var(--type-badge-color-ground); }
+    .type-badge--flying   { color: var(--type-badge-color-flying); }
+    .type-badge--psychic  { color: var(--type-badge-color-psychic); }
+    .type-badge--bug      { color: var(--type-badge-color-bug); }
+    .type-badge--rock     { color: var(--type-badge-color-rock); }
+    .type-badge--ghost    { color: var(--type-badge-color-ghost); }
+    .type-badge--dragon   { color: var(--type-badge-color-dragon); }
+    .type-badge--dark     { color: var(--type-badge-color-dark); }
+    .type-badge--steel    { color: var(--type-badge-color-steel); }
+    .type-badge--fairy    { color: var(--type-badge-color-fairy); }
+
+    .level, .rate {
+      font-family: var(--font-family-mono);
+      font-feature-settings: var(--font-feature-numbers);
+      font-variant-numeric: tabular-nums slashed-zero;
+      font-size: var(--font-size-sm);
+      color: var(--color-text-primary);
+      text-align: right;
+      justify-self: end;
+    }
+    .rate {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 4px;
+    }
+    .rate__bar {
+      width: 60px;
+      height: 3px;
+      background-color: var(--color-bg-tertiary);
+      border-radius: var(--border-radius-xs);
+      overflow: hidden;
+      position: relative;
+    }
+    .rate__bar-fill {
+      position: absolute;
+      inset: 0;
+      background-color: var(--color-text-secondary);
+      transform-origin: left;
+    }
+
+    .method {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+      font-size: var(--font-size-xs);
+      color: var(--color-text-secondary);
+      justify-self: end;
+    }
+    .method svg {
+      width: 14px;
+      height: 14px;
+      stroke: currentColor;
+    }
+
+    .first-flag {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 22px;
+      height: 22px;
+      border: 1.5px solid var(--color-accent-primary);
+      border-radius: var(--border-radius-xs);
+      color: var(--color-accent-primary);
+      font-family: var(--font-family-mono);
+      font-size: 10px;
+      font-weight: var(--font-weight-bold);
+      justify-self: end;
+    }
+    .first-flag--inactive {
+      border-color: var(--color-border-primary);
+      color: var(--color-text-tertiary);
+    }
+
+    /* ---- Mobile ---- */
+    @media (max-width: 767px) {
+      main { padding-bottom: 80px; }
+      .commandbar { padding: var(--space-3) var(--space-4); }
+      .breadcrumb__item:not(.breadcrumb__item--active) { display: none; }
+      .breadcrumb__sep { display: none; }
+      .page-head {
+        padding: var(--space-5) var(--space-4) var(--space-4);
+        grid-template-columns: 1fr;
+      }
+      .page-head__title { font-size: var(--font-size-xl); }
+      .stats-strip { gap: var(--space-5); margin-top: var(--space-4); }
+      .filter-bar {
+        padding: var(--space-3) var(--space-4);
+        top: 57px;
+        flex-wrap: wrap;
+      }
+      .filter-bar__count { width: 100%; margin-left: 0; }
+
+      .table-header { display: none; }
+
+      .encounter-row {
+        grid-template-columns: 48px 1fr auto;
+        grid-template-areas:
+          "sprite pkmn flag"
+          "sprite meta meta";
+        padding: var(--space-3) var(--space-4);
+        gap: var(--space-3);
+      }
+      .encounter-row > .sprite { grid-area: sprite; }
+      .encounter-row > .pkmn-cell { grid-area: pkmn; }
+      .encounter-row > .first-flag { grid-area: flag; }
+
+      /* Hide the level/rate/method columns and inject a compact line below */
+      .encounter-row > .level,
+      .encounter-row > .rate,
+      .encounter-row > .method { display: none; }
+
+      .pkmn-cell::after {
+        content: var(--mobile-meta, '');
+        grid-area: meta;
+        font-family: var(--font-family-mono);
+        font-size: var(--font-size-xs);
+        color: var(--color-text-tertiary);
+        font-feature-settings: var(--font-feature-numbers);
+        font-variant-numeric: tabular-nums slashed-zero;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Sidebar (desktop) -->
+  <aside class="shell-sidebar" aria-label="Primary navigation">
+    <div class="shell-sidebar__game" role="button" tabindex="0">
+      <span class="shell-sidebar__game__label">Active Game</span>
+      <span class="shell-sidebar__game__current">FireRed</span>
+    </div>
+    <nav class="shell-sidebar__nav">
+      <a class="shell-sidebar__link" href="route-browser.html" aria-current="page">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M9 6l6 0M9 12l6 0M9 18l6 0M5 6l0 0M5 12l0 0M5 18l0 0" stroke-linecap="round"/></svg>
+        Routes
+      </a>
+      <a class="shell-sidebar__link" href="pokemon-browser.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><circle cx="12" cy="12" r="9"/><line x1="3" y1="12" x2="21" y2="12"/></svg>
+        Pokémon
+      </a>
+      <a class="shell-sidebar__link" href="favorites.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><polygon points="12 2 15 9 22 9 17 14 19 21 12 17 5 21 7 14 2 9 9 9"/></svg>
+        Favorites
+      </a>
+      <a class="shell-sidebar__link" href="settings.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        Settings
+      </a>
+    </nav>
+  </aside>
+
+  <main>
+    <header class="commandbar">
+      <nav class="breadcrumb" aria-label="Breadcrumb">
+        <a class="breadcrumb__back" href="route-browser.html" aria-label="Back to Routes">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+        </a>
+        <span class="breadcrumb__item">
+          <span class="breadcrumb__game-dot" aria-hidden="true"></span>FireRed
+        </span>
+        <span class="breadcrumb__sep">›</span>
+        <a href="route-browser.html" class="breadcrumb__item" style="color: var(--color-text-secondary);">Routes</a>
+        <span class="breadcrumb__sep">›</span>
+        <span class="breadcrumb__item breadcrumb__item--active">Route 1</span>
+      </nav>
+      <div class="commandbar__actions">
+        <button class="icon-btn" aria-label="Search">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <section class="page-head">
+      <div>
+        <div class="page-head__eyebrow">
+          <span>Route detail</span>
+          <span class="terrain-tag">
+            <span class="terrain-tag__dot"></span>
+            Grass
+          </span>
+        </div>
+        <h1 class="page-head__title">Route 1</h1>
+        <p class="page-head__sub">Path between Pallet Town and Viridian City. Tall grass on both sides.</p>
+      </div>
+      <div class="stats-strip" aria-label="Route summary">
+        <div class="stat">
+          <span class="stat__label">Encounters</span>
+          <span class="stat__value">3</span>
+        </div>
+        <div class="stat">
+          <span class="stat__label">Lv range</span>
+          <span class="stat__value">2<span class="stat__value-sub">–</span>5</span>
+        </div>
+        <div class="stat">
+          <span class="stat__label">Methods</span>
+          <span class="stat__value">1</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Nuzlocke filter bar -->
+    <div class="filter-bar" role="toolbar" aria-label="Nuzlocke filters">
+      <button class="toggle" aria-pressed="true">
+        <span class="toggle__switch" aria-hidden="true"></span>
+        First encounter only
+      </button>
+      <button class="toggle" aria-pressed="false">
+        <span class="toggle__switch" aria-hidden="true"></span>
+        Dupes clause
+        <span class="toggle__hint">· hide already caught</span>
+      </button>
+      <span class="filter-bar__count">
+        Showing <strong>3</strong> of <strong>3</strong> encounters
+      </span>
+    </div>
+
+    <!-- Table header (desktop) -->
+    <div class="table-header" role="row">
+      <span></span>
+      <span>Pokémon</span>
+      <span class="th-right">Lv range</span>
+      <span class="th-right">Rate</span>
+      <span class="th-right">Method</span>
+      <span class="th-right">1st</span>
+    </div>
+
+    <!-- Encounter rows -->
+    <div role="list">
+      <a class="encounter-row" href="pokemon-detail.html" role="listitem">
+        <span class="sprite">
+          <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/16.png" alt="" aria-hidden="true" loading="lazy" />
+        </span>
+        <div class="pkmn-cell">
+          <span class="pkmn-cell__name">Pidgey<span class="pkmn-cell__id">#016</span></span>
+          <span class="pkmn-cell__types">
+            <span class="type-badge type-badge--normal">Normal</span>
+            <span class="type-badge type-badge--flying">Flying</span>
+          </span>
+        </div>
+        <span class="level">Lv 2–5</span>
+        <span class="rate">
+          50%
+          <span class="rate__bar"><span class="rate__bar-fill" style="transform: scaleX(0.50);"></span></span>
+        </span>
+        <span class="method">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="1.75"><path d="M12 4c-2 4-2 8 0 12M12 4c2 4 2 8 0 12M4 12h16M6 8c2 1 4 2 6 2s4-1 6-2M6 16c2-1 4-2 6-2s4 1 6 2"/></svg>
+          Grass
+        </span>
+        <span class="first-flag">1</span>
+      </a>
+
+      <a class="encounter-row" href="pokemon-detail.html" role="listitem">
+        <span class="sprite">
+          <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/19.png" alt="" aria-hidden="true" loading="lazy" />
+        </span>
+        <div class="pkmn-cell">
+          <span class="pkmn-cell__name">Rattata<span class="pkmn-cell__id">#019</span></span>
+          <span class="pkmn-cell__types">
+            <span class="type-badge type-badge--normal">Normal</span>
+          </span>
+        </div>
+        <span class="level">Lv 2–4</span>
+        <span class="rate">
+          40%
+          <span class="rate__bar"><span class="rate__bar-fill" style="transform: scaleX(0.40);"></span></span>
+        </span>
+        <span class="method">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="1.75"><path d="M12 4c-2 4-2 8 0 12M12 4c2 4 2 8 0 12M4 12h16M6 8c2 1 4 2 6 2s4-1 6-2M6 16c2-1 4-2 6-2s4 1 6 2"/></svg>
+          Grass
+        </span>
+        <span class="first-flag first-flag--inactive">—</span>
+      </a>
+
+      <a class="encounter-row" href="pokemon-detail.html" role="listitem">
+        <span class="sprite">
+          <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png" alt="" aria-hidden="true" loading="lazy" />
+        </span>
+        <div class="pkmn-cell">
+          <span class="pkmn-cell__name">Pikachu<span class="pkmn-cell__id">#025</span></span>
+          <span class="pkmn-cell__types">
+            <span class="type-badge type-badge--electric">Electric</span>
+          </span>
+        </div>
+        <span class="level">Lv 3–5</span>
+        <span class="rate">
+          10%
+          <span class="rate__bar"><span class="rate__bar-fill" style="transform: scaleX(0.10);"></span></span>
+        </span>
+        <span class="method">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="1.75"><path d="M12 4c-2 4-2 8 0 12M12 4c2 4 2 8 0 12M4 12h16M6 8c2 1 4 2 6 2s4-1 6-2M6 16c2-1 4-2 6-2s4 1 6 2"/></svg>
+          Grass
+        </span>
+        <span class="first-flag first-flag--inactive">—</span>
+      </a>
+    </div>
+  </main>
+
+  <nav class="shell-bottom-nav" aria-label="Primary navigation (mobile)">
+    <a class="shell-bottom-nav__item" href="route-browser.html" aria-current="page">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M9 6l6 0M9 12l6 0M9 18l6 0M5 6l0 0M5 12l0 0M5 18l0 0" stroke-linecap="round"/></svg>
+      Routes
+    </a>
+    <a class="shell-bottom-nav__item" href="pokemon-browser.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><circle cx="12" cy="12" r="9"/><line x1="3" y1="12" x2="21" y2="12"/></svg>
+      Pokémon
+    </a>
+    <a class="shell-bottom-nav__item" href="favorites.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><polygon points="12 2 15 9 22 9 17 14 19 21 12 17 5 21 7 14 2 9 9 9"/></svg>
+      Favorites
+    </a>
+    <a class="shell-bottom-nav__item" href="settings.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      Settings
+    </a>
+  </nav>
+</body>
+</html>

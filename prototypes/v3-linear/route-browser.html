@@ -1,0 +1,641 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Routes — FireRed · Pokedex (V3 Linear)</title>
+
+  <link rel="stylesheet" href="../styles/tokens-v3-linear.css" />
+  <link rel="stylesheet" href="../styles/reset.css" />
+  <link rel="stylesheet" href="../styles/shell.css" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ============================================================
+       V3 — Linear: dense, monochrome, violet accent, hairline rules
+       ============================================================ */
+
+    main {
+      max-width: var(--max-width-page);
+      margin: 0 auto;
+      padding: 0;
+    }
+
+    /* ---- Command bar / breadcrumb header (sticky) ---- */
+    .commandbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-4);
+      padding: var(--space-4) var(--space-5);
+      border-bottom: 1px solid var(--color-border-primary);
+      background-color: var(--color-bg-primary);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      backdrop-filter: blur(8px);
+    }
+    .breadcrumb {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      font-size: var(--font-size-sm);
+      color: var(--color-text-secondary);
+      min-width: 0;
+    }
+    .breadcrumb__item {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+      font-weight: var(--font-weight-medium);
+    }
+    .breadcrumb__item--active {
+      color: var(--color-text-primary);
+      font-weight: var(--font-weight-semibold);
+    }
+    .breadcrumb__sep {
+      color: var(--color-text-tertiary);
+      font-size: 11px;
+    }
+    .breadcrumb__game-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: var(--border-radius-xs);
+      background: linear-gradient(135deg, #DC2626 0%, #F87171 100%);
+      box-shadow: 0 0 0 1px var(--color-border-primary);
+    }
+    .commandbar__actions {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+    }
+    .kbd {
+      display: inline-flex;
+      align-items: center;
+      gap: 2px;
+      padding: 2px 5px;
+      background-color: var(--color-bg-tertiary);
+      border: 1px solid var(--color-border-primary);
+      border-bottom-width: 2px;
+      border-radius: var(--border-radius-xs);
+      font-family: var(--font-family-mono);
+      font-size: 10px;
+      color: var(--color-text-secondary);
+      line-height: 1;
+    }
+    .search-trigger {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-3);
+      padding: 6px var(--space-3);
+      background-color: var(--color-bg-secondary);
+      border: 1px solid var(--color-border-primary);
+      border-radius: var(--border-radius-sm);
+      color: var(--color-text-tertiary);
+      font-size: var(--font-size-sm);
+      transition: border-color var(--duration-fast) var(--easing-default);
+      min-width: 220px;
+    }
+    .search-trigger:hover {
+      border-color: var(--color-text-tertiary);
+      color: var(--color-text-secondary);
+    }
+    .search-trigger svg {
+      width: 14px;
+      height: 14px;
+      stroke: currentColor;
+    }
+    .search-trigger__hint {
+      margin-left: auto;
+    }
+    .icon-btn {
+      width: 32px;
+      height: 32px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid var(--color-border-primary);
+      border-radius: var(--border-radius-sm);
+      color: var(--color-text-secondary);
+      transition: all var(--duration-fast) var(--easing-default);
+    }
+    .icon-btn svg { width: 16px; height: 16px; }
+    .icon-btn:hover {
+      color: var(--color-text-primary);
+      border-color: var(--color-text-tertiary);
+    }
+
+    /* ---- Page section header ---- */
+    .page-head {
+      padding: var(--space-7) var(--space-5) var(--space-5);
+      border-bottom: 1px solid var(--color-border-primary);
+    }
+    .page-head__eyebrow {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      font-size: var(--font-size-xs);
+      text-transform: uppercase;
+      letter-spacing: var(--letter-spacing-widest);
+      color: var(--color-text-tertiary);
+      font-weight: var(--font-weight-semibold);
+      margin-bottom: var(--space-3);
+    }
+    .page-head__count-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+      padding: 2px var(--space-2);
+      background-color: var(--color-bg-tertiary);
+      border-radius: var(--border-radius-xs);
+      font-size: 10px;
+      color: var(--color-text-secondary);
+      letter-spacing: 0;
+      text-transform: none;
+    }
+    .page-head__title {
+      font-size: var(--font-size-xl);
+      font-weight: var(--font-weight-bold);
+      letter-spacing: var(--letter-spacing-tight);
+      margin-bottom: var(--space-3);
+    }
+    .page-head__sub {
+      font-size: var(--font-size-sm);
+      color: var(--color-text-secondary);
+      max-width: 56ch;
+      line-height: var(--line-height-relaxed);
+    }
+
+    /* ---- Toolbar (filter chips) ---- */
+    .toolbar {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      padding: var(--space-3) var(--space-5);
+      border-bottom: 1px solid var(--color-border-primary);
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .toolbar::-webkit-scrollbar { display: none; }
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+      padding: 5px var(--space-3);
+      background-color: transparent;
+      border: 1px solid var(--color-border-primary);
+      border-radius: var(--border-radius-sm);
+      font-size: var(--font-size-sm);
+      color: var(--color-text-secondary);
+      font-weight: var(--font-weight-medium);
+      white-space: nowrap;
+      transition: all var(--duration-fast) var(--easing-default);
+    }
+    .chip:hover {
+      color: var(--color-text-primary);
+      border-color: var(--color-text-tertiary);
+    }
+    .chip[aria-pressed="true"] {
+      color: var(--color-text-primary);
+      background-color: var(--color-bg-tertiary);
+      border-color: var(--color-text-tertiary);
+    }
+    .chip__count {
+      color: var(--color-text-tertiary);
+      font-feature-settings: var(--font-feature-numbers);
+      font-variant-numeric: tabular-nums;
+    }
+    .toolbar__sep {
+      width: 1px;
+      height: 16px;
+      background-color: var(--color-border-primary);
+    }
+    .toolbar__sort {
+      margin-left: auto;
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+      font-size: var(--font-size-sm);
+      color: var(--color-text-secondary);
+    }
+
+    /* ---- Route table ---- */
+    .route-table {
+      display: flex;
+      flex-direction: column;
+    }
+    .route-row {
+      display: grid;
+      grid-template-columns: 32px 1fr auto auto auto;
+      align-items: center;
+      gap: var(--space-4);
+      padding: var(--space-4) var(--space-5);
+      border-bottom: 1px solid var(--color-border-secondary);
+      transition: background-color var(--duration-fast) var(--easing-default);
+      color: var(--color-text-primary);
+    }
+    .route-row:hover {
+      background-color: var(--color-bg-secondary);
+    }
+    .route-row__id {
+      font-family: var(--font-family-mono);
+      font-size: var(--font-size-xs);
+      color: var(--color-text-tertiary);
+      font-feature-settings: var(--font-feature-numbers);
+      font-variant-numeric: tabular-nums slashed-zero;
+    }
+    .route-row__main {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 0;
+    }
+    .route-row__name {
+      font-size: var(--font-size-base);
+      font-weight: var(--font-weight-semibold);
+      letter-spacing: -0.005em;
+    }
+    .route-row__meta {
+      font-size: var(--font-size-sm);
+      color: var(--color-text-tertiary);
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+    }
+    .route-row__terrain {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+    }
+    .route-row__terrain-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background-color: var(--color-text-tertiary);
+    }
+    .route-row__terrain-dot--grass { background-color: var(--color-type-grass); }
+    .route-row__terrain-dot--cave  { background-color: var(--color-type-rock); }
+    .route-row__terrain-dot--water { background-color: var(--color-type-water); }
+    .route-row__count {
+      display: inline-flex;
+      align-items: baseline;
+      gap: var(--space-2);
+      font-size: var(--font-size-sm);
+      color: var(--color-text-secondary);
+    }
+    .route-row__count-num {
+      font-family: var(--font-family-mono);
+      font-weight: var(--font-weight-semibold);
+      color: var(--color-text-primary);
+      font-feature-settings: var(--font-feature-numbers);
+      font-variant-numeric: tabular-nums;
+    }
+    .route-row__bar {
+      width: 64px;
+      height: 4px;
+      background-color: var(--color-bg-tertiary);
+      border-radius: var(--border-radius-xs);
+      position: relative;
+      overflow: hidden;
+    }
+    .route-row__bar-fill {
+      position: absolute;
+      inset: 0;
+      background-color: var(--color-accent-primary);
+      transform-origin: left;
+    }
+    .route-row__chevron {
+      width: 14px;
+      height: 14px;
+      color: var(--color-text-tertiary);
+      transition: transform var(--duration-fast) var(--easing-default);
+    }
+    .route-row:hover .route-row__chevron {
+      color: var(--color-accent-primary);
+      transform: translateX(2px);
+    }
+
+    /* ---- Footer hint ---- */
+    .listing-footer {
+      padding: var(--space-5);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-3);
+      font-size: var(--font-size-sm);
+      color: var(--color-text-tertiary);
+    }
+
+    /* ---- Mobile tweaks ---- */
+    @media (max-width: 767px) {
+      .commandbar {
+        padding: var(--space-3) var(--space-4);
+      }
+      .search-trigger {
+        min-width: 0;
+        flex: 1;
+      }
+      .search-trigger__hint { display: none; }
+      .breadcrumb__item:not(.breadcrumb__item--active) { display: none; }
+      .breadcrumb__sep { display: none; }
+      .page-head { padding: var(--space-6) var(--space-4) var(--space-4); }
+      .toolbar { padding: var(--space-3) var(--space-4); }
+      .route-row {
+        grid-template-columns: 28px 1fr auto;
+        padding: var(--space-4);
+      }
+      .route-row__bar { display: none; }
+      .route-row__count { font-size: var(--font-size-xs); }
+      main { padding-bottom: 80px; } /* clear bottom nav */
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Sidebar (desktop) -->
+  <aside class="shell-sidebar" aria-label="Primary navigation">
+    <div class="shell-sidebar__game" role="button" tabindex="0">
+      <span class="shell-sidebar__game__label">Active Game</span>
+      <span class="shell-sidebar__game__current">FireRed</span>
+    </div>
+    <nav class="shell-sidebar__nav">
+      <a class="shell-sidebar__link" href="route-browser.html" aria-current="page">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true">
+          <path d="M9 6l6 0M9 12l6 0M9 18l6 0M5 6l0 0M5 12l0 0M5 18l0 0" stroke-linecap="round"/>
+        </svg>
+        Routes
+      </a>
+      <a class="shell-sidebar__link" href="pokemon-browser.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true">
+          <circle cx="12" cy="12" r="9"/>
+          <line x1="3" y1="12" x2="21" y2="12"/>
+        </svg>
+        Pokémon
+      </a>
+      <a class="shell-sidebar__link" href="favorites.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true">
+          <polygon points="12 2 15 9 22 9 17 14 19 21 12 17 5 21 7 14 2 9 9 9"/>
+        </svg>
+        Favorites
+      </a>
+      <a class="shell-sidebar__link" href="settings.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+        </svg>
+        Settings
+      </a>
+    </nav>
+  </aside>
+
+  <main>
+    <!-- Command bar -->
+    <header class="commandbar">
+      <nav class="breadcrumb" aria-label="Breadcrumb">
+        <span class="breadcrumb__item">
+          <span class="breadcrumb__game-dot" aria-hidden="true"></span>
+          FireRed
+        </span>
+        <span class="breadcrumb__sep">›</span>
+        <span class="breadcrumb__item breadcrumb__item--active">Routes</span>
+      </nav>
+      <div class="commandbar__actions">
+        <button class="search-trigger" type="button" aria-label="Search Pokémon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true">
+            <circle cx="11" cy="11" r="7"/>
+            <line x1="21" y1="21" x2="16.65" y2="16.65" stroke-linecap="round"/>
+          </svg>
+          <span>Search Pokémon</span>
+          <span class="search-trigger__hint">
+            <span class="kbd">⌘K</span>
+          </span>
+        </button>
+        <button class="icon-btn" aria-label="Switch Game">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true">
+            <path d="M3 12a9 9 0 0 1 15-6.7L21 8M21 3v5h-5M21 12a9 9 0 0 1-15 6.7L3 16M3 21v-5h5"/>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Page head -->
+    <section class="page-head">
+      <div class="page-head__eyebrow">
+        <span>Encounter encyclopedia</span>
+        <span class="page-head__count-pill">
+          <span class="num">25</span> routes
+        </span>
+      </div>
+      <h1 class="page-head__title">Routes</h1>
+      <p class="page-head__sub">Pick a Route to see its encounter table. Filters and Nuzlocke rules apply per Route.</p>
+    </section>
+
+    <!-- Toolbar -->
+    <div class="toolbar" role="toolbar" aria-label="Filter routes">
+      <button class="chip" aria-pressed="true">All <span class="chip__count">25</span></button>
+      <button class="chip" aria-pressed="false">Grass <span class="chip__count">14</span></button>
+      <button class="chip" aria-pressed="false">Cave <span class="chip__count">5</span></button>
+      <button class="chip" aria-pressed="false">Water <span class="chip__count">6</span></button>
+      <span class="toolbar__sep" aria-hidden="true"></span>
+      <button class="chip" aria-pressed="false">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <polygon points="12 2 15 9 22 9 17 14 19 21 12 17 5 21 7 14 2 9 9 9"/>
+        </svg>
+        Has favorites
+      </button>
+      <span class="toolbar__sort">
+        <span>Sort</span>
+        <span class="kbd">↕</span>
+        <span style="color: var(--color-text-primary); font-weight: var(--font-weight-medium);">In-game order</span>
+      </span>
+    </div>
+
+    <!-- Route list (table-style) -->
+    <div class="route-table" role="list">
+      <a class="route-row" href="route-detail.html" role="listitem">
+        <span class="route-row__id">01</span>
+        <div class="route-row__main">
+          <span class="route-row__name">Route 1</span>
+          <span class="route-row__meta">
+            <span class="route-row__terrain">
+              <span class="route-row__terrain-dot route-row__terrain-dot--grass"></span>
+              Grass
+            </span>
+            <span>Pallet → Viridian</span>
+          </span>
+        </div>
+        <span class="route-row__count">
+          <span class="route-row__count-num">3</span>
+          <span>Pokémon</span>
+        </span>
+        <span class="route-row__bar"><span class="route-row__bar-fill" style="transform: scaleX(0.18);"></span></span>
+        <svg class="route-row__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <polyline points="9 6 15 12 9 18"/>
+        </svg>
+      </a>
+
+      <a class="route-row" href="route-detail.html" role="listitem">
+        <span class="route-row__id">02</span>
+        <div class="route-row__main">
+          <span class="route-row__name">Route 2</span>
+          <span class="route-row__meta">
+            <span class="route-row__terrain">
+              <span class="route-row__terrain-dot route-row__terrain-dot--grass"></span>
+              Grass
+            </span>
+            <span>Viridian → Pewter</span>
+          </span>
+        </div>
+        <span class="route-row__count">
+          <span class="route-row__count-num">5</span>
+          <span>Pokémon</span>
+        </span>
+        <span class="route-row__bar"><span class="route-row__bar-fill" style="transform: scaleX(0.30);"></span></span>
+        <svg class="route-row__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <polyline points="9 6 15 12 9 18"/>
+        </svg>
+      </a>
+
+      <a class="route-row" href="route-detail.html" role="listitem">
+        <span class="route-row__id">22</span>
+        <div class="route-row__main">
+          <span class="route-row__name">Viridian Forest</span>
+          <span class="route-row__meta">
+            <span class="route-row__terrain">
+              <span class="route-row__terrain-dot route-row__terrain-dot--grass"></span>
+              Forest
+            </span>
+            <span>Cocoons galore</span>
+          </span>
+        </div>
+        <span class="route-row__count">
+          <span class="route-row__count-num">6</span>
+          <span>Pokémon</span>
+        </span>
+        <span class="route-row__bar"><span class="route-row__bar-fill" style="transform: scaleX(0.40);"></span></span>
+        <svg class="route-row__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <polyline points="9 6 15 12 9 18"/>
+        </svg>
+      </a>
+
+      <a class="route-row" href="route-detail.html" role="listitem">
+        <span class="route-row__id">23</span>
+        <div class="route-row__main">
+          <span class="route-row__name">Mt. Moon — 1F</span>
+          <span class="route-row__meta">
+            <span class="route-row__terrain">
+              <span class="route-row__terrain-dot route-row__terrain-dot--cave"></span>
+              Cave
+            </span>
+            <span>Geodude territory</span>
+          </span>
+        </div>
+        <span class="route-row__count">
+          <span class="route-row__count-num">8</span>
+          <span>Pokémon</span>
+        </span>
+        <span class="route-row__bar"><span class="route-row__bar-fill" style="transform: scaleX(0.55);"></span></span>
+        <svg class="route-row__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <polyline points="9 6 15 12 9 18"/>
+        </svg>
+      </a>
+
+      <a class="route-row" href="route-detail.html" role="listitem">
+        <span class="route-row__id">04</span>
+        <div class="route-row__main">
+          <span class="route-row__name">Route 4</span>
+          <span class="route-row__meta">
+            <span class="route-row__terrain">
+              <span class="route-row__terrain-dot route-row__terrain-dot--grass"></span>
+              Grass
+            </span>
+            <span>Mt. Moon exit</span>
+          </span>
+        </div>
+        <span class="route-row__count">
+          <span class="route-row__count-num">7</span>
+          <span>Pokémon</span>
+        </span>
+        <span class="route-row__bar"><span class="route-row__bar-fill" style="transform: scaleX(0.48);"></span></span>
+        <svg class="route-row__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <polyline points="9 6 15 12 9 18"/>
+        </svg>
+      </a>
+
+      <a class="route-row" href="route-detail.html" role="listitem">
+        <span class="route-row__id">25</span>
+        <div class="route-row__main">
+          <span class="route-row__name">Cerulean Cave</span>
+          <span class="route-row__meta">
+            <span class="route-row__terrain">
+              <span class="route-row__terrain-dot route-row__terrain-dot--cave"></span>
+              Cave
+            </span>
+            <span>Endgame · Lv 50–70</span>
+          </span>
+        </div>
+        <span class="route-row__count">
+          <span class="route-row__count-num">11</span>
+          <span>Pokémon</span>
+        </span>
+        <span class="route-row__bar"><span class="route-row__bar-fill" style="transform: scaleX(0.78);"></span></span>
+        <svg class="route-row__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <polyline points="9 6 15 12 9 18"/>
+        </svg>
+      </a>
+
+      <a class="route-row" href="route-detail.html" role="listitem">
+        <span class="route-row__id">12</span>
+        <div class="route-row__main">
+          <span class="route-row__name">Route 12 — Surf</span>
+          <span class="route-row__meta">
+            <span class="route-row__terrain">
+              <span class="route-row__terrain-dot route-row__terrain-dot--water"></span>
+              Surf
+            </span>
+            <span>South of Lavender</span>
+          </span>
+        </div>
+        <span class="route-row__count">
+          <span class="route-row__count-num">4</span>
+          <span>Pokémon</span>
+        </span>
+        <span class="route-row__bar"><span class="route-row__bar-fill" style="transform: scaleX(0.25);"></span></span>
+        <svg class="route-row__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <polyline points="9 6 15 12 9 18"/>
+        </svg>
+      </a>
+    </div>
+
+    <footer class="listing-footer">
+      <span>Showing <span class="num" style="color: var(--color-text-primary);">7</span> of <span class="num" style="color: var(--color-text-primary);">25</span> routes</span>
+      <span>
+        Press <span class="kbd">↑</span> <span class="kbd">↓</span> to navigate · <span class="kbd">↵</span> to open
+      </span>
+    </footer>
+  </main>
+
+  <!-- Mobile bottom nav -->
+  <nav class="shell-bottom-nav" aria-label="Primary navigation (mobile)">
+    <a class="shell-bottom-nav__item" href="route-browser.html" aria-current="page">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M9 6l6 0M9 12l6 0M9 18l6 0M5 6l0 0M5 12l0 0M5 18l0 0" stroke-linecap="round"/></svg>
+      Routes
+    </a>
+    <a class="shell-bottom-nav__item" href="pokemon-browser.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><circle cx="12" cy="12" r="9"/><line x1="3" y1="12" x2="21" y2="12"/></svg>
+      Pokémon
+    </a>
+    <a class="shell-bottom-nav__item" href="favorites.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><polygon points="12 2 15 9 22 9 17 14 19 21 12 17 5 21 7 14 2 9 9 9"/></svg>
+      Favorites
+    </a>
+    <a class="shell-bottom-nav__item" href="settings.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      Settings
+    </a>
+  </nav>
+</body>
+</html>

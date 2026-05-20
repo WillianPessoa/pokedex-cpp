@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Favorites — Pokedex (V2 DataDex)</title>
+
+  <link rel="stylesheet" href="../styles/tokens-v2-datadex.css" />
+  <link rel="stylesheet" href="../styles/reset.css" />
+  <link rel="stylesheet" href="../styles/shell.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <style>
+    /* V2 — Favorites view (DataDex). Subset of catalog with sprite-driven cards.
+       Mirrors V1 favorites for parity, with V2 visual language. */
+
+    body {
+      font-family: var(--font-family-body);
+      background-color: var(--color-bg-primary);
+      color: var(--color-text-primary);
+      padding-bottom: 80px;
+    }
+    .num { font-feature-settings: var(--font-feature-numbers); }
+
+    .topbar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: var(--space-3) var(--space-4);
+      background-color: var(--color-bg-secondary);
+      border-bottom: 1px solid var(--color-border-primary);
+      position: sticky; top: 0; z-index: 10;
+    }
+    .topbar__title {
+      font-size: var(--font-size-lg);
+      font-weight: var(--font-weight-bold);
+      letter-spacing: var(--letter-spacing-tight);
+    }
+    .topbar__count {
+      padding: 3px 10px;
+      background-color: var(--color-bg-tertiary);
+      border: 1px solid var(--color-border-primary);
+      border-radius: var(--border-radius-sm);
+      font-size: var(--font-size-sm);
+      font-weight: var(--font-weight-bold);
+      color: var(--color-text-primary);
+      letter-spacing: var(--letter-spacing-tight);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: var(--space-3);
+      padding: var(--space-4);
+    }
+
+    /* ===== Sprite-driven card (V2 signature) ===== */
+    .pokemon-card {
+      display: block;
+      position: relative;
+      padding: var(--space-3);
+      background:
+        linear-gradient(155deg,
+          var(--card-color-primary) 0%,
+          var(--card-color-secondary) 100%);
+      border-radius: var(--border-radius-lg);
+      color: var(--card-color-text);
+      text-decoration: none;
+      overflow: hidden;
+      box-shadow: var(--shadow-card);
+      transition: transform var(--duration-fast) var(--easing-default),
+                  box-shadow var(--duration-fast) var(--easing-default);
+    }
+    .pokemon-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+      text-decoration: none;
+    }
+    .pokemon-card:focus-visible { outline: none; box-shadow: var(--shadow-focus); }
+
+    .pokemon-card__decorator {
+      position: absolute;
+      right: -20px;
+      bottom: -20px;
+      width: 110px; height: 110px;
+      opacity: 0.18;
+      color: var(--card-color-text);
+      pointer-events: none;
+    }
+    .pokemon-card__decorator svg { width: 100%; height: 100%; }
+
+    .pokemon-card__id {
+      font-size: 11px;
+      letter-spacing: var(--letter-spacing-widest);
+      text-transform: uppercase;
+      font-weight: var(--font-weight-bold);
+      opacity: 0.85;
+      position: relative; z-index: 1;
+    }
+    .pokemon-card__name {
+      font-size: var(--font-size-md);
+      font-weight: var(--font-weight-black);
+      letter-spacing: var(--letter-spacing-tight);
+      line-height: 1.1;
+      margin: 2px 0 var(--space-2);
+      position: relative; z-index: 1;
+    }
+    .pokemon-card__types {
+      display: flex; gap: 4px; flex-wrap: wrap;
+      position: relative; z-index: 1;
+      margin-bottom: var(--space-3);
+    }
+    .pokemon-card__sprite {
+      position: relative; z-index: 1;
+      width: 100%; aspect-ratio: 1;
+      display: flex; align-items: center; justify-content: flex-end;
+    }
+    .pokemon-card__sprite img {
+      width: 100%; height: 100%;
+      object-fit: contain;
+      object-position: center;
+      image-rendering: pixelated;
+      filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.18));
+    }
+    .pokemon-card__fav {
+      position: absolute; top: 8px; right: 8px;
+      width: 32px; height: 32px;
+      display: flex; align-items: center; justify-content: center;
+      color: #FFD93C;
+      cursor: pointer;
+      border-radius: var(--border-radius-sm);
+      z-index: 2;
+      transition: background-color var(--duration-fast);
+    }
+    .pokemon-card__fav:hover { background-color: rgba(0, 0, 0, 0.10); }
+    .pokemon-card__fav svg { width: 18px; height: 18px; }
+
+    /* ===== Type badges ===== */
+    .type-badge {
+      display: inline-flex; align-items: center;
+      padding: 2px 7px;
+      border-radius: var(--border-radius-xs);
+      font-size: 10px;
+      font-weight: var(--font-weight-bold);
+      letter-spacing: var(--letter-spacing-widest);
+      text-transform: uppercase;
+      line-height: 1.4;
+    }
+    .type-badge--normal   { background: var(--type-badge-bg-normal);   color: var(--type-badge-text-normal); }
+    .type-badge--electric { background: var(--type-badge-bg-electric); color: var(--type-badge-text-electric); }
+
+    /* ===== Empty state (kept for reference; commented out at bottom) ===== */
+    .empty-state {
+      display: flex; flex-direction: column; align-items: center; gap: var(--space-3);
+      padding: var(--space-7) var(--space-4);
+      text-align: center;
+      background-color: var(--color-bg-secondary);
+      border: 1px dashed var(--color-border-primary);
+      border-radius: var(--border-radius-lg);
+      margin: var(--space-5) var(--space-4);
+    }
+    .empty-state svg { width: 40px; height: 40px; color: var(--color-text-tertiary); }
+    .empty-state h3 {
+      font-size: var(--font-size-md);
+      font-weight: var(--font-weight-semibold);
+      letter-spacing: var(--letter-spacing-tight);
+    }
+    .empty-state p { font-size: var(--font-size-sm); color: var(--color-text-secondary); max-width: 32ch; }
+
+    @media (min-width: 768px) {
+      .grid {
+        grid-template-columns: repeat(4, 1fr);
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: var(--space-6);
+      }
+      .topbar { padding: var(--space-4) var(--space-6); }
+      .empty-state { max-width: 600px; margin: var(--space-6) auto; }
+    }
+  </style>
+</head>
+<body>
+
+  <aside class="shell-sidebar" aria-label="Primary navigation">
+    <div class="shell-sidebar__game" role="button" tabindex="0">
+      <span class="shell-sidebar__game__label">Active Game</span>
+      <span class="shell-sidebar__game__current">FireRed</span>
+    </div>
+    <nav class="shell-sidebar__nav">
+      <a class="shell-sidebar__link" href="route-browser.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 12l2-2m0 0l7-7 7 7m-9-2v8m-4-4h12" /></svg>
+        Routes
+      </a>
+      <a class="shell-sidebar__link" href="pokemon-browser.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9" /><line x1="3" y1="12" x2="21" y2="12" /></svg>
+        Pokémon
+      </a>
+      <a class="shell-sidebar__link" href="favorites.html" aria-current="page">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polygon points="12 2 15 9 22 9 17 14 19 21 12 17 5 21 7 14 2 9 9 9" /></svg>
+        Favorites
+      </a>
+      <a class="shell-sidebar__link" href="settings.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="3" /></svg>
+        Settings
+      </a>
+    </nav>
+  </aside>
+
+  <header class="topbar">
+    <h1 class="topbar__title">Favorites</h1>
+    <span class="topbar__count num">2 saved</span>
+  </header>
+
+  <main class="grid">
+    <!-- Pikachu — Electric: yellow→amber -->
+    <a class="pokemon-card" href="pokemon-detail.html" style="--card-color-primary: #F2C93C; --card-color-secondary: #E89B2C; --card-color-text: #1F1F1F;">
+      <button class="pokemon-card__fav" aria-pressed="true" aria-label="Unfavorite Pikachu" type="button">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15 9 22 9 17 14 19 21 12 17 5 21 7 14 2 9 9 9" /></svg>
+      </button>
+      <span class="pokemon-card__id num">No. 0025</span>
+      <div class="pokemon-card__name">Pikachu</div>
+      <div class="pokemon-card__types">
+        <span class="type-badge type-badge--electric">Electric</span>
+      </div>
+      <div class="pokemon-card__sprite">
+        <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png" alt="" loading="lazy" />
+      </div>
+      <span class="pokemon-card__decorator" aria-hidden="true">
+        <svg viewBox="0 0 100 100" fill="currentColor"><circle cx="50" cy="50" r="50" /></svg>
+      </span>
+    </a>
+
+    <!-- Eevee — Normal: warm tan -->
+    <a class="pokemon-card" href="pokemon-detail.html" style="--card-color-primary: #C5A47E; --card-color-secondary: #8C6D4D; --card-color-text: #FFFFFF;">
+      <button class="pokemon-card__fav" aria-pressed="true" aria-label="Unfavorite Eevee" type="button">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15 9 22 9 17 14 19 21 12 17 5 21 7 14 2 9 9 9" /></svg>
+      </button>
+      <span class="pokemon-card__id num">No. 0133</span>
+      <div class="pokemon-card__name">Eevee</div>
+      <div class="pokemon-card__types">
+        <span class="type-badge type-badge--normal">Normal</span>
+      </div>
+      <div class="pokemon-card__sprite">
+        <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/133.png" alt="" loading="lazy" />
+      </div>
+      <span class="pokemon-card__decorator" aria-hidden="true">
+        <svg viewBox="0 0 100 100" fill="currentColor"><circle cx="50" cy="50" r="50" /></svg>
+      </span>
+    </a>
+  </main>
+
+  <!-- Empty state shown when there are zero favorites — uncomment to preview
+  <div class="empty-state">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+      <polygon points="12 2 15 9 22 9 17 14 19 21 12 17 5 21 7 14 2 9 9 9" />
+    </svg>
+    <h3>No Favorites yet</h3>
+    <p>Tap the ★ on any Pokémon card or detail screen to add it here for quick access.</p>
+  </div>
+  -->
+
+  <nav class="shell-bottom-nav" aria-label="Primary navigation (mobile)">
+    <a class="shell-bottom-nav__item" href="route-browser.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 12l2-2m0 0l7-7 7 7m-9-2v8m-4-4h12" /></svg>Routes</a>
+    <a class="shell-bottom-nav__item" href="pokemon-browser.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9" /><line x1="3" y1="12" x2="21" y2="12" /></svg>Pokémon</a>
+    <a class="shell-bottom-nav__item" href="favorites.html" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polygon points="12 2 15 9 22 9 17 14 19 21 12 17 5 21 7 14 2 9 9 9" /></svg>Favorites</a>
+    <a class="shell-bottom-nav__item" href="settings.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="3" /></svg>Settings</a>
+  </nav>
+
+  <script>
+    document.querySelectorAll('.pokemon-card__fav').forEach(b => b.addEventListener('click', e => {
+      e.preventDefault();
+      e.stopPropagation();
+      b.setAttribute('aria-pressed', b.getAttribute('aria-pressed') === 'true' ? 'false' : 'true');
+    }));
+  </script>
+</body>
+</html>

@@ -1,0 +1,648 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Pokémon — Pokedex (V3 Linear)</title>
+
+  <link rel="stylesheet" href="../styles/tokens-v3-linear.css" />
+  <link rel="stylesheet" href="../styles/reset.css" />
+  <link rel="stylesheet" href="../styles/shell.css" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+  <style>
+    main {
+      max-width: var(--max-width-page);
+      margin: 0 auto;
+    }
+
+    /* ---- Command bar ---- */
+    .commandbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-4);
+      padding: var(--space-4) var(--space-5);
+      border-bottom: 1px solid var(--color-border-primary);
+      background-color: var(--color-bg-primary);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      backdrop-filter: blur(8px);
+    }
+    .breadcrumb {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      font-size: var(--font-size-sm);
+      color: var(--color-text-secondary);
+    }
+    .breadcrumb__item--active {
+      color: var(--color-text-primary);
+      font-weight: var(--font-weight-semibold);
+    }
+    .breadcrumb__sep { color: var(--color-text-tertiary); font-size: 11px; }
+    .breadcrumb__game-dot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: var(--border-radius-xs);
+      background: linear-gradient(135deg, #DC2626 0%, #F87171 100%);
+      margin-right: 6px;
+      vertical-align: -1px;
+    }
+    .commandbar__actions { display: flex; gap: var(--space-2); align-items: center; }
+    .kbd {
+      display: inline-flex;
+      padding: 2px 5px;
+      background-color: var(--color-bg-tertiary);
+      border: 1px solid var(--color-border-primary);
+      border-bottom-width: 2px;
+      border-radius: var(--border-radius-xs);
+      font-family: var(--font-family-mono);
+      font-size: 10px;
+      color: var(--color-text-secondary);
+      line-height: 1;
+    }
+    .search-trigger {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-3);
+      padding: 6px var(--space-3);
+      background-color: var(--color-bg-secondary);
+      border: 1px solid var(--color-border-primary);
+      border-radius: var(--border-radius-sm);
+      color: var(--color-text-tertiary);
+      font-size: var(--font-size-sm);
+      min-width: 220px;
+    }
+    .search-trigger svg { width: 14px; height: 14px; }
+    .search-trigger:hover { border-color: var(--color-text-tertiary); color: var(--color-text-secondary); }
+    .search-trigger__hint { margin-left: auto; }
+
+    /* ---- Page head ---- */
+    .page-head {
+      padding: var(--space-7) var(--space-5) var(--space-5);
+      border-bottom: 1px solid var(--color-border-primary);
+    }
+    .page-head__eyebrow {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      font-size: var(--font-size-xs);
+      text-transform: uppercase;
+      letter-spacing: var(--letter-spacing-widest);
+      color: var(--color-text-tertiary);
+      font-weight: var(--font-weight-semibold);
+      margin-bottom: var(--space-3);
+    }
+    .page-head__count-pill {
+      padding: 2px var(--space-2);
+      background-color: var(--color-bg-tertiary);
+      border-radius: var(--border-radius-xs);
+      font-size: 10px;
+      color: var(--color-text-secondary);
+      letter-spacing: 0;
+      text-transform: none;
+    }
+    .page-head__title {
+      font-size: var(--font-size-xl);
+      font-weight: var(--font-weight-bold);
+      letter-spacing: var(--letter-spacing-tight);
+      margin-bottom: var(--space-3);
+    }
+    .page-head__sub {
+      font-size: var(--font-size-sm);
+      color: var(--color-text-secondary);
+      max-width: 56ch;
+    }
+
+    /* ---- Type filter rail ---- */
+    .type-rail {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      padding: var(--space-3) var(--space-5);
+      border-bottom: 1px solid var(--color-border-primary);
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .type-rail::-webkit-scrollbar { display: none; }
+    .type-rail__label {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: var(--letter-spacing-widest);
+      color: var(--color-text-tertiary);
+      font-weight: var(--font-weight-semibold);
+      margin-right: var(--space-2);
+      white-space: nowrap;
+    }
+    .type-pill {
+      display: inline-flex;
+      align-items: center;
+      padding: 3px 8px;
+      background-color: transparent;
+      border: 1.5px solid currentColor;
+      border-radius: var(--border-radius-sm);
+      font-size: var(--font-size-xs);
+      font-weight: var(--font-weight-bold);
+      letter-spacing: var(--letter-spacing-widest);
+      text-transform: uppercase;
+      opacity: 0.55;
+      transition: opacity var(--duration-fast) var(--easing-default);
+      white-space: nowrap;
+      cursor: pointer;
+    }
+    .type-pill:hover { opacity: 1; }
+    .type-pill[aria-pressed="true"] { opacity: 1; }
+    .type-pill--all { color: var(--color-text-primary); }
+    .type-pill--normal   { color: var(--type-badge-color-normal); }
+    .type-pill--fire     { color: var(--type-badge-color-fire); }
+    .type-pill--water    { color: var(--type-badge-color-water); }
+    .type-pill--electric { color: var(--type-badge-color-electric); }
+    .type-pill--grass    { color: var(--type-badge-color-grass); }
+    .type-pill--ice      { color: var(--type-badge-color-ice); }
+    .type-pill--fighting { color: var(--type-badge-color-fighting); }
+    .type-pill--poison   { color: var(--type-badge-color-poison); }
+    .type-pill--ground   { color: var(--type-badge-color-ground); }
+    .type-pill--flying   { color: var(--type-badge-color-flying); }
+    .type-pill--psychic  { color: var(--type-badge-color-psychic); }
+    .type-pill--bug      { color: var(--type-badge-color-bug); }
+    .type-pill--rock     { color: var(--type-badge-color-rock); }
+    .type-pill--ghost    { color: var(--type-badge-color-ghost); }
+    .type-pill--dragon   { color: var(--type-badge-color-dragon); }
+    .type-pill--dark     { color: var(--type-badge-color-dark); }
+    .type-pill--steel    { color: var(--type-badge-color-steel); }
+    .type-pill--fairy    { color: var(--type-badge-color-fairy); }
+
+    /* ---- Pokémon table (dense list, not cards) ---- */
+    .pkmn-table {
+      display: flex;
+      flex-direction: column;
+    }
+    .pkmn-table__header {
+      display: grid;
+      grid-template-columns: 56px 56px 1fr 220px 88px 24px;
+      gap: var(--space-4);
+      padding: var(--space-3) var(--space-5);
+      border-bottom: 1px solid var(--color-border-primary);
+      background-color: var(--color-bg-secondary);
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: var(--letter-spacing-widest);
+      color: var(--color-text-tertiary);
+      font-weight: var(--font-weight-semibold);
+    }
+    .pkmn-row {
+      display: grid;
+      grid-template-columns: 56px 56px 1fr 220px 88px 24px;
+      gap: var(--space-4);
+      align-items: center;
+      padding: var(--space-3) var(--space-5);
+      border-bottom: 1px solid var(--color-border-secondary);
+      transition: background-color var(--duration-fast) var(--easing-default);
+      color: var(--color-text-primary);
+    }
+    .pkmn-row:hover { background-color: var(--color-bg-secondary); }
+
+    .pkmn-row__id {
+      font-family: var(--font-family-mono);
+      font-size: var(--font-size-sm);
+      color: var(--color-text-tertiary);
+      font-feature-settings: var(--font-feature-numbers);
+      font-variant-numeric: tabular-nums slashed-zero;
+    }
+
+    .sprite {
+      width: 44px;
+      height: 44px;
+      background-color: var(--color-bg-secondary);
+      border: 1px solid var(--color-border-primary);
+      border-radius: var(--border-radius-sm);
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+    }
+    .sprite img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      image-rendering: pixelated;
+    }
+    .pkmn-row__name {
+      font-size: var(--font-size-base);
+      font-weight: var(--font-weight-semibold);
+    }
+    .pkmn-row__types {
+      display: flex;
+      gap: var(--space-2);
+      justify-self: start;
+    }
+
+    /* Outline-style type badges (V3 signature) */
+    .type-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 1px 6px;
+      background-color: transparent;
+      border: var(--type-badge-border-width) solid currentColor;
+      border-radius: var(--border-radius-sm);
+      font-size: var(--font-size-xs);
+      font-weight: var(--font-weight-bold);
+      letter-spacing: var(--letter-spacing-widest);
+      text-transform: uppercase;
+      line-height: 1.4;
+    }
+    .type-badge--normal   { color: var(--type-badge-color-normal); }
+    .type-badge--fire     { color: var(--type-badge-color-fire); }
+    .type-badge--water    { color: var(--type-badge-color-water); }
+    .type-badge--electric { color: var(--type-badge-color-electric); }
+    .type-badge--grass    { color: var(--type-badge-color-grass); }
+    .type-badge--ice      { color: var(--type-badge-color-ice); }
+    .type-badge--fighting { color: var(--type-badge-color-fighting); }
+    .type-badge--poison   { color: var(--type-badge-color-poison); }
+    .type-badge--ground   { color: var(--type-badge-color-ground); }
+    .type-badge--flying   { color: var(--type-badge-color-flying); }
+    .type-badge--psychic  { color: var(--type-badge-color-psychic); }
+    .type-badge--bug      { color: var(--type-badge-color-bug); }
+    .type-badge--rock     { color: var(--type-badge-color-rock); }
+    .type-badge--ghost    { color: var(--type-badge-color-ghost); }
+    .type-badge--dragon   { color: var(--type-badge-color-dragon); }
+    .type-badge--dark     { color: var(--type-badge-color-dark); }
+    .type-badge--steel    { color: var(--type-badge-color-steel); }
+    .type-badge--fairy    { color: var(--type-badge-color-fairy); }
+
+    .pkmn-row__gen {
+      font-family: var(--font-family-mono);
+      font-size: var(--font-size-xs);
+      color: var(--color-text-tertiary);
+      text-align: right;
+      justify-self: end;
+      font-feature-settings: var(--font-feature-numbers);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .fav-btn {
+      width: 24px;
+      height: 24px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--color-text-tertiary);
+      transition: color var(--duration-fast) var(--easing-default);
+      justify-self: end;
+    }
+    .fav-btn:hover { color: var(--color-accent-primary); }
+    .fav-btn svg { width: 16px; height: 16px; }
+    .fav-btn[aria-pressed="true"] {
+      color: var(--color-accent-primary);
+    }
+    .fav-btn[aria-pressed="true"] svg {
+      fill: currentColor;
+    }
+
+    /* ---- Generation divider ---- */
+    .gen-divider {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      padding: var(--space-5) var(--space-5) var(--space-3);
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: var(--letter-spacing-widest);
+      color: var(--color-text-tertiary);
+      font-weight: var(--font-weight-semibold);
+    }
+    .gen-divider__line {
+      flex: 1;
+      height: 1px;
+      background-color: var(--color-border-primary);
+    }
+
+    /* ---- Mobile ---- */
+    @media (max-width: 767px) {
+      main { padding-bottom: 80px; }
+      .commandbar { padding: var(--space-3) var(--space-4); }
+      .search-trigger { min-width: 0; flex: 1; }
+      .search-trigger__hint { display: none; }
+      .page-head { padding: var(--space-5) var(--space-4) var(--space-4); }
+      .type-rail { padding: var(--space-3) var(--space-4); }
+
+      .pkmn-table__header { display: none; }
+      .pkmn-row {
+        grid-template-columns: 44px 1fr auto;
+        padding: var(--space-3) var(--space-4);
+        gap: var(--space-3);
+      }
+      .pkmn-row > .pkmn-row__id { display: none; }
+      .pkmn-row > .pkmn-row__gen { display: none; }
+      .pkmn-row > .pkmn-row__main {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        min-width: 0;
+      }
+      .pkmn-row__main .pkmn-row__id-inline {
+        display: inline;
+        margin-left: 6px;
+        color: var(--color-text-tertiary);
+        font-family: var(--font-family-mono);
+        font-size: var(--font-size-xs);
+        font-feature-settings: var(--font-feature-numbers);
+        font-variant-numeric: tabular-nums;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <aside class="shell-sidebar" aria-label="Primary navigation">
+    <div class="shell-sidebar__game" role="button" tabindex="0">
+      <span class="shell-sidebar__game__label">Active Game</span>
+      <span class="shell-sidebar__game__current">FireRed</span>
+    </div>
+    <nav class="shell-sidebar__nav">
+      <a class="shell-sidebar__link" href="route-browser.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M9 6l6 0M9 12l6 0M9 18l6 0M5 6l0 0M5 12l0 0M5 18l0 0" stroke-linecap="round"/></svg>
+        Routes
+      </a>
+      <a class="shell-sidebar__link" href="pokemon-browser.html" aria-current="page">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><circle cx="12" cy="12" r="9"/><line x1="3" y1="12" x2="21" y2="12"/></svg>
+        Pokémon
+      </a>
+      <a class="shell-sidebar__link" href="favorites.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><polygon points="12 2 15 9 22 9 17 14 19 21 12 17 5 21 7 14 2 9 9 9"/></svg>
+        Favorites
+      </a>
+      <a class="shell-sidebar__link" href="settings.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        Settings
+      </a>
+    </nav>
+  </aside>
+
+  <main>
+    <header class="commandbar">
+      <nav class="breadcrumb" aria-label="Breadcrumb">
+        <span><span class="breadcrumb__game-dot" aria-hidden="true"></span>Catalog</span>
+        <span class="breadcrumb__sep">›</span>
+        <span class="breadcrumb__item--active">Pokémon</span>
+      </nav>
+      <div class="commandbar__actions">
+        <button class="search-trigger" type="button" aria-label="Search Pokémon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65" stroke-linecap="round"/></svg>
+          <span>Search Pokémon</span>
+          <span class="search-trigger__hint"><span class="kbd">⌘K</span></span>
+        </button>
+      </div>
+    </header>
+
+    <section class="page-head">
+      <div class="page-head__eyebrow">
+        <span>Catalog</span>
+        <span class="page-head__count-pill"><span class="num">1025</span> species across Gen 1–9</span>
+      </div>
+      <h1 class="page-head__title">Pokémon</h1>
+      <p class="page-head__sub">Bundled offline. Filter by Pokémon type or jump straight to a name with <span class="kbd">⌘K</span>.</p>
+    </section>
+
+    <!-- Type filter rail -->
+    <div class="type-rail" role="toolbar" aria-label="Filter by Pokémon type">
+      <span class="type-rail__label">Type</span>
+      <button class="type-pill type-pill--all" aria-pressed="true">All</button>
+      <button class="type-pill type-pill--normal" aria-pressed="false">Normal</button>
+      <button class="type-pill type-pill--fire" aria-pressed="false">Fire</button>
+      <button class="type-pill type-pill--water" aria-pressed="false">Water</button>
+      <button class="type-pill type-pill--electric" aria-pressed="false">Electric</button>
+      <button class="type-pill type-pill--grass" aria-pressed="false">Grass</button>
+      <button class="type-pill type-pill--ice" aria-pressed="false">Ice</button>
+      <button class="type-pill type-pill--fighting" aria-pressed="false">Fighting</button>
+      <button class="type-pill type-pill--poison" aria-pressed="false">Poison</button>
+      <button class="type-pill type-pill--ground" aria-pressed="false">Ground</button>
+      <button class="type-pill type-pill--flying" aria-pressed="false">Flying</button>
+      <button class="type-pill type-pill--psychic" aria-pressed="false">Psychic</button>
+      <button class="type-pill type-pill--bug" aria-pressed="false">Bug</button>
+      <button class="type-pill type-pill--rock" aria-pressed="false">Rock</button>
+      <button class="type-pill type-pill--ghost" aria-pressed="false">Ghost</button>
+      <button class="type-pill type-pill--dragon" aria-pressed="false">Dragon</button>
+      <button class="type-pill type-pill--dark" aria-pressed="false">Dark</button>
+      <button class="type-pill type-pill--steel" aria-pressed="false">Steel</button>
+      <button class="type-pill type-pill--fairy" aria-pressed="false">Fairy</button>
+    </div>
+
+    <div class="gen-divider">
+      <span>Generation 1</span>
+      <span class="gen-divider__line"></span>
+      <span class="num">151 species</span>
+    </div>
+
+    <!-- Table header -->
+    <div class="pkmn-table__header" role="row">
+      <span></span>
+      <span></span>
+      <span>Pokémon</span>
+      <span>Types</span>
+      <span class="th-right">Gen</span>
+      <span></span>
+    </div>
+
+    <div class="pkmn-table" role="list">
+      <a class="pkmn-row" href="pokemon-detail.html" role="listitem">
+        <span class="pkmn-row__id">#001</span>
+        <span class="sprite">
+          <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.png" alt="" aria-hidden="true" loading="lazy" />
+        </span>
+        <div class="pkmn-row__main">
+          <span class="pkmn-row__name">Bulbasaur<span class="pkmn-row__id-inline">#001</span></span>
+        </div>
+        <span class="pkmn-row__types">
+          <span class="type-badge type-badge--grass">Grass</span>
+          <span class="type-badge type-badge--poison">Poison</span>
+        </span>
+        <span class="pkmn-row__gen">G1</span>
+        <button class="fav-btn" aria-label="Toggle favorite" aria-pressed="false">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><polygon points="12 2 15 9 22 9 17 14 19 21 12 17 5 21 7 14 2 9 9 9"/></svg>
+        </button>
+      </a>
+
+      <a class="pkmn-row" href="pokemon-detail.html" role="listitem">
+        <span class="pkmn-row__id">#004</span>
+        <span class="sprite">
+          <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/4.png" alt="" aria-hidden="true" loading="lazy" />
+        </span>
+        <div class="pkmn-row__main">
+          <span class="pkmn-row__name">Charmander<span class="pkmn-row__id-inline">#004</span></span>
+        </div>
+        <span class="pkmn-row__types">
+          <span class="type-badge type-badge--fire">Fire</span>
+        </span>
+        <span class="pkmn-row__gen">G1</span>
+        <button class="fav-btn" aria-label="Toggle favorite" aria-pressed="true">
+          <svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.75"><polygon points="12 2 15 9 22 9 17 14 19 21 12 17 5 21 7 14 2 9 9 9"/></svg>
+        </button>
+      </a>
+
+      <a class="pkmn-row" href="pokemon-detail.html" role="listitem">
+        <span class="pkmn-row__id">#007</span>
+        <span class="sprite">
+          <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/7.png" alt="" aria-hidden="true" loading="lazy" />
+        </span>
+        <div class="pkmn-row__main">
+          <span class="pkmn-row__name">Squirtle<span class="pkmn-row__id-inline">#007</span></span>
+        </div>
+        <span class="pkmn-row__types">
+          <span class="type-badge type-badge--water">Water</span>
+        </span>
+        <span class="pkmn-row__gen">G1</span>
+        <button class="fav-btn" aria-label="Toggle favorite" aria-pressed="false">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><polygon points="12 2 15 9 22 9 17 14 19 21 12 17 5 21 7 14 2 9 9 9"/></svg>
+        </button>
+      </a>
+
+      <a class="pkmn-row" href="pokemon-detail.html" role="listitem">
+        <span class="pkmn-row__id">#016</span>
+        <span class="sprite">
+          <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/16.png" alt="" aria-hidden="true" loading="lazy" />
+        </span>
+        <div class="pkmn-row__main">
+          <span class="pkmn-row__name">Pidgey<span class="pkmn-row__id-inline">#016</span></span>
+        </div>
+        <span class="pkmn-row__types">
+          <span class="type-badge type-badge--normal">Normal</span>
+          <span class="type-badge type-badge--flying">Flying</span>
+        </span>
+        <span class="pkmn-row__gen">G1</span>
+        <button class="fav-btn" aria-label="Toggle favorite" aria-pressed="false">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><polygon points="12 2 15 9 22 9 17 14 19 21 12 17 5 21 7 14 2 9 9 9"/></svg>
+        </button>
+      </a>
+
+      <a class="pkmn-row" href="pokemon-detail.html" role="listitem">
+        <span class="pkmn-row__id">#019</span>
+        <span class="sprite">
+          <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/19.png" alt="" aria-hidden="true" loading="lazy" />
+        </span>
+        <div class="pkmn-row__main">
+          <span class="pkmn-row__name">Rattata<span class="pkmn-row__id-inline">#019</span></span>
+        </div>
+        <span class="pkmn-row__types">
+          <span class="type-badge type-badge--normal">Normal</span>
+        </span>
+        <span class="pkmn-row__gen">G1</span>
+        <button class="fav-btn" aria-label="Toggle favorite" aria-pressed="false">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><polygon points="12 2 15 9 22 9 17 14 19 21 12 17 5 21 7 14 2 9 9 9"/></svg>
+        </button>
+      </a>
+
+      <a class="pkmn-row" href="pokemon-detail.html" role="listitem">
+        <span class="pkmn-row__id">#025</span>
+        <span class="sprite">
+          <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png" alt="" aria-hidden="true" loading="lazy" />
+        </span>
+        <div class="pkmn-row__main">
+          <span class="pkmn-row__name">Pikachu<span class="pkmn-row__id-inline">#025</span></span>
+        </div>
+        <span class="pkmn-row__types">
+          <span class="type-badge type-badge--electric">Electric</span>
+        </span>
+        <span class="pkmn-row__gen">G1</span>
+        <button class="fav-btn" aria-label="Toggle favorite" aria-pressed="true">
+          <svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.75"><polygon points="12 2 15 9 22 9 17 14 19 21 12 17 5 21 7 14 2 9 9 9"/></svg>
+        </button>
+      </a>
+
+      <a class="pkmn-row" href="pokemon-detail.html" role="listitem">
+        <span class="pkmn-row__id">#074</span>
+        <span class="sprite">
+          <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/74.png" alt="" aria-hidden="true" loading="lazy" />
+        </span>
+        <div class="pkmn-row__main">
+          <span class="pkmn-row__name">Geodude<span class="pkmn-row__id-inline">#074</span></span>
+        </div>
+        <span class="pkmn-row__types">
+          <span class="type-badge type-badge--rock">Rock</span>
+          <span class="type-badge type-badge--ground">Ground</span>
+        </span>
+        <span class="pkmn-row__gen">G1</span>
+        <button class="fav-btn" aria-label="Toggle favorite" aria-pressed="false">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><polygon points="12 2 15 9 22 9 17 14 19 21 12 17 5 21 7 14 2 9 9 9"/></svg>
+        </button>
+      </a>
+
+      <a class="pkmn-row" href="pokemon-detail.html" role="listitem">
+        <span class="pkmn-row__id">#095</span>
+        <span class="sprite">
+          <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/95.png" alt="" aria-hidden="true" loading="lazy" />
+        </span>
+        <div class="pkmn-row__main">
+          <span class="pkmn-row__name">Onix<span class="pkmn-row__id-inline">#095</span></span>
+        </div>
+        <span class="pkmn-row__types">
+          <span class="type-badge type-badge--rock">Rock</span>
+          <span class="type-badge type-badge--ground">Ground</span>
+        </span>
+        <span class="pkmn-row__gen">G1</span>
+        <button class="fav-btn" aria-label="Toggle favorite" aria-pressed="false">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><polygon points="12 2 15 9 22 9 17 14 19 21 12 17 5 21 7 14 2 9 9 9"/></svg>
+        </button>
+      </a>
+
+      <a class="pkmn-row" href="pokemon-detail.html" role="listitem">
+        <span class="pkmn-row__id">#129</span>
+        <span class="sprite">
+          <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/129.png" alt="" aria-hidden="true" loading="lazy" />
+        </span>
+        <div class="pkmn-row__main">
+          <span class="pkmn-row__name">Magikarp<span class="pkmn-row__id-inline">#129</span></span>
+        </div>
+        <span class="pkmn-row__types">
+          <span class="type-badge type-badge--water">Water</span>
+        </span>
+        <span class="pkmn-row__gen">G1</span>
+        <button class="fav-btn" aria-label="Toggle favorite" aria-pressed="false">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><polygon points="12 2 15 9 22 9 17 14 19 21 12 17 5 21 7 14 2 9 9 9"/></svg>
+        </button>
+      </a>
+
+      <a class="pkmn-row" href="pokemon-detail.html" role="listitem">
+        <span class="pkmn-row__id">#133</span>
+        <span class="sprite">
+          <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/133.png" alt="" aria-hidden="true" loading="lazy" />
+        </span>
+        <div class="pkmn-row__main">
+          <span class="pkmn-row__name">Eevee<span class="pkmn-row__id-inline">#133</span></span>
+        </div>
+        <span class="pkmn-row__types">
+          <span class="type-badge type-badge--normal">Normal</span>
+        </span>
+        <span class="pkmn-row__gen">G1</span>
+        <button class="fav-btn" aria-label="Toggle favorite" aria-pressed="false">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><polygon points="12 2 15 9 22 9 17 14 19 21 12 17 5 21 7 14 2 9 9 9"/></svg>
+        </button>
+      </a>
+    </div>
+  </main>
+
+  <nav class="shell-bottom-nav" aria-label="Primary navigation (mobile)">
+    <a class="shell-bottom-nav__item" href="route-browser.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M9 6l6 0M9 12l6 0M9 18l6 0M5 6l0 0M5 12l0 0M5 18l0 0" stroke-linecap="round"/></svg>
+      Routes
+    </a>
+    <a class="shell-bottom-nav__item" href="pokemon-browser.html" aria-current="page">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><circle cx="12" cy="12" r="9"/><line x1="3" y1="12" x2="21" y2="12"/></svg>
+      Pokémon
+    </a>
+    <a class="shell-bottom-nav__item" href="favorites.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><polygon points="12 2 15 9 22 9 17 14 19 21 12 17 5 21 7 14 2 9 9 9"/></svg>
+      Favorites
+    </a>
+    <a class="shell-bottom-nav__item" href="settings.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      Settings
+    </a>
+  </nav>
+</body>
+</html>

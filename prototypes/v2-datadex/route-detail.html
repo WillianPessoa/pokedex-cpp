@@ -1,0 +1,629 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Route 1 — FireRed · Pokedex (V2 DataDex)</title>
+
+  <link rel="stylesheet" href="../styles/tokens-v2-datadex.css" />
+  <link rel="stylesheet" href="../styles/reset.css" />
+  <link rel="stylesheet" href="../styles/shell.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <style>
+    /* V2-1 — Route detail (DataDex). Maps to PRD Stories 5–10.
+       Delta vs V1: solid-block type badges, tighter row spacing, tabular-nums,
+       Inter font, more visible hairline borders, smaller card radius. */
+
+    body {
+      font-family: var(--font-family-body);
+      background-color: var(--color-bg-primary);
+      color: var(--color-text-primary);
+      padding-bottom: 80px;
+    }
+    .num { font-feature-settings: var(--font-feature-numbers); }
+
+    /* ==== Demo state switcher (FAB) ==== */
+    .demo-fab {
+      position: fixed;
+      bottom: calc(var(--space-4) + 70px);
+      right: var(--space-4);
+      z-index: 50;
+      display: flex; flex-direction: column-reverse; align-items: flex-end; gap: var(--space-2);
+    }
+    @media (min-width: 768px) { .demo-fab { bottom: var(--space-4); } }
+    .demo-fab__eye {
+      width: 48px; height: 48px;
+      display: inline-flex; align-items: center; justify-content: center;
+      border-radius: var(--border-radius-full);
+      background-color: var(--color-bg-inverse); color: var(--color-text-inverse);
+      box-shadow: var(--shadow-lg); cursor: pointer;
+      transition: transform var(--duration-fast) var(--easing-default);
+    }
+    .demo-fab__eye:hover { transform: scale(1.05); }
+    .demo-fab__eye svg { width: 22px; height: 22px; }
+    .demo-fab__eye__open { display: none; }
+    .demo-fab[data-collapsed="true"] .demo-fab__eye__closed { display: none; }
+    .demo-fab[data-collapsed="true"] .demo-fab__eye__open { display: inline-block; }
+    .demo-fab__panel {
+      display: flex; flex-direction: column; gap: 4px;
+      padding: var(--space-3);
+      background-color: var(--color-bg-inverse); color: var(--color-text-inverse);
+      border-radius: var(--border-radius-md);
+      box-shadow: var(--shadow-lg);
+      min-width: 220px;
+    }
+    .demo-fab[data-collapsed="true"] .demo-fab__panel { display: none; }
+    .demo-fab__label {
+      font-size: 10px; font-weight: var(--font-weight-bold);
+      letter-spacing: var(--letter-spacing-widest); text-transform: uppercase;
+      opacity: 0.55; margin-bottom: 4px;
+    }
+    .demo-fab__btn {
+      display: block; text-align: left;
+      padding: 8px 12px;
+      border-radius: var(--border-radius-sm);
+      background-color: rgba(255, 255, 255, 0.06);
+      color: var(--color-text-inverse);
+      font-size: var(--font-size-sm); font-weight: var(--font-weight-semibold);
+      cursor: pointer;
+      transition: background-color var(--duration-fast);
+    }
+    .demo-fab__btn:hover { background-color: rgba(255, 255, 255, 0.13); }
+    .demo-fab__btn[aria-pressed="true"] {
+      background-color: var(--color-accent-primary); color: white;
+    }
+
+    /* ==== TopBar ==== */
+    .topbar {
+      display: flex; align-items: center; gap: var(--space-3);
+      padding: var(--space-3) var(--space-4);
+      background-color: var(--color-bg-secondary);
+      border-bottom: 1px solid var(--color-border-primary);
+      position: sticky; top: 0; z-index: 10;
+    }
+    .topbar__back {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 40px; height: 40px;
+      border-radius: var(--border-radius-md);
+      color: var(--color-text-primary);
+      transition: background-color var(--duration-fast);
+    }
+    .topbar__back:hover { background-color: var(--color-bg-tertiary); }
+    .topbar__back svg { width: 22px; height: 22px; }
+    .topbar__heading { flex: 1; min-width: 0; }
+    .topbar__title {
+      font-size: var(--font-size-lg);
+      font-weight: var(--font-weight-bold);
+      letter-spacing: var(--letter-spacing-tight);
+      line-height: var(--line-height-tight);
+      margin: 0;
+    }
+    .topbar__subtitle {
+      font-size: 10px;
+      color: var(--color-text-tertiary);
+      text-transform: uppercase;
+      letter-spacing: var(--letter-spacing-widest);
+      font-weight: var(--font-weight-semibold);
+      margin-top: 2px;
+    }
+
+    /* ==== Filter bar ==== */
+    .filters {
+      display: flex; gap: var(--space-2);
+      padding: var(--space-3) var(--space-4);
+      background-color: var(--color-bg-primary);
+      border-bottom: 1px solid var(--color-border-primary);
+      overflow-x: auto;
+      position: sticky; top: 56px; z-index: 9;
+    }
+    .filter-toggle {
+      display: inline-flex; align-items: center; gap: var(--space-2);
+      padding: 6px 12px;
+      border-radius: var(--border-radius-sm);
+      background-color: var(--color-bg-secondary);
+      border: 1px solid var(--color-border-primary);
+      color: var(--color-text-secondary);
+      font-size: var(--font-size-sm);
+      font-weight: var(--font-weight-medium);
+      white-space: nowrap;
+      cursor: pointer;
+      transition: all var(--duration-fast) var(--easing-default);
+    }
+    .filter-toggle:hover {
+      background-color: var(--color-bg-tertiary);
+      color: var(--color-text-primary);
+    }
+    .filter-toggle[aria-pressed="true"] {
+      background-color: var(--color-accent-primary);
+      border-color: var(--color-accent-primary);
+      color: white;
+    }
+    .filter-toggle__indicator {
+      display: inline-block;
+      width: 14px; height: 14px;
+      border-radius: 3px;
+      border: 1.5px solid currentColor;
+      position: relative;
+    }
+    .filter-toggle[aria-pressed="true"] .filter-toggle__indicator {
+      background-color: white;
+      border-color: white;
+    }
+    .filter-toggle[aria-pressed="true"] .filter-toggle__indicator::after {
+      content: "";
+      position: absolute; top: 1px; left: 4px;
+      width: 4px; height: 8px;
+      border: solid var(--color-accent-primary);
+      border-width: 0 2px 2px 0;
+      transform: rotate(45deg);
+    }
+    .filter-toggle:disabled { opacity: 0.55; cursor: not-allowed; }
+
+    /* ==== Encounter table — denser than V1 ==== */
+    .encounter-list {
+      padding: var(--space-3) var(--space-4) var(--space-5);
+      display: flex; flex-direction: column;
+      gap: var(--space-1);
+    }
+    .encounter-row {
+      display: grid; grid-template-columns: 56px 1fr auto;
+      align-items: center; gap: var(--space-3);
+      padding: var(--space-3);
+      background-color: var(--color-bg-secondary);
+      border: 1px solid var(--color-border-primary);
+      border-radius: var(--border-radius-lg);
+      transition: border-color var(--duration-fast), box-shadow var(--duration-fast);
+    }
+    .encounter-row:hover {
+      border-color: var(--color-accent-primary);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .encounter-row__sprite {
+      width: 56px; height: 56px;
+      background-color: var(--color-bg-tertiary);
+      border-radius: var(--border-radius-md);
+      display: flex; align-items: center; justify-content: center;
+      overflow: hidden;
+    }
+    .encounter-row__sprite img {
+      width: 100%; height: 100%;
+      object-fit: contain;
+      image-rendering: pixelated;
+    }
+
+    .encounter-row__body {
+      min-width: 0;
+      display: flex; flex-direction: column; gap: 3px;
+    }
+    .encounter-row__name {
+      font-size: var(--font-size-md);
+      font-weight: var(--font-weight-bold);
+      color: var(--color-text-primary);
+      letter-spacing: var(--letter-spacing-tight);
+      line-height: var(--line-height-tight);
+    }
+    .encounter-row__meta {
+      display: flex; flex-wrap: wrap; align-items: center;
+      gap: var(--space-2);
+      font-size: var(--font-size-sm);
+      color: var(--color-text-secondary);
+    }
+    .encounter-row__meta__sep {
+      color: var(--color-text-tertiary);
+    }
+    .encounter-row__types {
+      display: flex; gap: 4px; margin-top: 2px;
+    }
+    .encounter-row__rate {
+      display: flex; flex-direction: column; align-items: flex-end; gap: 2px;
+    }
+    .encounter-row__rate-display {
+      font-size: var(--font-size-xl);
+      font-weight: var(--font-weight-black);
+      color: var(--color-text-primary);
+      letter-spacing: var(--letter-spacing-tight);
+      line-height: 1;
+    }
+    .encounter-row__rate-label {
+      font-size: 10px;
+      color: var(--color-text-tertiary);
+      text-transform: uppercase;
+      letter-spacing: var(--letter-spacing-widest);
+      font-weight: var(--font-weight-semibold);
+    }
+
+    /* ==== Type badges (V2 — solid block, sharp corners) ==== */
+    .type-badge {
+      display: inline-flex; align-items: center;
+      padding: 3px 8px;
+      border-radius: var(--border-radius-sm);
+      font-size: 11px;
+      font-weight: var(--font-weight-bold);
+      letter-spacing: var(--letter-spacing-widest);
+      text-transform: uppercase;
+      line-height: 1.3;
+    }
+    .type-badge--normal   { background: var(--type-badge-bg-normal);   color: var(--type-badge-text-normal); }
+    .type-badge--electric { background: var(--type-badge-bg-electric); color: var(--type-badge-text-electric); }
+    .type-badge--flying   { background: var(--type-badge-bg-flying);   color: var(--type-badge-text-flying); }
+
+    /* ==== Empty state ==== */
+    .empty-state-inline {
+      display: flex; flex-direction: column; align-items: center; gap: var(--space-3);
+      padding: var(--space-7) var(--space-4);
+      text-align: center;
+      background-color: var(--color-bg-secondary);
+      border: 1px dashed var(--color-border-primary);
+      border-radius: var(--border-radius-lg);
+      margin: var(--space-4);
+    }
+    .empty-state-inline svg { width: 40px; height: 40px; color: var(--color-text-tertiary); }
+    .empty-state-inline h3 {
+      font-size: var(--font-size-md);
+      font-weight: var(--font-weight-semibold);
+      letter-spacing: var(--letter-spacing-tight);
+    }
+    .empty-state-inline p { font-size: var(--font-size-sm); color: var(--color-text-secondary); max-width: 32ch; }
+
+    /* ==== Skeleton ==== */
+    .skeleton-block {
+      background-color: var(--color-bg-tertiary);
+      border-radius: 3px;
+      position: relative;
+      overflow: hidden;
+    }
+    .skeleton-block::after {
+      content: "";
+      position: absolute; inset: 0;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent);
+      animation: shimmer 1.4s ease-in-out infinite;
+    }
+    @keyframes shimmer { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+    @media (prefers-reduced-motion: reduce) { .skeleton-block::after { animation: none; opacity: 0.4; } }
+
+    /* ==== State visibility ==== */
+    [data-state-view] { display: none; }
+    body[data-state="default"]    [data-state-view="default"]    { display: block; }
+    body[data-state="default"]    ol[data-state-view="default"]  { display: flex; }
+    body[data-state="first-only"] [data-state-view="first-only"] { display: block; }
+    body[data-state="first-only"] ol[data-state-view="first-only"] { display: flex; }
+    body[data-state="empty"]      [data-state-view="empty"]      { display: block; }
+    body[data-state="loading"]    [data-state-view="loading"]    { display: block; }
+    body[data-state="loading"]    ol[data-state-view="loading"]  { display: flex; }
+    body[data-state="default"]    div.filters[data-state-view="default"] { display: flex; }
+    body[data-state="first-only"] div.filters[data-state-view="first-only"] { display: flex; }
+    body[data-state="empty"]      div.filters[data-state-view="empty"] { display: flex; }
+    body[data-state="loading"]    div.filters[data-state-view="loading"] { display: flex; }
+
+    /* ==== Desktop ≥768px ==== */
+    @media (min-width: 768px) {
+      .topbar { padding: var(--space-4) var(--space-6); }
+      .topbar__title { font-size: var(--font-size-xl); }
+      .filters { padding: var(--space-3) var(--space-6); top: 64px; }
+      .encounter-list {
+        padding: var(--space-4) var(--space-6) var(--space-7);
+        max-width: 720px; margin: 0 auto;
+      }
+      .encounter-row { grid-template-columns: 64px 1fr auto; }
+      .encounter-row__sprite { width: 64px; height: 64px; }
+      .encounter-row__rate-display { font-size: var(--font-size-2xl); }
+      .empty-state-inline { margin: var(--space-4) var(--space-6); max-width: 720px; margin-left: auto; margin-right: auto; }
+    }
+  </style>
+</head>
+<body data-state="default">
+
+  <aside class="shell-sidebar" aria-label="Primary navigation">
+    <div class="shell-sidebar__game" role="button" tabindex="0">
+      <span class="shell-sidebar__game__label">Active Game</span>
+      <span class="shell-sidebar__game__current">FireRed</span>
+    </div>
+    <nav class="shell-sidebar__nav">
+      <a class="shell-sidebar__link" href="route-browser.html" aria-current="page">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 12l2-2m0 0l7-7 7 7m-9-2v8m-4-4h12" /></svg>
+        Routes
+      </a>
+      <a class="shell-sidebar__link" href="pokemon-browser.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9" /><line x1="3" y1="12" x2="21" y2="12" /></svg>
+        Pokémon
+      </a>
+      <a class="shell-sidebar__link" href="favorites.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polygon points="12 2 15 9 22 9 17 14 19 21 12 17 5 21 7 14 2 9 9 9" /></svg>
+        Favorites
+      </a>
+      <a class="shell-sidebar__link" href="settings.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="3" /></svg>
+        Settings
+      </a>
+    </nav>
+  </aside>
+
+  <header class="topbar">
+    <a class="topbar__back" href="route-browser.html" aria-label="Back to Route browser">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <polyline points="15 18 9 12 15 6" />
+      </svg>
+    </a>
+    <div class="topbar__heading">
+      <h1 class="topbar__title">Route 1</h1>
+      <span class="topbar__subtitle" id="subtitle-text">FireRed</span>
+    </div>
+  </header>
+
+  <!-- Filter bars per state -->
+  <div class="filters" data-state-view="default" role="group" aria-label="Encounter filters">
+    <button class="filter-toggle" type="button" aria-pressed="false">
+      <span class="filter-toggle__indicator"></span>First encounter only
+    </button>
+    <button class="filter-toggle" type="button" aria-pressed="false">
+      <span class="filter-toggle__indicator"></span>Dupes clause: hide caught
+    </button>
+  </div>
+  <div class="filters" data-state-view="first-only" role="group">
+    <button class="filter-toggle" type="button" aria-pressed="true">
+      <span class="filter-toggle__indicator"></span>First encounter only
+    </button>
+    <button class="filter-toggle" type="button" aria-pressed="false">
+      <span class="filter-toggle__indicator"></span>Dupes clause: hide caught
+    </button>
+  </div>
+  <div class="filters" data-state-view="empty" role="group">
+    <button class="filter-toggle" type="button" aria-pressed="true">
+      <span class="filter-toggle__indicator"></span>First encounter only
+    </button>
+    <button class="filter-toggle" type="button" aria-pressed="true">
+      <span class="filter-toggle__indicator"></span>Dupes clause: hide caught
+    </button>
+  </div>
+  <div class="filters" data-state-view="loading" role="group">
+    <button class="filter-toggle" type="button" aria-pressed="false" disabled>
+      <span class="filter-toggle__indicator"></span>First encounter only
+    </button>
+    <button class="filter-toggle" type="button" aria-pressed="false" disabled>
+      <span class="filter-toggle__indicator"></span>Dupes clause: hide caught
+    </button>
+  </div>
+
+  <main>
+    <!-- Default state -->
+    <ol class="encounter-list" data-state-view="default" role="list">
+      <li class="encounter-row">
+        <div class="encounter-row__sprite">
+          <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/16.png" alt="" aria-hidden="true" loading="lazy" />
+        </div>
+        <div class="encounter-row__body">
+          <span class="encounter-row__name">Pidgey</span>
+          <div class="encounter-row__meta">
+            <span class="num">Lv 2&ndash;5</span>
+            <span class="encounter-row__meta__sep" aria-hidden="true">·</span>
+            <span>Grass</span>
+          </div>
+          <div class="encounter-row__types">
+            <span class="type-badge type-badge--normal">Normal</span>
+            <span class="type-badge type-badge--flying">Flying</span>
+          </div>
+        </div>
+        <div class="encounter-row__rate">
+          <span class="encounter-row__rate-display num">50%</span>
+          <span class="encounter-row__rate-label">Rate</span>
+        </div>
+      </li>
+      <li class="encounter-row">
+        <div class="encounter-row__sprite">
+          <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/19.png" alt="" aria-hidden="true" loading="lazy" />
+        </div>
+        <div class="encounter-row__body">
+          <span class="encounter-row__name">Rattata</span>
+          <div class="encounter-row__meta">
+            <span class="num">Lv 2&ndash;5</span>
+            <span class="encounter-row__meta__sep" aria-hidden="true">·</span>
+            <span>Grass</span>
+          </div>
+          <div class="encounter-row__types">
+            <span class="type-badge type-badge--normal">Normal</span>
+          </div>
+        </div>
+        <div class="encounter-row__rate">
+          <span class="encounter-row__rate-display num">50%</span>
+          <span class="encounter-row__rate-label">Rate</span>
+        </div>
+      </li>
+      <li class="encounter-row">
+        <div class="encounter-row__sprite">
+          <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png" alt="" aria-hidden="true" loading="lazy" />
+        </div>
+        <div class="encounter-row__body">
+          <span class="encounter-row__name">Pikachu</span>
+          <div class="encounter-row__meta">
+            <span class="num">Lv 3&ndash;5</span>
+            <span class="encounter-row__meta__sep" aria-hidden="true">·</span>
+            <span>Grass (rare)</span>
+          </div>
+          <div class="encounter-row__types">
+            <span class="type-badge type-badge--electric">Electric</span>
+          </div>
+        </div>
+        <div class="encounter-row__rate">
+          <span class="encounter-row__rate-display num">5%</span>
+          <span class="encounter-row__rate-label">Rate</span>
+        </div>
+      </li>
+      <li class="encounter-row">
+        <div class="encounter-row__sprite">
+          <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/16.png" alt="" aria-hidden="true" loading="lazy" />
+        </div>
+        <div class="encounter-row__body">
+          <span class="encounter-row__name">Pidgey</span>
+          <div class="encounter-row__meta">
+            <span class="num">Lv 4&ndash;6</span>
+            <span class="encounter-row__meta__sep" aria-hidden="true">·</span>
+            <span>Tall Grass</span>
+          </div>
+          <div class="encounter-row__types">
+            <span class="type-badge type-badge--normal">Normal</span>
+            <span class="type-badge type-badge--flying">Flying</span>
+          </div>
+        </div>
+        <div class="encounter-row__rate">
+          <span class="encounter-row__rate-display num">35%</span>
+          <span class="encounter-row__rate-label">Rate</span>
+        </div>
+      </li>
+      <li class="encounter-row">
+        <div class="encounter-row__sprite">
+          <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/19.png" alt="" aria-hidden="true" loading="lazy" />
+        </div>
+        <div class="encounter-row__body">
+          <span class="encounter-row__name">Rattata</span>
+          <div class="encounter-row__meta">
+            <span class="num">Lv 4&ndash;6</span>
+            <span class="encounter-row__meta__sep" aria-hidden="true">·</span>
+            <span>Tall Grass</span>
+          </div>
+          <div class="encounter-row__types">
+            <span class="type-badge type-badge--normal">Normal</span>
+          </div>
+        </div>
+        <div class="encounter-row__rate">
+          <span class="encounter-row__rate-display num">15%</span>
+          <span class="encounter-row__rate-label">Rate</span>
+        </div>
+      </li>
+    </ol>
+
+    <!-- First-only state -->
+    <ol class="encounter-list" data-state-view="first-only" role="list">
+      <li class="encounter-row">
+        <div class="encounter-row__sprite">
+          <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/16.png" alt="" aria-hidden="true" loading="lazy" />
+        </div>
+        <div class="encounter-row__body">
+          <span class="encounter-row__name">Pidgey</span>
+          <div class="encounter-row__meta">
+            <span class="num">Lv 2&ndash;5</span>
+            <span class="encounter-row__meta__sep" aria-hidden="true">·</span>
+            <span>Grass · most likely first</span>
+          </div>
+          <div class="encounter-row__types">
+            <span class="type-badge type-badge--normal">Normal</span>
+            <span class="type-badge type-badge--flying">Flying</span>
+          </div>
+        </div>
+        <div class="encounter-row__rate">
+          <span class="encounter-row__rate-display num">50%</span>
+          <span class="encounter-row__rate-label">Rate</span>
+        </div>
+      </li>
+    </ol>
+
+    <!-- Empty state -->
+    <div data-state-view="empty">
+      <div class="empty-state-inline">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+          <circle cx="11" cy="11" r="7" />
+          <line x1="21" y1="21" x2="16.65" y2="16.65" />
+        </svg>
+        <h3>No Encounters match this filter</h3>
+        <p>Toggle filters off, or pick another Route to see what's available there.</p>
+      </div>
+    </div>
+
+    <!-- Loading state -->
+    <ol class="encounter-list" data-state-view="loading" role="list" aria-busy="true">
+      <li class="encounter-row">
+        <div class="skeleton-block" style="width: 56px; height: 56px;"></div>
+        <div class="encounter-row__body" style="gap: 8px;">
+          <div class="skeleton-block" style="height: 18px; width: 60%;"></div>
+          <div class="skeleton-block" style="height: 14px; width: 40%;"></div>
+        </div>
+        <div class="skeleton-block" style="height: 28px; width: 56px;"></div>
+      </li>
+      <li class="encounter-row">
+        <div class="skeleton-block" style="width: 56px; height: 56px;"></div>
+        <div class="encounter-row__body" style="gap: 8px;">
+          <div class="skeleton-block" style="height: 18px; width: 50%;"></div>
+          <div class="skeleton-block" style="height: 14px; width: 35%;"></div>
+        </div>
+        <div class="skeleton-block" style="height: 28px; width: 56px;"></div>
+      </li>
+      <li class="encounter-row">
+        <div class="skeleton-block" style="width: 56px; height: 56px;"></div>
+        <div class="encounter-row__body" style="gap: 8px;">
+          <div class="skeleton-block" style="height: 18px; width: 45%;"></div>
+          <div class="skeleton-block" style="height: 14px; width: 30%;"></div>
+        </div>
+        <div class="skeleton-block" style="height: 28px; width: 56px;"></div>
+      </li>
+    </ol>
+  </main>
+
+  <!-- Demo state switcher -->
+  <div class="demo-fab" data-collapsed="false" aria-label="Demo state switcher">
+    <div class="demo-fab__panel" role="group" aria-label="Switch demonstrated state">
+      <span class="demo-fab__label">Demo · show state</span>
+      <button class="demo-fab__btn" type="button" data-state-target="default" aria-pressed="true">Default</button>
+      <button class="demo-fab__btn" type="button" data-state-target="first-only" aria-pressed="false">First encounter on</button>
+      <button class="demo-fab__btn" type="button" data-state-target="empty" aria-pressed="false">Empty</button>
+      <button class="demo-fab__btn" type="button" data-state-target="loading" aria-pressed="false">Loading</button>
+    </div>
+    <button class="demo-fab__eye" type="button" id="demo-fab-toggle" aria-label="Toggle demo controls" aria-expanded="true">
+      <svg class="demo-fab__eye__closed" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" />
+      </svg>
+      <svg class="demo-fab__eye__open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+        <line x1="1" y1="1" x2="23" y2="23" />
+      </svg>
+    </button>
+  </div>
+
+  <nav class="shell-bottom-nav" aria-label="Primary navigation (mobile)">
+    <a class="shell-bottom-nav__item" href="route-browser.html" aria-current="page">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 12l2-2m0 0l7-7 7 7m-9-2v8m-4-4h12" /></svg>Routes
+    </a>
+    <a class="shell-bottom-nav__item" href="pokemon-browser.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9" /><line x1="3" y1="12" x2="21" y2="12" /></svg>Pokémon
+    </a>
+    <a class="shell-bottom-nav__item" href="favorites.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polygon points="12 2 15 9 22 9 17 14 19 21 12 17 5 21 7 14 2 9 9 9" /></svg>Favorites
+    </a>
+    <a class="shell-bottom-nav__item" href="settings.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="3" /></svg>Settings
+    </a>
+  </nav>
+
+  <script>
+    const subtitleText = document.getElementById('subtitle-text');
+    const subtitles = {
+      'default':    'FireRed',
+      'first-only': 'FireRed · 1 result under filter',
+      'empty':      'FireRed · no results',
+      'loading':    'FireRed · fetching…'
+    };
+    document.querySelectorAll('[data-state-target]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const target = btn.getAttribute('data-state-target');
+        document.body.setAttribute('data-state', target);
+        document.querySelectorAll('[data-state-target]').forEach(b => b.setAttribute('aria-pressed', 'false'));
+        btn.setAttribute('aria-pressed', 'true');
+        subtitleText.textContent = subtitles[target];
+      });
+    });
+    document.querySelectorAll('.filter-toggle').forEach(t => t.addEventListener('click', () => {
+      if (t.disabled) return;
+      t.setAttribute('aria-pressed', t.getAttribute('aria-pressed') === 'true' ? 'false' : 'true');
+    }));
+    const fab = document.querySelector('.demo-fab');
+    const fabToggle = document.getElementById('demo-fab-toggle');
+    fabToggle.addEventListener('click', () => {
+      const collapsed = fab.getAttribute('data-collapsed') === 'true';
+      fab.setAttribute('data-collapsed', String(!collapsed));
+      fabToggle.setAttribute('aria-expanded', String(collapsed));
+    });
+  </script>
+</body>
+</html>

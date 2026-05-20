@@ -1,0 +1,535 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Settings — Pokedex (V3 Linear)</title>
+
+  <link rel="stylesheet" href="../styles/tokens-v3-linear.css" />
+  <link rel="stylesheet" href="../styles/reset.css" />
+  <link rel="stylesheet" href="../styles/shell.css" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+  <style>
+    main {
+      max-width: var(--max-width-wide);
+      margin: 0 auto;
+    }
+
+    /* ---- Command bar ---- */
+    .commandbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-4);
+      padding: var(--space-4) var(--space-5);
+      border-bottom: 1px solid var(--color-border-primary);
+      background-color: var(--color-bg-primary);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      backdrop-filter: blur(8px);
+    }
+    .breadcrumb {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      font-size: var(--font-size-sm);
+      color: var(--color-text-secondary);
+    }
+    .breadcrumb__item--active {
+      color: var(--color-text-primary);
+      font-weight: var(--font-weight-semibold);
+    }
+    .breadcrumb__sep { color: var(--color-text-tertiary); font-size: 11px; }
+    .save-state {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+      font-size: var(--font-size-xs);
+      color: var(--color-status-success);
+    }
+    .save-state__dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background-color: var(--color-status-success);
+    }
+
+    /* ---- Page head ---- */
+    .page-head {
+      padding: var(--space-7) var(--space-5) var(--space-5);
+      border-bottom: 1px solid var(--color-border-primary);
+    }
+    .page-head__eyebrow {
+      font-size: var(--font-size-xs);
+      text-transform: uppercase;
+      letter-spacing: var(--letter-spacing-widest);
+      color: var(--color-text-tertiary);
+      font-weight: var(--font-weight-semibold);
+      margin-bottom: var(--space-3);
+    }
+    .page-head__title {
+      font-size: var(--font-size-xl);
+      font-weight: var(--font-weight-bold);
+      letter-spacing: var(--letter-spacing-tight);
+      margin-bottom: var(--space-3);
+    }
+    .page-head__sub {
+      font-size: var(--font-size-sm);
+      color: var(--color-text-secondary);
+    }
+
+    /* ---- Section anchor nav (desktop side rail) ---- */
+    .settings-layout {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 0;
+      padding: var(--space-7) var(--space-5);
+    }
+    @media (min-width: 1024px) {
+      .settings-layout {
+        grid-template-columns: 180px 1fr;
+        gap: var(--space-7);
+      }
+      .anchor-nav {
+        position: sticky;
+        top: 80px;
+        align-self: start;
+      }
+    }
+    .anchor-nav {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .anchor-nav__heading {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: var(--letter-spacing-widest);
+      color: var(--color-text-tertiary);
+      font-weight: var(--font-weight-semibold);
+      padding: var(--space-2) var(--space-3);
+      margin-bottom: var(--space-2);
+    }
+    .anchor-nav__link {
+      padding: 6px var(--space-3);
+      font-size: var(--font-size-sm);
+      color: var(--color-text-secondary);
+      border-radius: var(--border-radius-sm);
+      text-decoration: none;
+      border-left: 2px solid transparent;
+      padding-left: var(--space-3);
+    }
+    .anchor-nav__link:hover { color: var(--color-text-primary); text-decoration: none; }
+    .anchor-nav__link[aria-current="true"] {
+      color: var(--color-accent-primary);
+      border-left-color: var(--color-accent-primary);
+      background-color: rgba(192, 132, 252, 0.06);
+    }
+
+    /* ---- Settings content ---- */
+    .settings-content {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-9);
+    }
+    .section-title {
+      font-size: var(--font-size-lg);
+      font-weight: var(--font-weight-semibold);
+      letter-spacing: var(--letter-spacing-tight);
+      margin-bottom: var(--space-2);
+    }
+    .section-sub {
+      font-size: var(--font-size-sm);
+      color: var(--color-text-secondary);
+      margin-bottom: var(--space-5);
+    }
+
+    /* ---- Property row (Linear settings pattern: row of label + control) ---- */
+    .prop-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      gap: var(--space-5);
+      padding: var(--space-4) 0;
+      border-bottom: 1px solid var(--color-border-secondary);
+    }
+    .prop-row:last-child { border-bottom: none; }
+    .prop-row__label {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 0;
+    }
+    .prop-row__name {
+      font-size: var(--font-size-base);
+      font-weight: var(--font-weight-medium);
+      color: var(--color-text-primary);
+    }
+    .prop-row__hint {
+      font-size: var(--font-size-sm);
+      color: var(--color-text-tertiary);
+      max-width: 56ch;
+      line-height: var(--line-height-normal);
+    }
+
+    /* ---- Segmented control ---- */
+    .segmented {
+      display: inline-flex;
+      background-color: var(--color-bg-secondary);
+      border: 1px solid var(--color-border-primary);
+      border-radius: var(--border-radius-sm);
+      padding: 2px;
+      gap: 2px;
+    }
+    .segmented__opt {
+      padding: 5px var(--space-4);
+      font-size: var(--font-size-sm);
+      color: var(--color-text-secondary);
+      border-radius: var(--border-radius-xs);
+      font-weight: var(--font-weight-medium);
+      transition: all var(--duration-fast) var(--easing-default);
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+    }
+    .segmented__opt:hover { color: var(--color-text-primary); }
+    .segmented__opt[aria-pressed="true"] {
+      background-color: var(--color-bg-tertiary);
+      color: var(--color-text-primary);
+      box-shadow: var(--shadow-sm);
+    }
+    .segmented__opt svg { width: 14px; height: 14px; }
+
+    /* ---- Select control ---- */
+    .select {
+      position: relative;
+      display: inline-block;
+    }
+    .select select {
+      appearance: none;
+      background-color: var(--color-bg-secondary);
+      border: 1px solid var(--color-border-primary);
+      border-radius: var(--border-radius-sm);
+      color: var(--color-text-primary);
+      font-size: var(--font-size-sm);
+      font-weight: var(--font-weight-medium);
+      padding: 7px var(--space-7) 7px var(--space-3);
+      min-width: 200px;
+      cursor: pointer;
+      transition: border-color var(--duration-fast) var(--easing-default);
+    }
+    .select select:hover { border-color: var(--color-text-tertiary); }
+    .select::after {
+      content: '';
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      width: 8px;
+      height: 8px;
+      border-right: 1.5px solid var(--color-text-secondary);
+      border-bottom: 1.5px solid var(--color-text-secondary);
+      transform: translateY(-75%) rotate(45deg);
+      pointer-events: none;
+    }
+
+    /* ---- Game selector custom (richer than dropdown) ---- */
+    .game-row {
+      display: grid;
+      grid-template-columns: 12px 1fr auto auto;
+      gap: var(--space-3);
+      align-items: center;
+      padding: var(--space-3);
+      border-bottom: 1px solid var(--color-border-secondary);
+    }
+    .game-row:last-child { border-bottom: none; }
+    .game-row__dot {
+      width: 8px;
+      height: 8px;
+      border-radius: var(--border-radius-xs);
+      background: linear-gradient(135deg, var(--c1, #DC2626) 0%, var(--c2, #F87171) 100%);
+    }
+    .game-row__name {
+      font-size: var(--font-size-sm);
+      color: var(--color-text-primary);
+      font-weight: var(--font-weight-medium);
+    }
+    .game-row__cache {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+      font-size: var(--font-size-xs);
+      color: var(--color-text-tertiary);
+    }
+    .game-row__cache--ok { color: var(--color-status-success); }
+    .game-row__cache svg { width: 12px; height: 12px; }
+    .radio-mark {
+      width: 16px;
+      height: 16px;
+      border: 1.5px solid var(--color-border-primary);
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+    }
+    .radio-mark--on { border-color: var(--color-accent-primary); }
+    .radio-mark--on::before {
+      content: '';
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background-color: var(--color-accent-primary);
+    }
+    .game-table {
+      border: 1px solid var(--color-border-primary);
+      border-radius: var(--border-radius-md);
+      overflow: hidden;
+      max-width: 460px;
+    }
+
+    /* ---- About section ---- */
+    .about-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-3) var(--space-7);
+      max-width: 540px;
+    }
+    .about-grid dt {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: var(--letter-spacing-widest);
+      color: var(--color-text-tertiary);
+      font-weight: var(--font-weight-semibold);
+      align-self: end;
+    }
+    .about-grid dd {
+      margin: 0;
+      font-family: var(--font-family-mono);
+      font-size: var(--font-size-sm);
+      color: var(--color-text-primary);
+      font-feature-settings: var(--font-feature-numbers);
+      font-variant-numeric: tabular-nums slashed-zero;
+    }
+    .about-grid dd a { color: var(--color-accent-primary); }
+
+    /* ---- Mobile ---- */
+    @media (max-width: 767px) {
+      main { padding-bottom: 80px; }
+      .commandbar { padding: var(--space-3) var(--space-4); }
+      .page-head { padding: var(--space-5) var(--space-4) var(--space-4); }
+      .settings-layout { padding: var(--space-5) var(--space-4); }
+      .anchor-nav { display: none; }
+      .prop-row {
+        grid-template-columns: 1fr;
+        gap: var(--space-3);
+      }
+      .segmented, .select select { width: 100%; }
+      .select select { min-width: 0; }
+      .about-grid { grid-template-columns: 1fr; gap: var(--space-2) var(--space-4); }
+    }
+  </style>
+</head>
+
+<body>
+  <aside class="shell-sidebar" aria-label="Primary navigation">
+    <div class="shell-sidebar__game" role="button" tabindex="0">
+      <span class="shell-sidebar__game__label">Active Game</span>
+      <span class="shell-sidebar__game__current">FireRed</span>
+    </div>
+    <nav class="shell-sidebar__nav">
+      <a class="shell-sidebar__link" href="route-browser.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M9 6l6 0M9 12l6 0M9 18l6 0M5 6l0 0M5 12l0 0M5 18l0 0" stroke-linecap="round"/></svg>
+        Routes
+      </a>
+      <a class="shell-sidebar__link" href="pokemon-browser.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><circle cx="12" cy="12" r="9"/><line x1="3" y1="12" x2="21" y2="12"/></svg>
+        Pokémon
+      </a>
+      <a class="shell-sidebar__link" href="favorites.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><polygon points="12 2 15 9 22 9 17 14 19 21 12 17 5 21 7 14 2 9 9 9"/></svg>
+        Favorites
+      </a>
+      <a class="shell-sidebar__link" href="settings.html" aria-current="page">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        Settings
+      </a>
+    </nav>
+  </aside>
+
+  <main>
+    <header class="commandbar">
+      <nav class="breadcrumb" aria-label="Breadcrumb">
+        <span>Workspace</span>
+        <span class="breadcrumb__sep">›</span>
+        <span class="breadcrumb__item--active">Settings</span>
+      </nav>
+      <span class="save-state" aria-live="polite">
+        <span class="save-state__dot" aria-hidden="true"></span>
+        Saved locally
+      </span>
+    </header>
+
+    <section class="page-head">
+      <div class="page-head__eyebrow">Workspace · Local SQLite</div>
+      <h1 class="page-head__title">Settings</h1>
+      <p class="page-head__sub">Preferences are stored on this device. Nothing syncs to a cloud.</p>
+    </section>
+
+    <div class="settings-layout">
+      <!-- Anchor nav (desktop only) -->
+      <nav class="anchor-nav" aria-label="Settings sections">
+        <span class="anchor-nav__heading">Sections</span>
+        <a class="anchor-nav__link" href="#appearance" aria-current="true">Appearance</a>
+        <a class="anchor-nav__link" href="#language">Language</a>
+        <a class="anchor-nav__link" href="#game">Default Game</a>
+        <a class="anchor-nav__link" href="#about">About</a>
+      </nav>
+
+      <div class="settings-content">
+        <!-- Appearance -->
+        <section id="appearance">
+          <h2 class="section-title">Appearance</h2>
+          <p class="section-sub">Dark mode is the canonical look. Light mode is offered for users who prefer it.</p>
+
+          <div class="prop-row">
+            <div class="prop-row__label">
+              <span class="prop-row__name">Theme</span>
+              <span class="prop-row__hint">Auto follows your operating system preference.</span>
+            </div>
+            <div class="segmented" role="radiogroup" aria-label="Theme">
+              <button class="segmented__opt" role="radio" aria-pressed="false">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+                Light
+              </button>
+              <button class="segmented__opt" role="radio" aria-pressed="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                Dark
+              </button>
+              <button class="segmented__opt" role="radio" aria-pressed="false">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><rect x="2" y="4" width="20" height="14" rx="2"/><path d="M8 22h8M12 18v4"/></svg>
+                Auto
+              </button>
+            </div>
+          </div>
+
+          <div class="prop-row">
+            <div class="prop-row__label">
+              <span class="prop-row__name">Reduced motion</span>
+              <span class="prop-row__hint">Skeleton placeholders won't shimmer; transitions become instant cuts.</span>
+            </div>
+            <div class="segmented" role="radiogroup" aria-label="Motion">
+              <button class="segmented__opt" role="radio" aria-pressed="true">System</button>
+              <button class="segmented__opt" role="radio" aria-pressed="false">Off</button>
+              <button class="segmented__opt" role="radio" aria-pressed="false">On</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- Language -->
+        <section id="language">
+          <h2 class="section-title">Language</h2>
+          <p class="section-sub">UI labels translate. Pokémon names stay English by convention.</p>
+
+          <div class="prop-row">
+            <div class="prop-row__label">
+              <span class="prop-row__name">UI language</span>
+              <span class="prop-row__hint">Three official locales. Community packs install separately.</span>
+            </div>
+            <div class="select">
+              <select aria-label="UI language">
+                <option>English</option>
+                <option>Português (BR)</option>
+                <option>Español</option>
+                <option disabled>—</option>
+                <option disabled>Add a language pack…</option>
+              </select>
+            </div>
+          </div>
+        </section>
+
+        <!-- Default Game -->
+        <section id="game">
+          <h2 class="section-title">Default Game</h2>
+          <p class="section-sub">The Game opened on app launch. Change at any time from the sidebar.</p>
+
+          <div class="game-table" role="radiogroup" aria-label="Default Game">
+            <div class="game-row">
+              <span class="game-row__dot" style="--c1: #DC2626; --c2: #F87171;"></span>
+              <span class="game-row__name">FireRed</span>
+              <span class="game-row__cache game-row__cache--ok">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                Cached
+              </span>
+              <span class="radio-mark radio-mark--on" aria-hidden="true"></span>
+            </div>
+            <div class="game-row">
+              <span class="game-row__dot" style="--c1: #16A34A; --c2: #4ADE80;"></span>
+              <span class="game-row__name">LeafGreen</span>
+              <span class="game-row__cache game-row__cache--ok">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                Cached
+              </span>
+              <span class="radio-mark" aria-hidden="true"></span>
+            </div>
+            <div class="game-row">
+              <span class="game-row__dot" style="--c1: #B45309; --c2: #FBBF24;"></span>
+              <span class="game-row__name">HeartGold</span>
+              <span class="game-row__cache">Not downloaded</span>
+              <span class="radio-mark" aria-hidden="true"></span>
+            </div>
+            <div class="game-row">
+              <span class="game-row__dot" style="--c1: #6B7280; --c2: #D1D5DB;"></span>
+              <span class="game-row__name">SoulSilver</span>
+              <span class="game-row__cache">Not downloaded</span>
+              <span class="radio-mark" aria-hidden="true"></span>
+            </div>
+          </div>
+        </section>
+
+        <!-- About -->
+        <section id="about">
+          <h2 class="section-title">About</h2>
+          <p class="section-sub">Open source. Built with C++ + Qt 6. Sprites courtesy of PokéAPI.</p>
+
+          <dl class="about-grid">
+            <dt>Version</dt>
+            <dd>0.0.1-alpha</dd>
+            <dt>Build</dt>
+            <dd>2026.05.09 · main</dd>
+            <dt>Engine</dt>
+            <dd>Qt 6.8 · QML</dd>
+            <dt>License</dt>
+            <dd>MIT</dd>
+            <dt>Repo</dt>
+            <dd><a href="#">github · pokedex-cpp</a></dd>
+            <dt>Issues</dt>
+            <dd><a href="#">Open a ticket</a></dd>
+          </dl>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <nav class="shell-bottom-nav" aria-label="Primary navigation (mobile)">
+    <a class="shell-bottom-nav__item" href="route-browser.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M9 6l6 0M9 12l6 0M9 18l6 0M5 6l0 0M5 12l0 0M5 18l0 0" stroke-linecap="round"/></svg>
+      Routes
+    </a>
+    <a class="shell-bottom-nav__item" href="pokemon-browser.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><circle cx="12" cy="12" r="9"/><line x1="3" y1="12" x2="21" y2="12"/></svg>
+      Pokémon
+    </a>
+    <a class="shell-bottom-nav__item" href="favorites.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><polygon points="12 2 15 9 22 9 17 14 19 21 12 17 5 21 7 14 2 9 9 9"/></svg>
+      Favorites
+    </a>
+    <a class="shell-bottom-nav__item" href="settings.html" aria-current="page">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      Settings
+    </a>
+  </nav>
+</body>
+</html>

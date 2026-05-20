@@ -1,0 +1,704 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Pikachu — Pokedex (V3 Linear)</title>
+
+  <link rel="stylesheet" href="../styles/tokens-v3-linear.css" />
+  <link rel="stylesheet" href="../styles/reset.css" />
+  <link rel="stylesheet" href="../styles/shell.css" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+  <style>
+    main {
+      max-width: var(--max-width-page);
+      margin: 0 auto;
+    }
+
+    /* ---- Command bar ---- */
+    .commandbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-4);
+      padding: var(--space-4) var(--space-5);
+      border-bottom: 1px solid var(--color-border-primary);
+      background-color: var(--color-bg-primary);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      backdrop-filter: blur(8px);
+    }
+    .breadcrumb {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      font-size: var(--font-size-sm);
+      color: var(--color-text-secondary);
+    }
+    .breadcrumb__back {
+      width: 28px;
+      height: 28px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid var(--color-border-primary);
+      border-radius: var(--border-radius-sm);
+      color: var(--color-text-secondary);
+    }
+    .breadcrumb__back svg { width: 14px; height: 14px; }
+    .breadcrumb__back:hover { color: var(--color-text-primary); border-color: var(--color-text-tertiary); }
+    .breadcrumb__item--active {
+      color: var(--color-text-primary);
+      font-weight: var(--font-weight-semibold);
+    }
+    .breadcrumb__sep { color: var(--color-text-tertiary); font-size: 11px; }
+    .commandbar__actions { display: flex; gap: var(--space-2); }
+    .icon-btn {
+      width: 32px;
+      height: 32px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid var(--color-border-primary);
+      border-radius: var(--border-radius-sm);
+      color: var(--color-text-secondary);
+    }
+    .icon-btn svg { width: 16px; height: 16px; }
+    .icon-btn:hover { color: var(--color-text-primary); border-color: var(--color-text-tertiary); }
+    .icon-btn[aria-pressed="true"] {
+      color: var(--color-accent-primary);
+      border-color: var(--color-accent-primary);
+    }
+    .icon-btn[aria-pressed="true"] svg { fill: currentColor; }
+
+    /* ---- Hero (two-column layout on desktop) ---- */
+    .hero {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      gap: var(--space-7);
+      padding: var(--space-7) var(--space-5);
+      border-bottom: 1px solid var(--color-border-primary);
+      align-items: start;
+    }
+    .hero__sprite-frame {
+      width: 280px;
+      height: 280px;
+      background: radial-gradient(ellipse at center, var(--color-bg-secondary) 0%, var(--color-bg-primary) 80%);
+      border: 1px solid var(--color-border-primary);
+      border-radius: var(--border-radius-md);
+      box-shadow: var(--shadow-inset-card);
+      display: grid;
+      place-items: center;
+      position: relative;
+    }
+    .hero__sprite-frame img {
+      width: 75%;
+      height: 75%;
+      object-fit: contain;
+      image-rendering: pixelated;
+    }
+    .hero__sprite-id {
+      position: absolute;
+      top: var(--space-3);
+      left: var(--space-3);
+      font-family: var(--font-family-mono);
+      font-size: var(--font-size-xs);
+      color: var(--color-text-tertiary);
+      font-feature-settings: var(--font-feature-numbers);
+      font-variant-numeric: tabular-nums slashed-zero;
+      letter-spacing: var(--letter-spacing-wide);
+    }
+    .hero__sprite-art {
+      position: absolute;
+      bottom: var(--space-3);
+      right: var(--space-3);
+      font-size: 10px;
+      color: var(--color-text-tertiary);
+      text-transform: uppercase;
+      letter-spacing: var(--letter-spacing-widest);
+    }
+
+    .hero__info {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-5);
+    }
+    .hero__eyebrow {
+      font-size: var(--font-size-xs);
+      text-transform: uppercase;
+      letter-spacing: var(--letter-spacing-widest);
+      color: var(--color-text-tertiary);
+      font-weight: var(--font-weight-semibold);
+    }
+    .hero__name {
+      font-size: var(--font-size-2xl);
+      font-weight: var(--font-weight-black);
+      letter-spacing: var(--letter-spacing-tight);
+      line-height: var(--line-height-tight);
+      margin-top: -4px;
+    }
+    .hero__types {
+      display: flex;
+      gap: var(--space-2);
+    }
+    .hero__factsheet {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: var(--space-5) var(--space-7);
+      padding-top: var(--space-5);
+      border-top: 1px solid var(--color-border-primary);
+    }
+    .fact {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      min-width: 0;
+    }
+    .fact__label {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: var(--letter-spacing-widest);
+      color: var(--color-text-tertiary);
+      font-weight: var(--font-weight-semibold);
+    }
+    .fact__value {
+      font-family: var(--font-family-mono);
+      font-size: var(--font-size-md);
+      font-weight: var(--font-weight-semibold);
+      color: var(--color-text-primary);
+      font-feature-settings: var(--font-feature-numbers);
+      font-variant-numeric: tabular-nums slashed-zero;
+      letter-spacing: -0.01em;
+    }
+    .fact__value--text {
+      font-family: var(--font-family-body);
+      font-size: var(--font-size-base);
+      font-weight: var(--font-weight-medium);
+      letter-spacing: 0;
+    }
+
+    /* ---- Outline-style type badges ---- */
+    .type-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 8px;
+      background-color: transparent;
+      border: var(--type-badge-border-width) solid currentColor;
+      border-radius: var(--border-radius-sm);
+      font-size: var(--font-size-xs);
+      font-weight: var(--font-weight-bold);
+      letter-spacing: var(--letter-spacing-widest);
+      text-transform: uppercase;
+    }
+    .type-badge--lg { padding: 4px 10px; font-size: var(--font-size-sm); }
+    .type-badge--electric { color: var(--type-badge-color-electric); }
+    .type-badge--fire     { color: var(--type-badge-color-fire); }
+    .type-badge--water    { color: var(--type-badge-color-water); }
+    .type-badge--grass    { color: var(--type-badge-color-grass); }
+    .type-badge--ice      { color: var(--type-badge-color-ice); }
+    .type-badge--ground   { color: var(--type-badge-color-ground); }
+    .type-badge--rock     { color: var(--type-badge-color-rock); }
+    .type-badge--steel    { color: var(--type-badge-color-steel); }
+    .type-badge--flying   { color: var(--type-badge-color-flying); }
+    .type-badge--fighting { color: var(--type-badge-color-fighting); }
+
+    /* ---- Tab bar ---- */
+    .tabbar {
+      display: flex;
+      gap: 0;
+      padding: 0 var(--space-5);
+      border-bottom: 1px solid var(--color-border-primary);
+      background-color: var(--color-bg-primary);
+      position: sticky;
+      top: 65px;
+      z-index: 9;
+      backdrop-filter: blur(8px);
+    }
+    .tab {
+      padding: var(--space-4) var(--space-5);
+      font-size: var(--font-size-sm);
+      font-weight: var(--font-weight-medium);
+      color: var(--color-text-secondary);
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+      transition: all var(--duration-fast) var(--easing-default);
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+    }
+    .tab:hover { color: var(--color-text-primary); }
+    .tab[aria-selected="true"] {
+      color: var(--color-text-primary);
+      border-bottom-color: var(--color-accent-primary);
+      font-weight: var(--font-weight-semibold);
+    }
+    .tab__count {
+      padding: 1px 5px;
+      background-color: var(--color-bg-tertiary);
+      border-radius: var(--border-radius-xs);
+      font-family: var(--font-family-mono);
+      font-size: 10px;
+      color: var(--color-text-tertiary);
+      font-feature-settings: var(--font-feature-numbers);
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* ---- Tab panel layout ---- */
+    .panel {
+      padding: var(--space-7) var(--space-5);
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-7);
+    }
+    .section-title {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: var(--letter-spacing-widest);
+      color: var(--color-text-tertiary);
+      font-weight: var(--font-weight-semibold);
+      margin-bottom: var(--space-4);
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+    }
+    .section-title__line {
+      flex: 1;
+      height: 1px;
+      background-color: var(--color-border-primary);
+    }
+
+    /* ---- Stats ---- */
+    .stat-list {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-4);
+    }
+    .stat-row {
+      display: grid;
+      grid-template-columns: 80px 1fr 36px;
+      align-items: center;
+      gap: var(--space-3);
+    }
+    .stat-row__label {
+      font-size: var(--font-size-sm);
+      color: var(--color-text-secondary);
+      font-weight: var(--font-weight-medium);
+    }
+    .stat-row__bar {
+      height: 4px;
+      background-color: var(--color-bg-tertiary);
+      border-radius: var(--border-radius-xs);
+      overflow: hidden;
+      position: relative;
+    }
+    .stat-row__bar-fill {
+      position: absolute;
+      inset: 0;
+      background-color: var(--color-text-primary);
+      transform-origin: left;
+    }
+    .stat-row__value {
+      font-family: var(--font-family-mono);
+      font-size: var(--font-size-sm);
+      font-weight: var(--font-weight-semibold);
+      color: var(--color-text-primary);
+      text-align: right;
+      font-feature-settings: var(--font-feature-numbers);
+      font-variant-numeric: tabular-nums;
+    }
+    .stat-total {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      padding-top: var(--space-3);
+      margin-top: var(--space-3);
+      border-top: 1px solid var(--color-border-primary);
+    }
+    .stat-total__label {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: var(--letter-spacing-widest);
+      color: var(--color-text-tertiary);
+      font-weight: var(--font-weight-semibold);
+    }
+    .stat-total__value {
+      font-family: var(--font-family-mono);
+      font-size: var(--font-size-lg);
+      font-weight: var(--font-weight-bold);
+      color: var(--color-text-primary);
+      font-feature-settings: var(--font-feature-numbers);
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* ---- Abilities ---- */
+    .ability-list {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3);
+    }
+    .ability {
+      padding: var(--space-3) var(--space-4);
+      border: 1px solid var(--color-border-primary);
+      border-radius: var(--border-radius-sm);
+      background-color: var(--color-bg-secondary);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-3);
+    }
+    .ability__name {
+      font-size: var(--font-size-sm);
+      font-weight: var(--font-weight-semibold);
+      color: var(--color-text-primary);
+    }
+    .ability__hidden-tag {
+      padding: 1px 6px;
+      background-color: rgba(192, 132, 252, 0.12);
+      color: var(--color-accent-primary);
+      border-radius: var(--border-radius-xs);
+      font-size: 10px;
+      font-weight: var(--font-weight-bold);
+      text-transform: uppercase;
+      letter-spacing: var(--letter-spacing-widest);
+    }
+    .ability__desc {
+      font-size: var(--font-size-xs);
+      color: var(--color-text-tertiary);
+      max-width: 22ch;
+      text-align: right;
+      line-height: var(--line-height-normal);
+    }
+
+    /* ---- Type effectiveness matrix (full width) ---- */
+    .type-effectiveness {
+      grid-column: 1 / -1;
+    }
+    .te-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 0;
+      border: 1px solid var(--color-border-primary);
+      border-radius: var(--border-radius-sm);
+      overflow: hidden;
+    }
+    .te-col {
+      display: flex;
+      flex-direction: column;
+      border-right: 1px solid var(--color-border-primary);
+    }
+    .te-col:last-child { border-right: none; }
+    .te-col__head {
+      padding: var(--space-3) var(--space-3) var(--space-2);
+      background-color: var(--color-bg-secondary);
+      border-bottom: 1px solid var(--color-border-primary);
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .te-col__head-label {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: var(--letter-spacing-widest);
+      color: var(--color-text-tertiary);
+      font-weight: var(--font-weight-semibold);
+    }
+    .te-col__head-multiplier {
+      font-family: var(--font-family-mono);
+      font-size: var(--font-size-base);
+      font-weight: var(--font-weight-bold);
+      color: var(--color-text-primary);
+      font-feature-settings: var(--font-feature-numbers);
+      font-variant-numeric: tabular-nums;
+    }
+    .te-col__head-multiplier--err  { color: var(--color-status-error); }
+    .te-col__head-multiplier--warn { color: var(--color-status-warning); }
+    .te-col__head-multiplier--ok   { color: var(--color-status-success); }
+    .te-col__list {
+      padding: var(--space-3);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+      min-height: 80px;
+    }
+    .te-col__list:empty::before {
+      content: '—';
+      color: var(--color-text-tertiary);
+      font-family: var(--font-family-mono);
+      font-size: var(--font-size-sm);
+    }
+
+    /* ---- Mobile ---- */
+    @media (max-width: 767px) {
+      main { padding-bottom: 80px; }
+      .commandbar { padding: var(--space-3) var(--space-4); }
+      .hero {
+        grid-template-columns: 1fr;
+        padding: var(--space-5) var(--space-4);
+        gap: var(--space-5);
+      }
+      .hero__sprite-frame {
+        width: 100%;
+        height: 220px;
+        max-width: 280px;
+      }
+      .hero__name { font-size: var(--font-size-xl); }
+      .hero__factsheet { grid-template-columns: repeat(2, 1fr); }
+      .tabbar { padding: 0 var(--space-4); top: 57px; overflow-x: auto; scrollbar-width: none; }
+      .tabbar::-webkit-scrollbar { display: none; }
+      .tab { padding: var(--space-3) var(--space-4); white-space: nowrap; }
+      .panel { grid-template-columns: 1fr; padding: var(--space-5) var(--space-4); gap: var(--space-6); }
+      .te-grid { grid-template-columns: 1fr 1fr; }
+      .te-col:nth-child(2n) { border-right: none; }
+      .te-col:nth-child(-n+4) { border-bottom: 1px solid var(--color-border-primary); }
+    }
+  </style>
+</head>
+
+<body>
+  <aside class="shell-sidebar" aria-label="Primary navigation">
+    <div class="shell-sidebar__game" role="button" tabindex="0">
+      <span class="shell-sidebar__game__label">Active Game</span>
+      <span class="shell-sidebar__game__current">FireRed</span>
+    </div>
+    <nav class="shell-sidebar__nav">
+      <a class="shell-sidebar__link" href="route-browser.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M9 6l6 0M9 12l6 0M9 18l6 0M5 6l0 0M5 12l0 0M5 18l0 0" stroke-linecap="round"/></svg>
+        Routes
+      </a>
+      <a class="shell-sidebar__link" href="pokemon-browser.html" aria-current="page">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><circle cx="12" cy="12" r="9"/><line x1="3" y1="12" x2="21" y2="12"/></svg>
+        Pokémon
+      </a>
+      <a class="shell-sidebar__link" href="favorites.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><polygon points="12 2 15 9 22 9 17 14 19 21 12 17 5 21 7 14 2 9 9 9"/></svg>
+        Favorites
+      </a>
+      <a class="shell-sidebar__link" href="settings.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        Settings
+      </a>
+    </nav>
+  </aside>
+
+  <main>
+    <header class="commandbar">
+      <nav class="breadcrumb" aria-label="Breadcrumb">
+        <a class="breadcrumb__back" href="pokemon-browser.html" aria-label="Back">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+        </a>
+        <a href="pokemon-browser.html" style="color: var(--color-text-secondary);">Pokémon</a>
+        <span class="breadcrumb__sep">›</span>
+        <span class="breadcrumb__item--active">Pikachu</span>
+      </nav>
+      <div class="commandbar__actions">
+        <button class="icon-btn" aria-label="Toggle favorite" aria-pressed="true">
+          <svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.75"><polygon points="12 2 15 9 22 9 17 14 19 21 12 17 5 21 7 14 2 9 9 9"/></svg>
+        </button>
+        <button class="icon-btn" aria-label="Search">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Hero -->
+    <section class="hero">
+      <div class="hero__sprite-frame">
+        <span class="hero__sprite-id">#025</span>
+        <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/25.png" alt="Pikachu official artwork" loading="lazy" />
+        <span class="hero__sprite-art">Official artwork</span>
+      </div>
+      <div class="hero__info">
+        <div>
+          <div class="hero__eyebrow">Mouse Pokémon · Generation 1</div>
+          <h1 class="hero__name">Pikachu</h1>
+        </div>
+        <div class="hero__types">
+          <span class="type-badge type-badge--lg type-badge--electric">Electric</span>
+        </div>
+        <div class="hero__factsheet">
+          <div class="fact">
+            <span class="fact__label">Height</span>
+            <span class="fact__value">0.4<span style="font-family: var(--font-family-body); font-weight: 400; color: var(--color-text-tertiary); font-size: var(--font-size-xs); margin-left: 2px;">m</span></span>
+          </div>
+          <div class="fact">
+            <span class="fact__label">Weight</span>
+            <span class="fact__value">6.0<span style="font-family: var(--font-family-body); font-weight: 400; color: var(--color-text-tertiary); font-size: var(--font-size-xs); margin-left: 2px;">kg</span></span>
+          </div>
+          <div class="fact">
+            <span class="fact__label">Catch rate</span>
+            <span class="fact__value">190</span>
+          </div>
+          <div class="fact">
+            <span class="fact__label">Form</span>
+            <span class="fact__value fact__value--text">Default</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tabs -->
+    <nav class="tabbar" role="tablist">
+      <button class="tab" role="tab" aria-selected="true">Info</button>
+      <button class="tab" role="tab" aria-selected="false">Moves <span class="tab__count">82</span></button>
+      <button class="tab" role="tab" aria-selected="false">Locations <span class="tab__count">12</span></button>
+    </nav>
+
+    <!-- Info panel -->
+    <section class="panel" role="tabpanel">
+      <!-- Base stats -->
+      <div>
+        <h2 class="section-title">
+          <span>Base stats</span>
+          <span class="section-title__line"></span>
+        </h2>
+        <div class="stat-list">
+          <div class="stat-row">
+            <span class="stat-row__label">HP</span>
+            <span class="stat-row__bar"><span class="stat-row__bar-fill" style="transform: scaleX(0.139); background-color: var(--color-status-success);"></span></span>
+            <span class="stat-row__value">35</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-row__label">Attack</span>
+            <span class="stat-row__bar"><span class="stat-row__bar-fill" style="transform: scaleX(0.219);"></span></span>
+            <span class="stat-row__value">55</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-row__label">Defense</span>
+            <span class="stat-row__bar"><span class="stat-row__bar-fill" style="transform: scaleX(0.159);"></span></span>
+            <span class="stat-row__value">40</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-row__label">Sp. Atk</span>
+            <span class="stat-row__bar"><span class="stat-row__bar-fill" style="transform: scaleX(0.199);"></span></span>
+            <span class="stat-row__value">50</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-row__label">Sp. Def</span>
+            <span class="stat-row__bar"><span class="stat-row__bar-fill" style="transform: scaleX(0.199);"></span></span>
+            <span class="stat-row__value">50</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-row__label">Speed</span>
+            <span class="stat-row__bar"><span class="stat-row__bar-fill" style="transform: scaleX(0.358); background-color: var(--color-accent-primary);"></span></span>
+            <span class="stat-row__value">90</span>
+          </div>
+          <div class="stat-total">
+            <span class="stat-total__label">Total</span>
+            <span class="stat-total__value">320</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Abilities -->
+      <div>
+        <h2 class="section-title">
+          <span>Abilities</span>
+          <span class="section-title__line"></span>
+        </h2>
+        <div class="ability-list">
+          <div class="ability">
+            <span class="ability__name">Static</span>
+            <span class="ability__desc">30% chance to paralyze on contact</span>
+          </div>
+          <div class="ability">
+            <span class="ability__name">
+              Lightning Rod
+              <span class="ability__hidden-tag">Hidden</span>
+            </span>
+            <span class="ability__desc">Draws Electric moves to itself</span>
+          </div>
+        </div>
+
+        <h2 class="section-title" style="margin-top: var(--space-7);">
+          <span>Evolution</span>
+          <span class="section-title__line"></span>
+        </h2>
+        <div style="display: flex; align-items: center; gap: var(--space-3); font-size: var(--font-size-sm); color: var(--color-text-secondary);">
+          <span style="color: var(--color-text-tertiary); font-family: var(--font-family-mono); font-size: var(--font-size-xs);">#172</span>
+          <span>Pichu</span>
+          <span style="color: var(--color-text-tertiary);">→</span>
+          <span style="color: var(--color-accent-primary); font-weight: var(--font-weight-semibold);">#025 Pikachu</span>
+          <span style="color: var(--color-text-tertiary);">→</span>
+          <span style="color: var(--color-text-tertiary); font-family: var(--font-family-mono); font-size: var(--font-size-xs);">#026</span>
+          <span>Raichu</span>
+        </div>
+      </div>
+
+      <!-- Type effectiveness (full width) -->
+      <div class="type-effectiveness">
+        <h2 class="section-title">
+          <span>Type effectiveness — incoming</span>
+          <span class="section-title__line"></span>
+        </h2>
+        <div class="te-grid">
+          <div class="te-col">
+            <div class="te-col__head">
+              <span class="te-col__head-label">Weak</span>
+              <span class="te-col__head-multiplier te-col__head-multiplier--err">×4</span>
+            </div>
+            <div class="te-col__list"></div>
+          </div>
+          <div class="te-col">
+            <div class="te-col__head">
+              <span class="te-col__head-label">Weak</span>
+              <span class="te-col__head-multiplier te-col__head-multiplier--warn">×2</span>
+            </div>
+            <div class="te-col__list">
+              <span class="type-badge type-badge--ground">Ground</span>
+            </div>
+          </div>
+          <div class="te-col">
+            <div class="te-col__head">
+              <span class="te-col__head-label">Resist</span>
+              <span class="te-col__head-multiplier te-col__head-multiplier--ok">×½</span>
+            </div>
+            <div class="te-col__list">
+              <span class="type-badge type-badge--electric">Electric</span>
+              <span class="type-badge type-badge--flying">Flying</span>
+              <span class="type-badge type-badge--steel">Steel</span>
+            </div>
+          </div>
+          <div class="te-col">
+            <div class="te-col__head">
+              <span class="te-col__head-label">Resist</span>
+              <span class="te-col__head-multiplier te-col__head-multiplier--ok">×¼</span>
+            </div>
+            <div class="te-col__list"></div>
+          </div>
+          <div class="te-col">
+            <div class="te-col__head">
+              <span class="te-col__head-label">Immune</span>
+              <span class="te-col__head-multiplier">×0</span>
+            </div>
+            <div class="te-col__list"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <nav class="shell-bottom-nav" aria-label="Primary navigation (mobile)">
+    <a class="shell-bottom-nav__item" href="route-browser.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M9 6l6 0M9 12l6 0M9 18l6 0M5 6l0 0M5 12l0 0M5 18l0 0" stroke-linecap="round"/></svg>
+      Routes
+    </a>
+    <a class="shell-bottom-nav__item" href="pokemon-browser.html" aria-current="page">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><circle cx="12" cy="12" r="9"/><line x1="3" y1="12" x2="21" y2="12"/></svg>
+      Pokémon
+    </a>
+    <a class="shell-bottom-nav__item" href="favorites.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><polygon points="12 2 15 9 22 9 17 14 19 21 12 17 5 21 7 14 2 9 9 9"/></svg>
+      Favorites
+    </a>
+    <a class="shell-bottom-nav__item" href="settings.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      Settings
+    </a>
+  </nav>
+</body>
+</html>

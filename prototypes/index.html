@@ -1,0 +1,421 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Prototype Index — Pokedex C++/QML</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0d0d0f;
+      --bg-card:   #16161a;
+      --bg-hover:  #1e1e24;
+      --border:    #2a2a32;
+      --text:      #e8e8f0;
+      --muted:     #7a7a90;
+      --accent:    #7c6af5;
+      --accent-2:  #4ea0d4;
+      --accent-3:  #52b788;
+      --v1-color:  #e07b54;
+      --v2-color:  #4ea0d4;
+      --v3-color:  #9b7fe8;
+      --radius:    8px;
+      --font-mono: 'JetBrains Mono', monospace;
+      --font-sans: 'Inter', system-ui, sans-serif;
+    }
+
+    [data-theme="light"] {
+      --bg:       #f5f5f7;
+      --bg-card:  #ffffff;
+      --bg-hover: #f0f0f5;
+      --border:   #dcdce8;
+      --text:     #111118;
+      --muted:    #6b6b80;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 2rem 1rem 4rem;
+      line-height: 1.5;
+    }
+
+    .wrapper {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    /* ---- Header ---- */
+    .header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 2.5rem;
+      flex-wrap: wrap;
+    }
+
+    .header__title {
+      font-size: 1.5rem;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+    }
+
+    .header__sub {
+      margin-top: 0.25rem;
+      font-size: 0.875rem;
+      color: var(--muted);
+      font-family: var(--font-mono);
+    }
+
+    .theme-btn {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: var(--radius);
+      padding: 0.375rem 0.75rem;
+      font-size: 0.8125rem;
+      font-family: var(--font-mono);
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .theme-btn:hover { background: var(--bg-hover); }
+
+    /* ---- Section labels ---- */
+    .section-label {
+      font-size: 0.6875rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 0.75rem;
+      font-family: var(--font-mono);
+    }
+
+    /* ---- Shared components block ---- */
+    .shared-block {
+      margin-bottom: 2.5rem;
+    }
+
+    .shared-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.375rem 0.875rem;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+      font-size: 0.8125rem;
+      font-family: var(--font-mono);
+      color: var(--text);
+      text-decoration: none;
+      transition: background 120ms, border-color 120ms;
+    }
+    .chip:hover {
+      background: var(--bg-hover);
+      border-color: var(--muted);
+    }
+    .chip__dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--muted);
+      flex-shrink: 0;
+    }
+
+    /* ---- Variant blocks ---- */
+    .variants {
+      display: grid;
+      gap: 1.5rem;
+    }
+
+    .variant {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      background: var(--bg-card);
+    }
+
+    .variant__header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 1rem 1.25rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .variant__indicator {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .v1 .variant__indicator { background: var(--v1-color); }
+    .v2 .variant__indicator { background: var(--v2-color); }
+    .v3 .variant__indicator { background: var(--v3-color); }
+
+    .variant__name {
+      font-size: 0.9375rem;
+      font-weight: 600;
+    }
+
+    .variant__philosophy {
+      font-size: 0.8125rem;
+      color: var(--muted);
+      font-family: var(--font-mono);
+      margin-left: auto;
+    }
+
+    .variant__screens {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    }
+
+    .screen-link {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+      padding: 0.875rem 1.25rem;
+      border-bottom: 1px solid var(--border);
+      border-right: 1px solid var(--border);
+      text-decoration: none;
+      color: var(--text);
+      transition: background 120ms;
+    }
+    .screen-link:last-child,
+    .screen-link:nth-last-child(-n+3):not(:nth-child(3n+1)) { }
+    .screen-link:hover { background: var(--bg-hover); }
+
+    .screen-link__label {
+      font-size: 0.875rem;
+      font-weight: 500;
+    }
+
+    .screen-link__key {
+      font-size: 0.75rem;
+      font-family: var(--font-mono);
+      color: var(--muted);
+    }
+
+    .screen-link__arrow {
+      margin-top: auto;
+      padding-top: 0.5rem;
+      font-size: 0.75rem;
+      color: var(--muted);
+      transition: color 120ms;
+    }
+    .screen-link:hover .screen-link__arrow { color: var(--text); }
+
+    /* ---- Footer note ---- */
+    .footer-note {
+      margin-top: 3rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--border);
+      font-size: 0.8125rem;
+      color: var(--muted);
+      font-family: var(--font-mono);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.5rem;
+      justify-content: space-between;
+      align-items: flex-end;
+    }
+
+    .footer-note__meta { line-height: 1.7; }
+    .footer-note__meta strong { color: var(--text); }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+
+    <header class="header">
+      <div>
+        <h1 class="header__title">Pokédex — prototype index</h1>
+        <p class="header__sub">Sprint 0 · Phase 4 · 3 variants × 5 screens + shared</p>
+      </div>
+      <button class="theme-btn" onclick="toggleTheme()">toggle theme</button>
+    </header>
+
+    <!-- Shared components -->
+    <div class="shared-block">
+      <p class="section-label">Shared — variant-agnostic components</p>
+      <div class="shared-grid">
+        <a class="chip" href="_shared/appshell.html">
+          <span class="chip__dot"></span>
+          AppShell (F3)
+        </a>
+        <a class="chip" href="_shared/typebadge.html">
+          <span class="chip__dot"></span>
+          TypeBadge (F4)
+        </a>
+        <a class="chip" href="_shared/states.html">
+          <span class="chip__dot"></span>
+          Loading &amp; Empty states (F5)
+        </a>
+      </div>
+    </div>
+
+    <!-- Variant grid -->
+    <p class="section-label">Design variants</p>
+    <div class="variants">
+
+      <!-- V1 — FlutterDex -->
+      <div class="variant v1">
+        <div class="variant__header">
+          <span class="variant__indicator" aria-hidden="true"></span>
+          <span class="variant__name">V1 — FlutterDex</span>
+          <span class="variant__philosophy">Scandinavian · Confident-warm · risk-first</span>
+        </div>
+        <div class="variant__screens">
+          <a class="screen-link" href="v1-flutterdex/route-detail.html">
+            <span class="screen-link__label">Route detail</span>
+            <span class="screen-link__key">V1-1 · PRD 5–10</span>
+            <span class="screen-link__arrow">→</span>
+          </a>
+          <a class="screen-link" href="v1-flutterdex/pokemon-detail.html">
+            <span class="screen-link__label">Pokémon detail</span>
+            <span class="screen-link__key">V1-2 · PRD 14–17</span>
+            <span class="screen-link__arrow">→</span>
+          </a>
+          <a class="screen-link" href="v1-flutterdex/pokemon-browser.html">
+            <span class="screen-link__label">Pokémon browser</span>
+            <span class="screen-link__key">V1-3 · PRD 11–13</span>
+            <span class="screen-link__arrow">→</span>
+          </a>
+          <a class="screen-link" href="v1-flutterdex/route-browser.html">
+            <span class="screen-link__label">Route browser</span>
+            <span class="screen-link__key">V1-4 · PRD 1–4</span>
+            <span class="screen-link__arrow">→</span>
+          </a>
+          <a class="screen-link" href="v1-flutterdex/settings.html">
+            <span class="screen-link__label">Settings</span>
+            <span class="screen-link__key">V1-5 · PRD 23–29</span>
+            <span class="screen-link__arrow">→</span>
+          </a>
+          <a class="screen-link" href="v1-flutterdex/favorites.html">
+            <span class="screen-link__label">Favorites</span>
+            <span class="screen-link__key">extra · PRD 19–20</span>
+            <span class="screen-link__arrow">→</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- V2 — DataDex -->
+      <div class="variant v2">
+        <div class="variant__header">
+          <span class="variant__indicator" aria-hidden="true"></span>
+          <span class="variant__name">V2 — DataDex</span>
+          <span class="variant__philosophy">Swiss · Confident-pragmatic · sprite-color cards</span>
+        </div>
+        <div class="variant__screens">
+          <a class="screen-link" href="v2-datadex/route-detail.html">
+            <span class="screen-link__label">Route detail</span>
+            <span class="screen-link__key">V2-1 · PRD 5–10</span>
+            <span class="screen-link__arrow">→</span>
+          </a>
+          <a class="screen-link" href="v2-datadex/pokemon-detail.html">
+            <span class="screen-link__label">Pokémon detail</span>
+            <span class="screen-link__key">V2-2 · PRD 14–17</span>
+            <span class="screen-link__arrow">→</span>
+          </a>
+          <a class="screen-link" href="v2-datadex/pokemon-browser.html">
+            <span class="screen-link__label">Pokémon browser</span>
+            <span class="screen-link__key">V2-3 · PRD 11–13</span>
+            <span class="screen-link__arrow">→</span>
+          </a>
+          <a class="screen-link" href="v2-datadex/route-browser.html">
+            <span class="screen-link__label">Route browser</span>
+            <span class="screen-link__key">V2-4 · PRD 1–4</span>
+            <span class="screen-link__arrow">→</span>
+          </a>
+          <a class="screen-link" href="v2-datadex/settings.html">
+            <span class="screen-link__label">Settings</span>
+            <span class="screen-link__key">V2-5 · PRD 23–29</span>
+            <span class="screen-link__arrow">→</span>
+          </a>
+          <a class="screen-link" href="v2-datadex/favorites.html">
+            <span class="screen-link__label">Favorites</span>
+            <span class="screen-link__key">extra · PRD 19–20</span>
+            <span class="screen-link__arrow">→</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- V3 — Linear -->
+      <div class="variant v3">
+        <div class="variant__header">
+          <span class="variant__indicator" aria-hidden="true"></span>
+          <span class="variant__name">V3 — Linear</span>
+          <span class="variant__philosophy">Swiss + dark-first · Confident-clinical · highest risk</span>
+        </div>
+        <div class="variant__screens">
+          <a class="screen-link" href="v3-linear/route-detail.html">
+            <span class="screen-link__label">Route detail</span>
+            <span class="screen-link__key">V3-1 · PRD 5–10</span>
+            <span class="screen-link__arrow">→</span>
+          </a>
+          <a class="screen-link" href="v3-linear/pokemon-detail.html">
+            <span class="screen-link__label">Pokémon detail</span>
+            <span class="screen-link__key">V3-2 · PRD 14–17</span>
+            <span class="screen-link__arrow">→</span>
+          </a>
+          <a class="screen-link" href="v3-linear/pokemon-browser.html">
+            <span class="screen-link__label">Pokémon browser</span>
+            <span class="screen-link__key">V3-3 · PRD 11–13</span>
+            <span class="screen-link__arrow">→</span>
+          </a>
+          <a class="screen-link" href="v3-linear/route-browser.html">
+            <span class="screen-link__label">Route browser</span>
+            <span class="screen-link__key">V3-4 · PRD 1–4</span>
+            <span class="screen-link__arrow">→</span>
+          </a>
+          <a class="screen-link" href="v3-linear/settings.html">
+            <span class="screen-link__label">Settings</span>
+            <span class="screen-link__key">V3-5 · PRD 23–29</span>
+            <span class="screen-link__arrow">→</span>
+          </a>
+          <a class="screen-link" href="v3-linear/favorites.html">
+            <span class="screen-link__label">Favorites</span>
+            <span class="screen-link__key">extra · PRD 19–20</span>
+            <span class="screen-link__arrow">→</span>
+          </a>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Footer -->
+    <div class="footer-note">
+      <div class="footer-note__meta">
+        <strong>Pokedex C++/QML v2</strong> — Sprint 0, Phase 4 (Prototype)<br>
+        Prototypes are throwaway HTML+CSS. No JS framework. Mobile ≤767px + desktop ≥768px on the same page.<br>
+        Next: design-review (R1) → user test (Phase 5) → Sprint 1 (C++/QML production code).
+      </div>
+      <div>
+        <a class="chip" href="../.design/pokedex/DESIGN_BRIEF.md" style="text-decoration:none;">Design Brief</a>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    function toggleTheme() {
+      const html = document.documentElement;
+      html.dataset.theme = html.dataset.theme === 'dark' ? 'light' : 'dark';
+    }
+  </script>
+</body>
+</html>

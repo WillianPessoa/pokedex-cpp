@@ -1,0 +1,590 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Favorites — Pokedex (V3 Linear)</title>
+
+  <link rel="stylesheet" href="../styles/tokens-v3-linear.css" />
+  <link rel="stylesheet" href="../styles/reset.css" />
+  <link rel="stylesheet" href="../styles/shell.css" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+  <style>
+    main {
+      max-width: var(--max-width-page);
+      margin: 0 auto;
+    }
+
+    /* ---- Command bar ---- */
+    .commandbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-4);
+      padding: var(--space-4) var(--space-5);
+      border-bottom: 1px solid var(--color-border-primary);
+      background-color: var(--color-bg-primary);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      backdrop-filter: blur(8px);
+    }
+    .breadcrumb {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      font-size: var(--font-size-sm);
+      color: var(--color-text-secondary);
+    }
+    .breadcrumb__item--active {
+      color: var(--color-text-primary);
+      font-weight: var(--font-weight-semibold);
+    }
+    .breadcrumb__sep { color: var(--color-text-tertiary); font-size: 11px; }
+    .commandbar__actions { display: flex; gap: var(--space-2); }
+    .icon-btn {
+      width: 32px;
+      height: 32px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid var(--color-border-primary);
+      border-radius: var(--border-radius-sm);
+      color: var(--color-text-secondary);
+    }
+    .icon-btn svg { width: 16px; height: 16px; }
+    .icon-btn:hover { color: var(--color-text-primary); border-color: var(--color-text-tertiary); }
+    .kbd {
+      display: inline-flex;
+      padding: 2px 5px;
+      background-color: var(--color-bg-tertiary);
+      border: 1px solid var(--color-border-primary);
+      border-bottom-width: 2px;
+      border-radius: var(--border-radius-xs);
+      font-family: var(--font-family-mono);
+      font-size: 10px;
+      color: var(--color-text-secondary);
+      line-height: 1;
+    }
+
+    /* ---- Page head ---- */
+    .page-head {
+      padding: var(--space-7) var(--space-5) var(--space-5);
+      border-bottom: 1px solid var(--color-border-primary);
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: end;
+      gap: var(--space-5);
+    }
+    .page-head__eyebrow {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      font-size: var(--font-size-xs);
+      text-transform: uppercase;
+      letter-spacing: var(--letter-spacing-widest);
+      color: var(--color-text-tertiary);
+      font-weight: var(--font-weight-semibold);
+      margin-bottom: var(--space-3);
+    }
+    .page-head__count-pill {
+      padding: 2px var(--space-2);
+      background-color: var(--color-bg-tertiary);
+      border-radius: var(--border-radius-xs);
+      font-size: 10px;
+      color: var(--color-text-secondary);
+      letter-spacing: 0;
+      text-transform: none;
+    }
+    .page-head__title {
+      font-size: var(--font-size-xl);
+      font-weight: var(--font-weight-bold);
+      letter-spacing: var(--letter-spacing-tight);
+    }
+    .page-head__sub {
+      margin-top: var(--space-3);
+      font-size: var(--font-size-sm);
+      color: var(--color-text-secondary);
+    }
+
+    /* Quick stats on the right */
+    .stats-strip {
+      display: grid;
+      grid-template-columns: repeat(3, auto);
+      gap: var(--space-7);
+      padding-bottom: 2px;
+    }
+    .stat {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .stat__label {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: var(--letter-spacing-widest);
+      color: var(--color-text-tertiary);
+      font-weight: var(--font-weight-semibold);
+    }
+    .stat__value {
+      font-family: var(--font-family-mono);
+      font-size: var(--font-size-md);
+      font-weight: var(--font-weight-semibold);
+      color: var(--color-text-primary);
+      font-feature-settings: var(--font-feature-numbers);
+      font-variant-numeric: tabular-nums slashed-zero;
+    }
+
+    /* ---- Type distribution rail (favorites-specific feature) ---- */
+    .type-distribution {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      padding: var(--space-3) var(--space-5);
+      border-bottom: 1px solid var(--color-border-primary);
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: var(--letter-spacing-widest);
+      color: var(--color-text-tertiary);
+      font-weight: var(--font-weight-semibold);
+    }
+    .type-distribution__bar {
+      flex: 1;
+      display: flex;
+      height: 6px;
+      border-radius: var(--border-radius-xs);
+      overflow: hidden;
+      background-color: var(--color-bg-tertiary);
+    }
+    .type-distribution__seg {
+      height: 100%;
+    }
+    .type-distribution__seg--fire     { background-color: var(--type-badge-color-fire); }
+    .type-distribution__seg--electric { background-color: var(--type-badge-color-electric); }
+    .type-distribution__seg--water    { background-color: var(--type-badge-color-water); }
+    .type-distribution__seg--grass    { background-color: var(--type-badge-color-grass); }
+    .type-distribution__seg--rock     { background-color: var(--type-badge-color-rock); }
+    .type-distribution__seg--normal   { background-color: var(--type-badge-color-normal); }
+
+    /* ---- Toolbar ---- */
+    .toolbar {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      padding: var(--space-3) var(--space-5);
+      border-bottom: 1px solid var(--color-border-primary);
+    }
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+      padding: 5px var(--space-3);
+      background-color: transparent;
+      border: 1px solid var(--color-border-primary);
+      border-radius: var(--border-radius-sm);
+      font-size: var(--font-size-sm);
+      color: var(--color-text-secondary);
+      font-weight: var(--font-weight-medium);
+    }
+    .chip[aria-pressed="true"] {
+      color: var(--color-text-primary);
+      background-color: var(--color-bg-tertiary);
+      border-color: var(--color-text-tertiary);
+    }
+    .chip:hover { color: var(--color-text-primary); border-color: var(--color-text-tertiary); }
+    .chip__count {
+      color: var(--color-text-tertiary);
+      font-feature-settings: var(--font-feature-numbers);
+      font-variant-numeric: tabular-nums;
+    }
+    .toolbar__sort {
+      margin-left: auto;
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+      font-size: var(--font-size-sm);
+      color: var(--color-text-secondary);
+    }
+
+    /* ---- Favorites list (denser variant of pokemon-row) ---- */
+    .fav-row {
+      display: grid;
+      grid-template-columns: 44px 1fr 220px 100px 24px;
+      gap: var(--space-4);
+      align-items: center;
+      padding: var(--space-3) var(--space-5);
+      border-bottom: 1px solid var(--color-border-secondary);
+      transition: background-color var(--duration-fast) var(--easing-default);
+      color: var(--color-text-primary);
+    }
+    .fav-row:hover { background-color: var(--color-bg-secondary); }
+
+    .sprite {
+      width: 44px;
+      height: 44px;
+      background-color: var(--color-bg-secondary);
+      border: 1px solid var(--color-border-primary);
+      border-radius: var(--border-radius-sm);
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+    }
+    .sprite img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      image-rendering: pixelated;
+    }
+
+    .fav-row__name {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .fav-row__name-text {
+      font-size: var(--font-size-base);
+      font-weight: var(--font-weight-semibold);
+    }
+    .fav-row__id {
+      color: var(--color-text-tertiary);
+      font-family: var(--font-family-mono);
+      font-size: var(--font-size-xs);
+      font-feature-settings: var(--font-feature-numbers);
+      font-variant-numeric: tabular-nums slashed-zero;
+    }
+
+    .fav-row__types {
+      display: flex;
+      gap: var(--space-2);
+    }
+    .type-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 1px 6px;
+      background-color: transparent;
+      border: var(--type-badge-border-width) solid currentColor;
+      border-radius: var(--border-radius-sm);
+      font-size: var(--font-size-xs);
+      font-weight: var(--font-weight-bold);
+      letter-spacing: var(--letter-spacing-widest);
+      text-transform: uppercase;
+      line-height: 1.4;
+    }
+    .type-badge--normal   { color: var(--type-badge-color-normal); }
+    .type-badge--fire     { color: var(--type-badge-color-fire); }
+    .type-badge--water    { color: var(--type-badge-color-water); }
+    .type-badge--electric { color: var(--type-badge-color-electric); }
+    .type-badge--grass    { color: var(--type-badge-color-grass); }
+    .type-badge--ice      { color: var(--type-badge-color-ice); }
+    .type-badge--ground   { color: var(--type-badge-color-ground); }
+    .type-badge--rock     { color: var(--type-badge-color-rock); }
+    .type-badge--flying   { color: var(--type-badge-color-flying); }
+    .type-badge--poison   { color: var(--type-badge-color-poison); }
+
+    .fav-row__added {
+      font-family: var(--font-family-mono);
+      font-size: var(--font-size-xs);
+      color: var(--color-text-tertiary);
+      text-align: right;
+      justify-self: end;
+      font-feature-settings: var(--font-feature-numbers);
+      font-variant-numeric: tabular-nums slashed-zero;
+    }
+
+    .fav-btn {
+      width: 24px;
+      height: 24px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--color-accent-primary);
+      justify-self: end;
+    }
+    .fav-btn svg { width: 16px; height: 16px; fill: currentColor; }
+    .fav-btn:hover { color: var(--color-status-error); }
+
+    /* ---- Mobile ---- */
+    @media (max-width: 767px) {
+      main { padding-bottom: 80px; }
+      .commandbar { padding: var(--space-3) var(--space-4); }
+      .page-head {
+        grid-template-columns: 1fr;
+        padding: var(--space-5) var(--space-4) var(--space-4);
+      }
+      .stats-strip { gap: var(--space-5); margin-top: var(--space-4); }
+      .type-distribution { padding: var(--space-3) var(--space-4); flex-wrap: wrap; }
+      .toolbar { padding: var(--space-3) var(--space-4); flex-wrap: wrap; }
+      .toolbar__sort { width: 100%; margin-left: 0; }
+      .fav-row {
+        grid-template-columns: 44px 1fr auto;
+        padding: var(--space-3) var(--space-4);
+        gap: var(--space-3);
+      }
+      .fav-row > .fav-row__types { display: none; }
+      .fav-row > .fav-row__added { display: none; }
+      .fav-row__name { gap: 4px; }
+      .fav-row__name-types {
+        display: flex;
+        gap: 4px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <aside class="shell-sidebar" aria-label="Primary navigation">
+    <div class="shell-sidebar__game" role="button" tabindex="0">
+      <span class="shell-sidebar__game__label">Active Game</span>
+      <span class="shell-sidebar__game__current">FireRed</span>
+    </div>
+    <nav class="shell-sidebar__nav">
+      <a class="shell-sidebar__link" href="route-browser.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M9 6l6 0M9 12l6 0M9 18l6 0M5 6l0 0M5 12l0 0M5 18l0 0" stroke-linecap="round"/></svg>
+        Routes
+      </a>
+      <a class="shell-sidebar__link" href="pokemon-browser.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><circle cx="12" cy="12" r="9"/><line x1="3" y1="12" x2="21" y2="12"/></svg>
+        Pokémon
+      </a>
+      <a class="shell-sidebar__link" href="favorites.html" aria-current="page">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><polygon points="12 2 15 9 22 9 17 14 19 21 12 17 5 21 7 14 2 9 9 9"/></svg>
+        Favorites
+      </a>
+      <a class="shell-sidebar__link" href="settings.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        Settings
+      </a>
+    </nav>
+  </aside>
+
+  <main>
+    <header class="commandbar">
+      <nav class="breadcrumb" aria-label="Breadcrumb">
+        <span>Library</span>
+        <span class="breadcrumb__sep">›</span>
+        <span class="breadcrumb__item--active">Favorites</span>
+      </nav>
+      <div class="commandbar__actions">
+        <button class="icon-btn" aria-label="Search">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <section class="page-head">
+      <div>
+        <div class="page-head__eyebrow">
+          <span>Personal library</span>
+          <span class="page-head__count-pill">Stored locally</span>
+        </div>
+        <h1 class="page-head__title">Favorites</h1>
+        <p class="page-head__sub">Pokémon you've starred. Press <span class="kbd">★</span> on any detail to add or remove.</p>
+      </div>
+      <div class="stats-strip">
+        <div class="stat">
+          <span class="stat__label">Total</span>
+          <span class="stat__value">8</span>
+        </div>
+        <div class="stat">
+          <span class="stat__label">Types covered</span>
+          <span class="stat__value">6</span>
+        </div>
+        <div class="stat">
+          <span class="stat__label">Last added</span>
+          <span class="stat__value" style="font-family: var(--font-family-body); font-size: var(--font-size-sm); font-weight: var(--font-weight-medium);">2d ago</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Type distribution sparkline (favorites-specific) -->
+    <div class="type-distribution" aria-label="Type distribution across favorites">
+      <span>Type mix</span>
+      <span class="type-distribution__bar" aria-hidden="true">
+        <span class="type-distribution__seg type-distribution__seg--fire" style="width: 12.5%;"></span>
+        <span class="type-distribution__seg type-distribution__seg--electric" style="width: 25%;"></span>
+        <span class="type-distribution__seg type-distribution__seg--water" style="width: 25%;"></span>
+        <span class="type-distribution__seg type-distribution__seg--grass" style="width: 12.5%;"></span>
+        <span class="type-distribution__seg type-distribution__seg--rock" style="width: 12.5%;"></span>
+        <span class="type-distribution__seg type-distribution__seg--normal" style="width: 12.5%;"></span>
+      </span>
+      <span class="num" style="color: var(--color-text-secondary);">8 / 18 types</span>
+    </div>
+
+    <!-- Toolbar -->
+    <div class="toolbar" role="toolbar" aria-label="Filter favorites">
+      <button class="chip" aria-pressed="true">All <span class="chip__count">8</span></button>
+      <button class="chip" aria-pressed="false">Catchable in FireRed <span class="chip__count">5</span></button>
+      <span class="toolbar__sort">
+        Sort
+        <span class="kbd">↕</span>
+        <span style="color: var(--color-text-primary); font-weight: var(--font-weight-medium);">Recently added</span>
+      </span>
+    </div>
+
+    <!-- Favorites list -->
+    <div role="list">
+      <a class="fav-row" href="pokemon-detail.html" role="listitem">
+        <span class="sprite">
+          <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png" alt="" aria-hidden="true" loading="lazy" />
+        </span>
+        <div class="fav-row__name">
+          <span class="fav-row__name-text">Pikachu</span>
+          <span class="fav-row__id">#025 · Mouse Pokémon</span>
+        </div>
+        <span class="fav-row__types">
+          <span class="type-badge type-badge--electric">Electric</span>
+        </span>
+        <span class="fav-row__added">2 days ago</span>
+        <button class="fav-btn" aria-label="Remove from favorites">
+          <svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.75"><polygon points="12 2 15 9 22 9 17 14 19 21 12 17 5 21 7 14 2 9 9 9"/></svg>
+        </button>
+      </a>
+
+      <a class="fav-row" href="pokemon-detail.html" role="listitem">
+        <span class="sprite">
+          <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/4.png" alt="" aria-hidden="true" loading="lazy" />
+        </span>
+        <div class="fav-row__name">
+          <span class="fav-row__name-text">Charmander</span>
+          <span class="fav-row__id">#004 · Lizard Pokémon</span>
+        </div>
+        <span class="fav-row__types">
+          <span class="type-badge type-badge--fire">Fire</span>
+        </span>
+        <span class="fav-row__added">5 days ago</span>
+        <button class="fav-btn" aria-label="Remove from favorites">
+          <svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.75"><polygon points="12 2 15 9 22 9 17 14 19 21 12 17 5 21 7 14 2 9 9 9"/></svg>
+        </button>
+      </a>
+
+      <a class="fav-row" href="pokemon-detail.html" role="listitem">
+        <span class="sprite">
+          <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/7.png" alt="" aria-hidden="true" loading="lazy" />
+        </span>
+        <div class="fav-row__name">
+          <span class="fav-row__name-text">Squirtle</span>
+          <span class="fav-row__id">#007 · Tiny Turtle Pokémon</span>
+        </div>
+        <span class="fav-row__types">
+          <span class="type-badge type-badge--water">Water</span>
+        </span>
+        <span class="fav-row__added">5 days ago</span>
+        <button class="fav-btn" aria-label="Remove from favorites">
+          <svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.75"><polygon points="12 2 15 9 22 9 17 14 19 21 12 17 5 21 7 14 2 9 9 9"/></svg>
+        </button>
+      </a>
+
+      <a class="fav-row" href="pokemon-detail.html" role="listitem">
+        <span class="sprite">
+          <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.png" alt="" aria-hidden="true" loading="lazy" />
+        </span>
+        <div class="fav-row__name">
+          <span class="fav-row__name-text">Bulbasaur</span>
+          <span class="fav-row__id">#001 · Seed Pokémon</span>
+        </div>
+        <span class="fav-row__types">
+          <span class="type-badge type-badge--grass">Grass</span>
+          <span class="type-badge type-badge--poison">Poison</span>
+        </span>
+        <span class="fav-row__added">1 week ago</span>
+        <button class="fav-btn" aria-label="Remove from favorites">
+          <svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.75"><polygon points="12 2 15 9 22 9 17 14 19 21 12 17 5 21 7 14 2 9 9 9"/></svg>
+        </button>
+      </a>
+
+      <a class="fav-row" href="pokemon-detail.html" role="listitem">
+        <span class="sprite">
+          <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/95.png" alt="" aria-hidden="true" loading="lazy" />
+        </span>
+        <div class="fav-row__name">
+          <span class="fav-row__name-text">Onix</span>
+          <span class="fav-row__id">#095 · Rock Snake Pokémon</span>
+        </div>
+        <span class="fav-row__types">
+          <span class="type-badge type-badge--rock">Rock</span>
+          <span class="type-badge type-badge--ground">Ground</span>
+        </span>
+        <span class="fav-row__added">2 weeks ago</span>
+        <button class="fav-btn" aria-label="Remove from favorites">
+          <svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.75"><polygon points="12 2 15 9 22 9 17 14 19 21 12 17 5 21 7 14 2 9 9 9"/></svg>
+        </button>
+      </a>
+
+      <a class="fav-row" href="pokemon-detail.html" role="listitem">
+        <span class="sprite">
+          <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/133.png" alt="" aria-hidden="true" loading="lazy" />
+        </span>
+        <div class="fav-row__name">
+          <span class="fav-row__name-text">Eevee</span>
+          <span class="fav-row__id">#133 · Evolution Pokémon</span>
+        </div>
+        <span class="fav-row__types">
+          <span class="type-badge type-badge--normal">Normal</span>
+        </span>
+        <span class="fav-row__added">3 weeks ago</span>
+        <button class="fav-btn" aria-label="Remove from favorites">
+          <svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.75"><polygon points="12 2 15 9 22 9 17 14 19 21 12 17 5 21 7 14 2 9 9 9"/></svg>
+        </button>
+      </a>
+
+      <a class="fav-row" href="pokemon-detail.html" role="listitem">
+        <span class="sprite">
+          <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/129.png" alt="" aria-hidden="true" loading="lazy" />
+        </span>
+        <div class="fav-row__name">
+          <span class="fav-row__name-text">Magikarp</span>
+          <span class="fav-row__id">#129 · Fish Pokémon</span>
+        </div>
+        <span class="fav-row__types">
+          <span class="type-badge type-badge--water">Water</span>
+        </span>
+        <span class="fav-row__added">1 month ago</span>
+        <button class="fav-btn" aria-label="Remove from favorites">
+          <svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.75"><polygon points="12 2 15 9 22 9 17 14 19 21 12 17 5 21 7 14 2 9 9 9"/></svg>
+        </button>
+      </a>
+
+      <a class="fav-row" href="pokemon-detail.html" role="listitem">
+        <span class="sprite">
+          <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/16.png" alt="" aria-hidden="true" loading="lazy" />
+        </span>
+        <div class="fav-row__name">
+          <span class="fav-row__name-text">Pidgey</span>
+          <span class="fav-row__id">#016 · Tiny Bird Pokémon</span>
+        </div>
+        <span class="fav-row__types">
+          <span class="type-badge type-badge--normal">Normal</span>
+          <span class="type-badge type-badge--flying">Flying</span>
+        </span>
+        <span class="fav-row__added">1 month ago</span>
+        <button class="fav-btn" aria-label="Remove from favorites">
+          <svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.75"><polygon points="12 2 15 9 22 9 17 14 19 21 12 17 5 21 7 14 2 9 9 9"/></svg>
+        </button>
+      </a>
+    </div>
+  </main>
+
+  <nav class="shell-bottom-nav" aria-label="Primary navigation (mobile)">
+    <a class="shell-bottom-nav__item" href="route-browser.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M9 6l6 0M9 12l6 0M9 18l6 0M5 6l0 0M5 12l0 0M5 18l0 0" stroke-linecap="round"/></svg>
+      Routes
+    </a>
+    <a class="shell-bottom-nav__item" href="pokemon-browser.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><circle cx="12" cy="12" r="9"/><line x1="3" y1="12" x2="21" y2="12"/></svg>
+      Pokémon
+    </a>
+    <a class="shell-bottom-nav__item" href="favorites.html" aria-current="page">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><polygon points="12 2 15 9 22 9 17 14 19 21 12 17 5 21 7 14 2 9 9 9"/></svg>
+      Favorites
+    </a>
+    <a class="shell-bottom-nav__item" href="settings.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      Settings
+    </a>
+  </nav>
+</body>
+</html>
