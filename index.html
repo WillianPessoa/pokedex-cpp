@@ -1,0 +1,1287 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pesquisa sobre Nuzlocke</title>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        /* =====================
+           VARIABLES
+        ===================== */
+        :root {
+            --bg:          #eef2f7;
+            --card:        #ffffff;
+            --shadow:      0 1px 4px rgba(0,0,0,0.04), 0 16px 48px rgba(0,0,0,0.09);
+            --shadow-sm:   0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.06);
+            --radius:      20px;
+            --radius-sm:   14px;
+            --font:        'Nunito', sans-serif;
+            --text:        #1a202c;
+            --muted:       #718096;
+            --border:      #e2e8f0;
+
+            /* accent — updated per section via JS */
+            --acc:         #e53e3e;
+            --acc-light:   #fff5f5;
+            --acc-border:  #fed7d7;
+        }
+
+        /* =====================
+           RESET & BASE
+        ===================== */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: var(--font);
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        /* =====================
+           LAYOUT
+        ===================== */
+        .page {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+        }
+
+        .wrap {
+            width: 100%;
+            max-width: 600px;
+        }
+
+        /* =====================
+           SCREENS
+        ===================== */
+        .screen { display: none; }
+        .screen.active { display: block; animation: fadeUp .28s ease both; }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(14px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* =====================
+           PROGRESS POKÉBALLS
+        ===================== */
+        .progress {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0;
+            margin-bottom: 24px;
+        }
+
+        .pball {
+            width: 22px; height: 22px;
+            border-radius: 50%;
+            position: relative;
+            overflow: hidden;
+            border: 2.5px solid #cbd5e0;
+            opacity: .3;
+            transition: opacity .3s, border-color .3s, box-shadow .3s;
+            flex-shrink: 0;
+        }
+        .pball-top    { position: absolute; top: 0; left: 0; right: 0; height: 50%; background: #cbd5e0; transition: background .3s; }
+        .pball-mid    { position: absolute; top: calc(50% - 1.5px); left: 0; right: 0; height: 3px; background: #cbd5e0; z-index: 1; }
+        .pball-center { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); width: 6px; height: 6px; border-radius: 50%; background: var(--card); border: 2px solid #cbd5e0; z-index: 2; transition: border-color .3s; }
+
+        .pball.done { opacity: .55; border-color: var(--acc); }
+        .pball.done .pball-top { background: var(--acc); opacity: .6; }
+        .pball.done .pball-center { border-color: var(--acc); }
+
+        .pball.cur { opacity: 1; border-color: var(--acc); box-shadow: 0 0 0 3px var(--acc-light), 0 0 12px rgba(0,0,0,0.1); }
+        .pball.cur .pball-top { background: var(--acc); }
+        .pball.cur .pball-mid { background: rgba(0,0,0,0.2); }
+        .pball.cur .pball-center { border-color: var(--acc); }
+
+        .pconn { width: 18px; height: 2px; background: #cbd5e0; opacity: .35; flex-shrink: 0; }
+
+        /* =====================
+           CARD
+        ===================== */
+        .card {
+            background: var(--card);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 44px 48px;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.8);
+        }
+
+        @media (max-width: 520px) {
+            .card { padding: 32px 28px; }
+        }
+
+        /* Corner Pokémon decoration */
+        .card-mon {
+            position: absolute;
+            bottom: -24px; right: -16px;
+            width: 190px; height: 190px;
+            object-fit: contain;
+            filter: brightness(0) opacity(.055);
+            pointer-events: none;
+            transition: filter .4s;
+        }
+
+        /* =====================
+           COVER SCREEN
+        ===================== */
+        .cover { text-align: center; }
+
+        .cover-label {
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: .2em;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-bottom: 6px;
+        }
+
+        .cover-mon {
+            width: 160px; height: 160px;
+            object-fit: contain;
+            filter: brightness(0) opacity(.12);
+            animation: bob 4s ease-in-out infinite;
+            display: block;
+            margin: 0 auto 6px;
+        }
+
+        @keyframes bob {
+            0%,100% { transform: translateY(0); }
+            50%      { transform: translateY(-12px); }
+        }
+
+        .cover-title {
+            font-size: 32px;
+            font-weight: 900;
+            line-height: 1.2;
+            letter-spacing: -.02em;
+            margin-bottom: 14px;
+        }
+
+        .cover-title em {
+            font-style: normal;
+            color: var(--acc);
+        }
+
+        .cover-desc {
+            font-size: 15px;
+            color: var(--muted);
+            line-height: 1.75;
+            max-width: 380px;
+            margin: 0 auto 24px;
+        }
+
+        .badges {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 32px;
+        }
+
+        .badge {
+            font-size: 12px;
+            font-weight: 700;
+            padding: 5px 13px;
+            border-radius: 20px;
+            background: var(--acc-light);
+            color: var(--acc);
+            border: 1px solid var(--acc-border);
+        }
+
+        /* =====================
+           QUESTION
+        ===================== */
+        .q-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: .14em;
+            text-transform: uppercase;
+            color: var(--acc);
+            margin-bottom: 12px;
+            padding: 4px 10px;
+            background: var(--acc-light);
+            border-radius: 6px;
+        }
+
+        .q-text {
+            font-size: 21px;
+            font-weight: 800;
+            line-height: 1.35;
+            letter-spacing: -.01em;
+            margin-bottom: 22px;
+        }
+
+        .q-hint {
+            font-size: 12px;
+            color: var(--muted);
+            margin-top: -14px;
+            margin-bottom: 18px;
+            font-style: italic;
+        }
+
+        /* =====================
+           OPTIONS
+        ===================== */
+        .options { display: flex; flex-direction: column; gap: 8px; }
+
+        .opt {
+            display: flex;
+            align-items: flex-start;
+            gap: 13px;
+            padding: 13px 16px;
+            background: #f7fafc;
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: background .14s, border-color .14s, transform .1s;
+            font-size: 14px;
+            font-weight: 600;
+            line-height: 1.45;
+            color: var(--text);
+            user-select: none;
+        }
+
+        .opt:hover { background: #edf2f7; border-color: var(--acc); }
+
+        .opt.sel {
+            background: var(--acc-light);
+            border-color: var(--acc);
+        }
+
+        .opt:active { transform: scale(.99); }
+
+        .ctrl {
+            width: 18px; height: 18px;
+            border-radius: 50%;
+            border: 2px solid #cbd5e0;
+            flex-shrink: 0;
+            margin-top: 1px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: border-color .14s, background .14s;
+        }
+
+        .ctrl.sq { border-radius: 6px; }
+
+        .opt.sel .ctrl {
+            border-color: var(--acc);
+            background: var(--acc);
+        }
+
+        .opt.sel .ctrl::after {
+            content: '';
+            display: block;
+            border-radius: 50%;
+            background: white;
+        }
+
+        /* circle check */
+        .ctrl:not(.sq).opt-inner::after { width: 6px; height: 6px; }
+        .opt.sel .ctrl:not(.sq)::after  { width: 6px; height: 6px; }
+
+        /* square check mark */
+        .opt.sel .ctrl.sq::after {
+            content: '';
+            display: block;
+            width: 5px; height: 9px;
+            border: 2.5px solid white;
+            border-top: none;
+            border-left: none;
+            transform: rotate(45deg) translateY(-1px);
+            border-radius: 1px;
+        }
+
+        /* "Outro" reveal */
+        .outro-input {
+            display: none;
+            margin-top: 8px;
+            padding: 10px 14px;
+            border: 1.5px solid var(--border);
+            border-radius: 10px;
+            font-family: var(--font);
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text);
+            width: 100%;
+            background: #f7fafc;
+            transition: border-color .14s;
+        }
+
+        .outro-input:focus { outline: none; border-color: var(--acc); background: white; }
+        .outro-input.visible { display: block; animation: fadeUp .2s ease both; }
+
+        /* Open text */
+        .open-area {
+            width: 100%;
+            padding: 14px 18px;
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-family: var(--font);
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text);
+            background: #f7fafc;
+            resize: vertical;
+            min-height: 110px;
+            line-height: 1.6;
+            transition: border-color .14s;
+        }
+
+        .open-area:focus { outline: none; border-color: var(--acc); background: white; }
+
+        /* =====================
+           NAVIGATION
+        ===================== */
+        .nav { display: flex; gap: 10px; margin-top: 28px; }
+
+        .btn {
+            font-family: var(--font);
+            font-size: 15px;
+            font-weight: 800;
+            padding: 13px 24px;
+            border-radius: var(--radius-sm);
+            border: none;
+            cursor: pointer;
+            transition: all .18s;
+            letter-spacing: .01em;
+        }
+
+        .btn-back {
+            background: transparent;
+            color: var(--muted);
+            border: 1.5px solid var(--border);
+        }
+
+        .btn-back:hover { color: var(--text); border-color: #a0aec0; }
+
+        .btn-next {
+            flex: 1;
+            background: var(--acc);
+            color: #ffffff;
+            box-shadow: 0 4px 14px rgba(229,62,62,.3);
+        }
+
+        .btn-next:hover { filter: brightness(1.07); transform: translateY(-1px); box-shadow: 0 6px 18px rgba(229,62,62,.35); }
+        .btn-next:active { transform: translateY(0); }
+        .btn-next:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+
+        /* =====================
+           END SCREEN
+        ===================== */
+        .end { text-align: center; padding: 8px 0 16px; }
+
+        .end-icon {
+            font-size: 56px;
+            margin-bottom: 16px;
+            display: block;
+            animation: pop .4s cubic-bezier(.175,.885,.32,1.275) both;
+        }
+
+        @keyframes pop {
+            from { transform: scale(0); opacity: 0; }
+            to   { transform: scale(1); opacity: 1; }
+        }
+
+        .end h2 {
+            font-size: 26px;
+            font-weight: 900;
+            margin-bottom: 12px;
+        }
+
+        .end p {
+            font-size: 15px;
+            color: var(--muted);
+            line-height: 1.75;
+            max-width: 360px;
+            margin: 0 auto;
+        }
+
+        /* =====================
+           STEP COUNTER
+        ===================== */
+        .counter {
+            text-align: center;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--muted);
+            margin-top: 16px;
+            letter-spacing: .02em;
+        }
+
+        /* =====================
+           LOADING / SUBMIT STATE
+        ===================== */
+        .spinner {
+            display: inline-block;
+            width: 18px; height: 18px;
+            border: 2.5px solid rgba(255,255,255,0.4);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin .7s linear infinite;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+    </style>
+</head>
+<body>
+
+<div class="page">
+<div class="wrap">
+
+    <!-- ===== PROGRESS ===== -->
+    <div class="progress" id="progress" style="display:none">
+        <!-- dynamically generated -->
+    </div>
+
+    <!-- ===== CARD ===== -->
+    <div class="card" id="card" style="display:none">
+        <div id="qarea"></div>
+    </div>
+
+    <!-- ===== COVER ===== -->
+    <div class="card screen active" id="screen-cover">
+        <div class="cover">
+            <div class="cover-label">Quem é esse Pokémon?</div>
+            <img class="cover-mon"
+                 src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/6.png"
+                 alt="">
+            <h1 class="cover-title">Pesquisa sobre<br><em>Nuzlocke</em></h1>
+            <p class="cover-desc">
+                Queremos entender quem são os jogadores de Nuzlocke no Brasil — do casual ao hardcoreador de Emerald Kaizo.
+                São de 5 a 10 minutos.
+            </p>
+            <div class="badges">
+                <span class="badge">🕐 ~10 min</span>
+                <span class="badge">🔒 Anônimo</span>
+                <span class="badge">🇧🇷 PT-BR</span>
+            </div>
+        </div>
+        <div class="nav">
+            <button class="btn btn-next" onclick="startForm()">Começar →</button>
+        </div>
+    </div>
+
+    <!-- ===== END: NÃO JOGA ===== -->
+    <div class="card screen" id="screen-end-nao">
+        <div class="end">
+            <span class="end-icon">🎮</span>
+            <h2>Valeu mesmo assim!</h2>
+            <p>
+                O formulário é para jogadores de Pokémon, mas agradecemos sua curiosidade.
+                Quem sabe você não começa a jogar depois disso?
+            </p>
+        </div>
+    </div>
+
+    <!-- ===== END: OBRIGADO ===== -->
+    <div class="card screen" id="screen-end-ok">
+        <div class="end">
+            <span class="end-icon">🏆</span>
+            <h2>Run concluída!</h2>
+            <p>
+                Suas respostas foram registradas. Muito obrigado por participar —
+                você está ajudando a mapear a comunidade de Nuzlocke no Brasil.
+            </p>
+        </div>
+    </div>
+
+    <!-- ===== END: ERRO ===== -->
+    <div class="card screen" id="screen-end-err">
+        <div class="end">
+            <span class="end-icon">😵</span>
+            <h2>Pokémon fainted...</h2>
+            <p>
+                Algo deu errado ao enviar suas respostas. Tente novamente ou entre em contato.
+            </p>
+        </div>
+        <div class="nav" style="margin-top:24px">
+            <button class="btn btn-next" onclick="retrySubmit()">Tentar novamente</button>
+        </div>
+    </div>
+
+    <div class="counter" id="counter" style="display:none"></div>
+
+</div><!-- /wrap -->
+</div><!-- /page -->
+
+<script>
+/* =====================================================================
+   CONFIGURATION
+   Substitua pela URL do seu Google Apps Script após publicar.
+   Instruções de setup no README ou nos comentários ao final do arquivo.
+===================================================================== */
+const APPS_SCRIPT_URL = 'YOUR_APPS_SCRIPT_URL_HERE';
+
+/* =====================================================================
+   SECTION COLORS (Pokémon type inspired)
+===================================================================== */
+const SECTIONS = {
+    triagem: { color: '#e53e3e', light: '#fff5f5', border: '#fed7d7', label: 'Triagem' },
+    demo:    { color: '#805ad5', light: '#faf5ff', border: '#e9d8fd', label: 'Sobre você' },
+    device:  { color: '#b7791f', light: '#fffff0', border: '#fefcbf', label: 'Dispositivos' },
+    freq:    { color: '#2b6cb0', light: '#ebf8ff', border: '#bee3f8', label: 'Frequência' },
+    motiv:   { color: '#c05621', light: '#fffaf0', border: '#fbd38d', label: 'Motivação' },
+    share:   { color: '#276749', light: '#f0fff4', border: '#c6f6d5', label: 'Compartilhamento' },
+    barrier: { color: '#4a5568', light: '#f7fafc', border: '#e2e8f0', label: 'Barreiras' },
+    abandon: { color: '#553c9a', light: '#faf5ff', border: '#d6bcfa', label: 'Suas runs' },
+    win:     { color: '#975a16', light: '#fffaf0', border: '#f6ad55', label: 'Conquistas' },
+};
+
+/* =====================================================================
+   QUESTIONS
+===================================================================== */
+const Q = {
+    q0: {
+        section: 'triagem', num: '1 de 2',
+        text: 'Você joga ou já jogou Pokémon?',
+        type: 'single',
+        pokemon: 133,
+        opts: [
+            { v: 'sim-atual',  l: 'Sim, jogo atualmente' },
+            { v: 'sim-antes',  l: 'Já joguei, mas faz tempo que não jogo' },
+            { v: 'nao',        l: 'Não, nunca joguei' },
+        ],
+    },
+    q1: {
+        section: 'triagem', num: '2 de 2',
+        text: 'Qual é a sua relação com o Nuzlocke?',
+        type: 'single',
+        pokemon: 133,
+        opts: [
+            { v: 'nao-conhece',        l: 'Nunca ouvi falar em Nuzlocke' },
+            { v: 'conhece-nao-tentou', l: 'Já ouvi falar, mas nunca tentei' },
+            { v: 'tentou',             l: 'Já tentei, mas nunca completei uma run' },
+            { v: 'completou',          l: 'Já completei pelo menos uma run' },
+        ],
+    },
+
+    /* ── DEMOGRAFIA ── */
+    a1: {
+        section: 'demo', num: 'A1',
+        text: 'Qual é a sua faixa etária?',
+        type: 'single', pokemon: 35,
+        opts: [
+            { v: '<13',   l: 'Menos de 13 anos' },
+            { v: '13-17', l: '13–17 anos' },
+            { v: '18-24', l: '18–24 anos' },
+            { v: '25-34', l: '25–34 anos' },
+            { v: '35-44', l: '35–44 anos' },
+            { v: '45+',   l: '45 anos ou mais' },
+        ],
+    },
+    a2: {
+        section: 'demo', num: 'A2',
+        text: 'Quando você começou a jogar Pokémon?',
+        type: 'single', pokemon: 142,
+        opts: [
+            { v: 'gen1',     l: 'Antes de 2000 — Gen 1 (Red, Blue, Yellow)' },
+            { v: 'gen2-3',   l: '2000–2005 — Gen 2–3 (Gold, Silver, Ruby, Emerald)' },
+            { v: 'gen4-5',   l: '2006–2010 — Gen 4–5 (Diamond, Pearl, Black, White)' },
+            { v: 'gen6-7',   l: '2011–2016 — Gen 6–7 (X, Y, Sun, Moon)' },
+            { v: 'gen8',     l: '2017–2022 — Gen 8 (Sword, Shield)' },
+            { v: 'gen9',     l: '2023 em diante — Gen 9 (Scarlet, Violet)' },
+            { v: 'nao-lembro', l: 'Não lembro ao certo' },
+        ],
+    },
+    a3: {
+        section: 'demo', num: 'A3',
+        text: 'Quando você fez sua primeira tentativa de Nuzlocke?',
+        type: 'single', pokemon: 158,
+        opts: [
+            { v: '<1ano',  l: 'Menos de 1 ano atrás' },
+            { v: '1-2',    l: '1–2 anos atrás' },
+            { v: '3-5',    l: '3–5 anos atrás' },
+            { v: '5+',     l: 'Mais de 5 anos atrás' },
+            { v: 'nao-lembro', l: 'Não lembro ao certo' },
+        ],
+    },
+
+    /* ── DISPOSITIVOS ── */
+    b1: {
+        section: 'device', num: 'B1',
+        text: 'Em quais dispositivos você costuma jogar Pokémon?',
+        hint: 'Pode marcar mais de uma opção.',
+        type: 'multi', pokemon: 137,
+        opts: [
+            { v: 'celular',  l: 'Celular (Pokémon Go, Masters, emulador)' },
+            { v: 'pc-mac',   l: 'Emulador no computador (PC ou Mac)' },
+            { v: 'switch',   l: 'Nintendo Switch' },
+            { v: '3ds',      l: 'Nintendo 3DS / 2DS' },
+            { v: 'gba-ds',   l: 'Game Boy Advance / DS (cartucho original)' },
+            { v: 'outro',    l: 'Outro', outro: true },
+        ],
+    },
+    b2: {
+        section: 'device', num: 'B2',
+        text: 'Em qual dispositivo você geralmente faz seus Nuzlockes?',
+        type: 'single', pokemon: 233,
+        opts: [
+            { v: 'celular',  l: 'Celular (emulador)' },
+            { v: 'pc-mac',   l: 'Emulador no computador' },
+            { v: 'switch',   l: 'Nintendo Switch' },
+            { v: '3ds',      l: 'Nintendo 3DS / 2DS' },
+            { v: 'gba-ds',   l: 'Game Boy Advance / DS (cartucho original)' },
+            { v: 'outro',    l: 'Outro', outro: true },
+        ],
+    },
+    b3: {
+        section: 'device', num: 'B3',
+        text: 'Você joga ou já jogou algum ROM hack de Pokémon?',
+        type: 'single', pokemon: 474,
+        opts: [
+            { v: 'nao',          l: 'Não, nunca joguei ROM hack' },
+            { v: 'sim-oficial',  l: 'Sim, mas prefiro os jogos oficiais' },
+            { v: 'ambos',        l: 'Jogo os dois igualmente' },
+            { v: 'prefiro-rom',  l: 'Prefiro ROM hacks' },
+        ],
+    },
+    b4: {
+        section: 'device', num: 'B4',
+        text: 'Quais ROM hacks você já usou numa run?',
+        hint: 'Pode marcar mais de uma opção.',
+        type: 'multi', pokemon: 474,
+        opts: [
+            { v: 'radical-red',      l: 'Radical Red' },
+            { v: 'unbound',          l: 'Pokémon Unbound' },
+            { v: 'emerald-kaizo',    l: 'Emerald Kaizo' },
+            { v: 'renegade-plat',    l: 'Renegade Platinum' },
+            { v: 'blaze-black',      l: 'Blaze Black / Volt White' },
+            { v: 'gaia',             l: 'Pokémon Gaia' },
+            { v: 'glazed',           l: 'Pokémon Glazed' },
+            { v: 'insurgence',       l: 'Pokémon Insurgence' },
+            { v: 'outro',            l: 'Outro', outro: true },
+        ],
+    },
+
+    /* ── FREQUÊNCIA ── */
+    c1: {
+        section: 'freq', num: 'C1',
+        text: 'Com que frequência você joga Pokémon atualmente?',
+        type: 'single', pokemon: 143,
+        opts: [
+            { v: 'diario',     l: 'Todo dia' },
+            { v: 'semana',     l: 'Algumas vezes por semana' },
+            { v: 'mes',        l: 'Algumas vezes por mês' },
+            { v: 'raramente',  l: 'Raramente' },
+            { v: 'so-nuzlocke',l: 'Só jogo quando estou numa run de Nuzlocke' },
+        ],
+    },
+    c2: {
+        section: 'freq', num: 'C2',
+        text: 'Numa run de Nuzlocke, quanto tempo por sessão você costuma jogar?',
+        type: 'single', pokemon: 52,
+        opts: [
+            { v: '<30',     l: 'Menos de 30 minutos' },
+            { v: '30-1h',   l: '30 minutos – 1 hora' },
+            { v: '1-2h',    l: '1 hora – 2 horas' },
+            { v: '>2h',     l: 'Mais de 2 horas' },
+            { v: 'depende', l: 'Depende muito do momento da run' },
+        ],
+    },
+
+    /* ── MOTIVAÇÃO ── */
+    d1: {
+        section: 'motiv', num: 'D1',
+        text: 'O que te motivou a tentar um Nuzlocke pela primeira vez?',
+        type: 'single', pokemon: 390,
+        opts: [
+            { v: 'stream',       l: 'Vi alguém jogando (stream ou YouTube)' },
+            { v: 'desafio',      l: 'Queria mais desafio no Pokémon' },
+            { v: 'amigo',        l: 'Recomendação de amigo' },
+            { v: 'curiosidade',  l: 'Curiosidade sobre as regras' },
+            { v: 'rejog',        l: 'Queria reviver um jogo antigo de forma nova' },
+            { v: 'outro',        l: 'Outro', outro: true },
+        ],
+    },
+    d2: {
+        section: 'motiv', num: 'D2',
+        text: 'O que te faz continuar jogando Nuzlockes?',
+        hint: 'Pode marcar mais de uma opção.',
+        type: 'multi', pokemon: 6,
+        opts: [
+            { v: 'tensao',       l: 'A tensão de não poder perder' },
+            { v: 'vinculo',      l: 'O vínculo com os Pokémons' },
+            { v: 'conquista',    l: 'A sensação de conquista ao terminar' },
+            { v: 'rejog',        l: 'É uma forma de rejogabilidade' },
+            { v: 'comunidade',   l: 'Compartilhar a experiência com outros' },
+            { v: 'outro',        l: 'Outro', outro: true },
+        ],
+    },
+    d3: {
+        section: 'motiv', num: 'D3',
+        text: 'Você usa regras extras além das básicas (permadeath + first encounter)?',
+        type: 'single', pokemon: 282,
+        opts: [
+            { v: 'so-basicas',   l: 'Não, só as regras básicas' },
+            { v: 'add-proprias', l: 'Sim, adiciono algumas regras próprias' },
+            { v: 'crio',         l: 'Sim, crio meus próprios rulesets' },
+            { v: 'terceiros',    l: 'Uso rulesets prontos de terceiros' },
+        ],
+    },
+    d4: {
+        section: 'motiv', num: 'D4',
+        text: 'Como você reage quando perde um Pokémon importante?',
+        type: 'single', pokemon: 93,
+        opts: [
+            { v: 'reinicio',     l: 'Reinicio a run do zero' },
+            { v: 'chateado-ok',  l: 'Fico chateado mas continuo' },
+            { v: 'natural',      l: 'Encaro como parte natural do jogo' },
+            { v: 'arquivo',      l: 'Arquivo a save e começo uma nova run' },
+        ],
+    },
+    d5: {
+        section: 'motiv', num: 'D5',
+        text: 'Você nomeia todos os seus Pokémons nas runs?',
+        type: 'single', pokemon: 25,
+        opts: [
+            { v: 'sempre',    l: 'Sempre' },
+            { v: 'as-vezes',  l: 'Às vezes, só os favoritos' },
+            { v: 'raramente', l: 'Raramente' },
+            { v: 'nunca',     l: 'Nunca' },
+        ],
+    },
+
+    /* ── COMPARTILHAMENTO ── */
+    e1: {
+        section: 'share', num: 'E1',
+        text: 'Você costuma registrar ou compartilhar o progresso das suas runs?',
+        hint: 'Pode marcar mais de uma opção.',
+        type: 'multi', pokemon: 65,
+        opts: [
+            { v: 'nao',         l: 'Não costumo registrar' },
+            { v: 'anotacoes',   l: 'Anoto pra mim mesmo (caderno, planilha)' },
+            { v: 'whatsapp',    l: 'Compartilho com amigos pelo WhatsApp ou Telegram' },
+            { v: 'facebook',    l: 'Posto em grupos do Facebook' },
+            { v: 'reddit',      l: 'Posto no Reddit (r/nuzlocke ou similares)' },
+            { v: 'redes',       l: 'Compartilho no Instagram, TikTok ou Twitter/X' },
+            { v: 'stream',      l: 'Faço stream ou gravo vídeos' },
+            { v: 'outro',       l: 'Outro', outro: true },
+        ],
+    },
+    e2: {
+        section: 'share', num: 'E2',
+        text: 'Você usa algum conteúdo de apoio durante suas runs?',
+        hint: 'Pode marcar mais de uma opção.',
+        type: 'multi', pokemon: 235,
+        opts: [
+            { v: 'nada',          l: 'Não costumo usar nada externo' },
+            { v: 'univ-nuzlocke', l: 'Universidade Nuzlocke (guias de tier)' },
+            { v: 'bulbapedia',    l: 'Bulbapedia' },
+            { v: 'serebii',       l: 'Serebii' },
+            { v: 'smogon',        l: 'Smogon' },
+            { v: 'damage-calc',   l: 'Calculadora de dano' },
+            { v: 'youtube',       l: 'Guias no YouTube' },
+            { v: 'tier-list',     l: 'Tier lists específicas de Nuzlocke' },
+            { v: 'discord',       l: 'Grupos no Discord com dicas' },
+            { v: 'outro',         l: 'Outro', outro: true },
+        ],
+    },
+    e3: {
+        section: 'share', num: 'E3',
+        text: 'Com que frequência você consulta esses materiais durante uma run?',
+        type: 'single', pokemon: 385,
+        opts: [
+            { v: 'raramente',    l: 'Raramente, só quando trava em algo' },
+            { v: 'as-vezes',     l: 'Às vezes, para confirmar alguma informação' },
+            { v: 'freq',         l: 'Frequentemente, me preparo antes de cada área' },
+            { v: 'sempre',       l: 'Sempre, pesquiso tudo antes de tomar uma decisão' },
+        ],
+    },
+
+    /* ── BARREIRAS (só para quem conhece mas nunca tentou) ── */
+    f1: {
+        section: 'barrier', num: 'F1',
+        text: 'Por que você ainda não tentou um Nuzlocke?',
+        hint: 'Pode marcar mais de uma opção.',
+        type: 'multi', pokemon: 129,
+        opts: [
+            { v: 'dificil',      l: 'Parece difícil demais' },
+            { v: 'apego',        l: 'Não quero me apegar aos Pokémons e os perder' },
+            { v: 'tempo',        l: 'Nunca tive tempo' },
+            { v: 'nao-divertido',l: 'Não achei que seria divertido' },
+            { v: 'em-breve',     l: 'Pretendo tentar em breve' },
+            { v: 'nao-conhece-regras', l: 'Não conheço bem as regras' },
+            { v: 'outro',        l: 'Outro', outro: true },
+        ],
+    },
+
+    /* ── ABANDONO (só para quem tentou mas não completou) ── */
+    g1: {
+        section: 'abandon', num: 'G1',
+        text: 'O que geralmente te faz abandonar uma run?',
+        type: 'single', pokemon: 75,
+        opts: [
+            { v: 'perdeu-mon',  l: 'Perdi um Pokémon muito importante e não quis continuar' },
+            { v: 'dificil',     l: 'A run ficou difícil demais' },
+            { v: 'interesse',   l: 'Perdi o interesse no jogo' },
+            { v: 'nova-run',    l: 'Comecei uma nova run em outro jogo' },
+            { v: 'vida-real',   l: 'Vida real (falta de tempo)' },
+            { v: 'outro',       l: 'Outro', outro: true },
+        ],
+    },
+
+    /* ── CONQUISTAS (só para quem completou) ── */
+    h1: {
+        section: 'win', num: 'H1',
+        text: 'Você já postou seu Hall da Fama ou registro de conclusão em algum lugar?',
+        type: 'single', pokemon: 250,
+        opts: [
+            { v: 'sim-sempre',   l: 'Sim, costumo postar' },
+            { v: 'sim-raramente',l: 'Já postei, mas raramente' },
+            { v: 'guardo',       l: 'Não posto, mas guardo pra mim' },
+            { v: 'nao-pensou',   l: 'Nunca pensei em registrar' },
+        ],
+    },
+    h2: {
+        section: 'win', num: 'H2',
+        text: 'Você tem algum Pokémon perdido numa run que ainda lembra hoje?',
+        hint: 'Campo opcional — conta a história se quiser.',
+        type: 'open', pokemon: 197,
+        placeholder: 'Ex: Meu Typhlosion no Emerald, morreu pra um crítico do último gym...',
+    },
+};
+
+/* =====================================================================
+   FLOWS PER PROFILE
+===================================================================== */
+const PROFILE_FLOWS = {
+    'nao-conhece':        ['a1', 'a2', 'b1', 'b3', 'c1'],
+    'conhece-nao-tentou': ['a1', 'a2', 'b1', 'b3', 'c1', 'f1'],
+    'tentou':             ['a1', 'a2', 'a3', 'b1', 'b2', 'b3', 'c1', 'c2', 'd1', 'd2', 'd3', 'd4', 'd5', 'e1', 'e2', 'e3', 'g1'],
+    'completou':          ['a1', 'a2', 'a3', 'b1', 'b2', 'b3', 'c1', 'c2', 'd1', 'd2', 'd3', 'd4', 'd5', 'e1', 'e2', 'e3', 'h1', 'h2'],
+};
+
+/* =====================================================================
+   STATE
+===================================================================== */
+let state = {
+    answers:  {},  // { qid: value }
+    phase:    'triagem',  // 'triagem' | 'profile'
+    triagem:  ['q0', 'q1'],
+    triIdx:   0,
+    flow:     [],
+    flowIdx:  -1,
+};
+
+let lastPayload = null;  // for retry
+
+/* =====================================================================
+   HELPERS
+===================================================================== */
+function getAns(id) { return state.answers[id]; }
+
+function romSelected() {
+    const v = getAns('b3') || '';
+    return v !== '' && v !== 'nao';
+}
+
+function buildFlow() {
+    const profile = getAns('q1');
+    let base = (PROFILE_FLOWS[profile] || []).slice();
+    // Insert b4 after b3 only if ROM hacks were selected
+    const b3idx = base.indexOf('b3');
+    if (b3idx !== -1 && romSelected()) {
+        base.splice(b3idx + 1, 0, 'b4');
+    }
+    // Skip e3 if user said "nada" in e2
+    const e2ans = getAns('e2') || [];
+    if (Array.isArray(e2ans) && e2ans.includes('nada') && e2ans.length === 1) {
+        base = base.filter(id => id !== 'e3');
+    }
+    state.flow = base;
+}
+
+function currentQid() {
+    if (state.phase === 'triagem') return state.triagem[state.triIdx];
+    return state.flow[state.flowIdx];
+}
+
+function totalSteps() {
+    return state.triagem.length + state.flow.length;
+}
+
+function currentStepNum() {
+    if (state.phase === 'triagem') return state.triIdx + 1;
+    return state.triagem.length + state.flowIdx + 1;
+}
+
+function setAccent(sectionKey) {
+    const s = SECTIONS[sectionKey] || SECTIONS.triagem;
+    document.documentElement.style.setProperty('--acc',       s.color);
+    document.documentElement.style.setProperty('--acc-light', s.light);
+    document.documentElement.style.setProperty('--acc-border',s.border);
+}
+
+/* =====================================================================
+   PROGRESS BAR
+===================================================================== */
+function renderProgress() {
+    const total = Math.max(6, totalSteps());
+    const cur   = currentStepNum();
+    const el    = document.getElementById('progress');
+    let html    = '';
+    const dots  = Math.min(total, 8);
+
+    for (let i = 0; i < dots; i++) {
+        const seg  = Math.ceil((i + 1) * total / dots);
+        const cls  = seg < cur ? 'done' : seg === cur ? 'cur' : '';
+        html += `<div class="pball ${cls}"><div class="pball-top"></div><div class="pball-mid"></div><div class="pball-center"></div></div>`;
+        if (i < dots - 1) html += `<div class="pconn"></div>`;
+    }
+    el.innerHTML = html;
+    el.style.display = 'flex';
+}
+
+/* =====================================================================
+   RENDER QUESTION
+===================================================================== */
+function renderQuestion(qid) {
+    const q   = Q[qid];
+    const sec = SECTIONS[q.section] || SECTIONS.triagem;
+    setAccent(q.section);
+
+    const isFirst = state.phase === 'triagem' && state.triIdx === 0;
+    const isLast  = state.phase === 'profile' && state.flowIdx === state.flow.length - 1;
+
+    let optsHtml = '';
+
+    if (q.type === 'single' || q.type === 'multi') {
+        const isMul = q.type === 'multi';
+        optsHtml = `<div class="options">` +
+            q.opts.map(o => {
+                const outroPart = o.outro
+                    ? `<input class="outro-input" type="text" placeholder="Descreva aqui..." id="outro-${qid}-${o.v}" oninput="saveOutro('${qid}','${o.v}',this.value)">`
+                    : '';
+                return `
+                <div class="opt" id="opt-${o.v}" onclick="pickOpt('${qid}','${o.v}',${isMul})">
+                    <div class="ctrl ${isMul ? 'sq' : ''}"></div>
+                    <div style="flex:1">${o.l}${outroPart}</div>
+                </div>`;
+            }).join('') +
+            `</div>`;
+    } else if (q.type === 'open') {
+        optsHtml = `<textarea class="open-area" id="open-${qid}" placeholder="${q.placeholder || ''}"
+            oninput="saveOpen('${qid}', this.value)">${getAns(qid) || ''}</textarea>`;
+    }
+
+    const monUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${q.pokemon}.png`;
+
+    document.getElementById('qarea').innerHTML = `
+        <div class="q-tag">${sec.label} · ${q.num}</div>
+        <div class="q-text">${q.text}</div>
+        ${q.hint ? `<div class="q-hint">${q.hint}</div>` : ''}
+        ${optsHtml}
+        <img class="card-mon" src="${monUrl}" alt="">
+        <div class="nav">
+            ${isFirst ? '' : `<button class="btn btn-back" onclick="goBack()">← Voltar</button>`}
+            <button class="btn btn-next" id="btn-next" onclick="goNext()">${isLast ? 'Enviar →' : 'Próxima →'}</button>
+        </div>
+    `;
+
+    // Restore previous selections
+    restoreSelections(qid);
+    updateCounter();
+    renderProgress();
+}
+
+/* =====================================================================
+   SELECTION LOGIC
+===================================================================== */
+function pickOpt(qid, val, isMulti) {
+    if (isMulti) {
+        let arr = getAns(qid) || [];
+        if (!Array.isArray(arr)) arr = [];
+
+        if (val === 'nada') {
+            // "Nada" deselects everything else
+            arr = arr.includes('nada') ? [] : ['nada'];
+        } else {
+            arr = arr.filter(v => v !== 'nada');  // deselect "nada"
+            if (arr.includes(val)) arr = arr.filter(v => v !== val);
+            else arr = [...arr, val];
+        }
+        state.answers[qid] = arr;
+    } else {
+        state.answers[qid] = val;
+    }
+
+    restoreSelections(qid);
+
+    // Show/hide outro field
+    const outroInput = document.getElementById(`outro-${qid}-outro`);
+    if (outroInput) {
+        const curAns = getAns(qid);
+        const outroSelected = Array.isArray(curAns) ? curAns.includes('outro') : curAns === 'outro';
+        outroInput.classList.toggle('visible', outroSelected);
+    }
+}
+
+function restoreSelections(qid) {
+    const q   = Q[qid];
+    if (q.type === 'open') return;
+
+    const ans = getAns(qid);
+    q.opts.forEach(o => {
+        const el = document.getElementById(`opt-${o.v}`);
+        if (!el) return;
+        const sel = Array.isArray(ans) ? ans.includes(o.v) : ans === o.v;
+        el.classList.toggle('sel', sel);
+
+        if (o.outro) {
+            const inp = document.getElementById(`outro-${qid}-${o.v}`);
+            if (inp) inp.classList.toggle('visible', sel);
+        }
+    });
+}
+
+function saveOutro(qid, val, text) {
+    state.answers[`${qid}_outro`] = text;
+}
+
+function saveOpen(qid, text) {
+    state.answers[qid] = text;
+}
+
+/* =====================================================================
+   COUNTER
+===================================================================== */
+function updateCounter() {
+    const el  = document.getElementById('counter');
+    const cur = currentStepNum();
+    const tot = totalSteps();
+    el.textContent = `Pergunta ${cur} de ${tot}`;
+    el.style.display = 'block';
+}
+
+/* =====================================================================
+   NAVIGATION
+===================================================================== */
+function startForm() {
+    document.getElementById('screen-cover').classList.remove('active');
+    document.getElementById('card').style.display = '';
+    renderQuestion(currentQid());
+}
+
+function goNext() {
+    const qid = currentQid();
+    const q   = Q[qid];
+
+    // Validate required (open is optional)
+    if (q.type !== 'open') {
+        const ans = getAns(qid);
+        if (!ans || (Array.isArray(ans) && ans.length === 0)) {
+            shakeMissing();
+            return;
+        }
+    }
+
+    // After q0
+    if (qid === 'q0' && getAns('q0') === 'nao') {
+        showScreen('screen-end-nao');
+        return;
+    }
+
+    // After q1 — build flow
+    if (qid === 'q1') {
+        buildFlow();
+    }
+
+    // After b3 — check if we need to insert b4
+    if (qid === 'b3') {
+        buildFlow();  // rebuild to include/exclude b4
+    }
+
+    // After e2 — rebuild to conditionally exclude e3
+    if (qid === 'e2') {
+        const oldIdx = state.flowIdx;
+        buildFlow();
+        state.flowIdx = oldIdx;
+    }
+
+    // Advance
+    if (state.phase === 'triagem') {
+        if (state.triIdx < state.triagem.length - 1) {
+            state.triIdx++;
+        } else {
+            state.phase   = 'profile';
+            state.flowIdx = 0;
+        }
+    } else {
+        if (state.flowIdx < state.flow.length - 1) {
+            state.flowIdx++;
+        } else {
+            submitForm();
+            return;
+        }
+    }
+
+    renderQuestion(currentQid());
+}
+
+function goBack() {
+    if (state.phase === 'profile' && state.flowIdx === 0) {
+        state.phase  = 'triagem';
+        state.triIdx = state.triagem.length - 1;
+    } else if (state.phase === 'profile') {
+        state.flowIdx--;
+    } else if (state.triIdx > 0) {
+        state.triIdx--;
+    } else {
+        // Back to cover
+        document.getElementById('card').style.display = 'none';
+        document.getElementById('progress').style.display = 'none';
+        document.getElementById('counter').style.display  = 'none';
+        showScreen('screen-cover');
+        return;
+    }
+    renderQuestion(currentQid());
+}
+
+function shakeMissing() {
+    const card = document.getElementById('card');
+    card.style.animation = 'none';
+    card.offsetHeight;
+    card.style.animation = 'shake .35s ease';
+    setTimeout(() => card.style.animation = '', 400);
+}
+
+/* =====================================================================
+   SCREENS
+===================================================================== */
+function showScreen(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    document.getElementById('progress').style.display = 'none';
+    document.getElementById('counter').style.display  = 'none';
+    document.getElementById('card').style.display     = 'none';
+}
+
+/* =====================================================================
+   SUBMIT
+===================================================================== */
+function buildPayload() {
+    return {
+        timestamp: new Date().toISOString(),
+        profile:   getAns('q1') || 'unknown',
+        answers:   { ...state.answers },
+    };
+}
+
+function submitForm() {
+    const btn = document.getElementById('btn-next');
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = `<span class="spinner"></span> Enviando...`;
+    }
+
+    lastPayload = buildPayload();
+
+    if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL === 'YOUR_APPS_SCRIPT_URL_HERE') {
+        console.log('Payload (sem URL configurada):', JSON.stringify(lastPayload, null, 2));
+        setTimeout(() => showScreen('screen-end-ok'), 600);
+        return;
+    }
+
+    fetch(APPS_SCRIPT_URL, {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify(lastPayload),
+    })
+    .then(r => { if (!r.ok) throw new Error('status ' + r.status); return r.json(); })
+    .then(() => showScreen('screen-end-ok'))
+    .catch(err => {
+        console.error('Erro ao enviar:', err);
+        showScreen('screen-end-err');
+    });
+}
+
+function retrySubmit() {
+    if (!lastPayload) { submitForm(); return; }
+    showScreen('screen-end-err');
+    document.getElementById('screen-end-err').classList.remove('active');
+
+    fetch(APPS_SCRIPT_URL, {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify(lastPayload),
+    })
+    .then(r => r.json())
+    .then(() => showScreen('screen-end-ok'))
+    .catch(() => showScreen('screen-end-err'));
+}
+
+/* =====================================================================
+   SHAKE KEYFRAME (injected via JS to avoid style conflicts)
+===================================================================== */
+const shakeStyle = document.createElement('style');
+shakeStyle.textContent = `
+@keyframes shake {
+    0%,100% { transform: translateX(0); }
+    20%     { transform: translateX(-6px); }
+    40%     { transform: translateX(6px); }
+    60%     { transform: translateX(-4px); }
+    80%     { transform: translateX(4px); }
+}`;
+document.head.appendChild(shakeStyle);
+
+</script>
+
+<!--
+=====================================================================
+GOOGLE APPS SCRIPT — INSTRUÇÕES DE SETUP
+=====================================================================
+
+1. Acesse: https://script.google.com
+2. Crie um novo projeto e cole o código abaixo:
+
+---
+
+function doPost(e) {
+  const sheet = SpreadsheetApp.openById('SEU_SPREADSHEET_ID').getActiveSheet();
+  const data  = JSON.parse(e.postData.contents);
+  const flat  = flattenAnswers(data);
+
+  if (sheet.getLastRow() === 0) {
+    sheet.appendRow(Object.keys(flat));
+  }
+  sheet.appendRow(Object.values(flat));
+
+  return ContentService.createTextOutput(JSON.stringify({ ok: true }))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+function flattenAnswers(data) {
+  const row = { timestamp: data.timestamp, profile: data.profile };
+  Object.assign(row, data.answers);
+  return row;
+}
+
+---
+
+3. Clique em "Implantar" → "Nova implantação" → Tipo: "App da Web"
+   - Executar como: Eu
+   - Quem pode acessar: Qualquer pessoa
+4. Copie a URL gerada e substitua 'YOUR_APPS_SCRIPT_URL_HERE' no topo do script deste arquivo.
+
+=====================================================================
+-->
+
+</body>
+</html>
