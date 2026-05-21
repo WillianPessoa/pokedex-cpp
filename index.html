@@ -466,6 +466,36 @@
         }
 
         /* =====================
+           LANGUAGE TOGGLE
+        ===================== */
+        #lang-toggle {
+            position: fixed;
+            top: 16px;
+            right: 16px;
+            background: white;
+            border: 1.5px solid var(--border);
+            border-radius: 20px;
+            padding: 6px 14px;
+            font-family: var(--font);
+            font-size: 12px;
+            font-weight: 800;
+            cursor: pointer;
+            z-index: 1000;
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            gap: 6px;
+            align-items: center;
+            user-select: none;
+            transition: box-shadow .15s;
+        }
+
+        #lang-toggle:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.12); }
+
+        .lang-opt { color: var(--muted); transition: color .15s; }
+        .lang-opt.active { color: var(--acc); }
+        .lang-sep { color: var(--border); }
+
+        /* =====================
            LOADING / SUBMIT STATE
         ===================== */
         .spinner {
@@ -487,6 +517,12 @@
 
 <div id="tip-popup"></div>
 
+<div id="lang-toggle" onclick="toggleLang()" title="Switch language / Trocar idioma">
+    <span class="lang-opt active" id="lang-pt">PT</span>
+    <span class="lang-sep">|</span>
+    <span class="lang-opt" id="lang-en">EN</span>
+</div>
+
 <div class="page">
 <div class="wrap">
 
@@ -503,23 +539,23 @@
     <!-- ===== COVER ===== -->
     <div class="card screen active" id="screen-cover">
         <div class="cover">
-            <div class="cover-label">Quem é esse Pokémon?</div>
+            <div class="cover-label" id="cover-tag">Quem é esse Pokémon?</div>
             <img class="cover-mon"
                  src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/6.png"
                  alt="">
-            <h1 class="cover-title">Pesquisa sobre<br><em>Nuzlocke</em></h1>
-            <p class="cover-desc">
+            <h1 class="cover-title" id="cover-title">Pesquisa sobre<br><em>Nuzlocke</em></h1>
+            <p class="cover-desc" id="cover-desc">
                 Queremos entender quem são os jogadores de Nuzlocke no Brasil — do casual ao hardcoreador de Emerald Kaizo.
                 São de 5 a 10 minutos.
             </p>
             <div class="badges">
-                <span class="badge">🕐 ~10 min</span>
-                <span class="badge">🔒 Anônimo</span>
-                <span class="badge">🇧🇷 PT-BR</span>
+                <span class="badge" id="badge-time">🕐 ~10 min</span>
+                <span class="badge" id="badge-anon">🔒 Anônimo</span>
+                <span class="badge" id="badge-lang">🇧🇷 PT-BR</span>
             </div>
         </div>
         <div class="nav">
-            <button class="btn btn-next" onclick="startForm()">Começar →</button>
+            <button class="btn btn-next" id="btn-start" onclick="startForm()">Começar →</button>
         </div>
     </div>
 
@@ -527,8 +563,8 @@
     <div class="card screen" id="screen-end-nao">
         <div class="end">
             <span class="end-icon">🎮</span>
-            <h2>Valeu mesmo assim!</h2>
-            <p>
+            <h2 id="end-nao-title">Valeu mesmo assim!</h2>
+            <p id="end-nao-desc">
                 O formulário é para jogadores de Pokémon, mas agradecemos sua curiosidade.
                 Quem sabe você não começa a jogar depois disso?
             </p>
@@ -539,8 +575,8 @@
     <div class="card screen" id="screen-end-ok">
         <div class="end">
             <span class="end-icon">🏆</span>
-            <h2>Run concluída!</h2>
-            <p>
+            <h2 id="end-ok-title">Run concluída!</h2>
+            <p id="end-ok-desc">
                 Suas respostas foram registradas. Muito obrigado por participar —
                 você está ajudando a mapear a comunidade de Nuzlocke no Brasil.
             </p>
@@ -551,13 +587,13 @@
     <div class="card screen" id="screen-end-err">
         <div class="end">
             <span class="end-icon">😵</span>
-            <h2>Pokémon fainted...</h2>
-            <p>
+            <h2 id="end-err-title">Pokémon fainted...</h2>
+            <p id="end-err-desc">
                 Algo deu errado ao enviar suas respostas. Tente novamente ou entre em contato.
             </p>
         </div>
         <div class="nav" style="margin-top:24px">
-            <button class="btn btn-next" onclick="retrySubmit()">Tentar novamente</button>
+            <button class="btn btn-next" id="btn-retry" onclick="retrySubmit()">Tentar novamente</button>
         </div>
     </div>
 
@@ -568,25 +604,87 @@
 
 <script>
 /* =====================================================================
+   SOURCE TRACKING — reads ?s= URL parameter
+   Exemplo de links por canal:
+     Facebook:  ?s=fb-nuzlocke-br
+     Reddit:    ?s=reddit-nuzlocke
+     Discord:   ?s=discord-pt
+     Twitter/X: ?s=twitter-br
+     WhatsApp:  ?s=whatsapp
+     Direto:    (sem parâmetro) → 'direct'
+===================================================================== */
+const SOURCE = new URLSearchParams(window.location.search).get('s') || 'direct';
+
+/* =====================================================================
    CONFIGURATION
-   Substitua pela URL do seu Google Apps Script após publicar.
-   Instruções de setup no README ou nos comentários ao final do arquivo.
 ===================================================================== */
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw0vYyvuxvSFZBFVO-7Ktpp7W0zBoHyF6_Dozf3wNnG0NKue9DDa1370OWEzNF9hkeA/exec';
+
+/* =====================================================================
+   UI STRINGS (PT / EN)
+===================================================================== */
+const UI = {
+    pt: {
+        cover_tag:     'Quem é esse Pokémon?',
+        cover_title:   'Pesquisa sobre<br><em>Nuzlocke</em>',
+        cover_desc:    'Queremos entender quem são os jogadores de Nuzlocke no Brasil — do casual ao hardcoreador de Emerald Kaizo. São de 5 a 10 minutos.',
+        badge_time:    '🕐 ~10 min',
+        badge_anon:    '🔒 Anônimo',
+        badge_lang:    '🇧🇷 PT-BR',
+        btn_start:     'Começar →',
+        btn_next:      'Próxima →',
+        btn_back:      '← Voltar',
+        btn_send:      'Enviar →',
+        btn_retry:     'Tentar novamente',
+        sending:       'Enviando...',
+        counter:       (cur, tot) => `Pergunta ${cur} de ${tot}`,
+        end_nao_title: 'Valeu mesmo assim!',
+        end_nao_desc:  'O formulário é para jogadores de Pokémon, mas agradecemos sua curiosidade. Quem sabe você não começa a jogar depois disso?',
+        end_ok_title:  'Run concluída!',
+        end_ok_desc:   'Suas respostas foram registradas. Muito obrigado por participar — você está ajudando a mapear a comunidade de Nuzlocke no Brasil.',
+        end_err_title: 'Pokémon fainted...',
+        end_err_desc:  'Algo deu errado ao enviar suas respostas. Tente novamente ou entre em contato.',
+        page_title:    'Pesquisa sobre Nuzlocke',
+        outro_ph:      'Descreva aqui...',
+    },
+    en: {
+        cover_tag:     "Who's that Pokémon?",
+        cover_title:   'Survey on<br><em>Nuzlocke</em>',
+        cover_desc:    'We want to understand who plays Nuzlocke in Brazil — from casual players to hardcore Emerald Kaizo runners. Takes 5 to 10 minutes.',
+        badge_time:    '🕐 ~10 min',
+        badge_anon:    '🔒 Anonymous',
+        badge_lang:    '🌐 EN',
+        btn_start:     'Start →',
+        btn_next:      'Next →',
+        btn_back:      '← Back',
+        btn_send:      'Submit →',
+        btn_retry:     'Try again',
+        sending:       'Sending...',
+        counter:       (cur, tot) => `Question ${cur} of ${tot}`,
+        end_nao_title: 'Thanks anyway!',
+        end_nao_desc:  "This survey is for Pokémon players, but we appreciate your curiosity. Maybe you'll start playing after this?",
+        end_ok_title:  'Run complete!',
+        end_ok_desc:   'Your answers have been recorded. Thank you so much for participating — you are helping map the Nuzlocke community in Brazil.',
+        end_err_title: 'Pokémon fainted...',
+        end_err_desc:  'Something went wrong while sending your answers. Please try again or get in touch.',
+        page_title:    'Nuzlocke Survey',
+        outro_ph:      'Describe here...',
+    },
+};
 
 /* =====================================================================
    SECTION COLORS (Pokémon type inspired)
 ===================================================================== */
 const SECTIONS = {
-    triagem: { color: '#e53e3e', light: '#fff5f5', border: '#fed7d7', label: 'Triagem' },
-    demo:    { color: '#805ad5', light: '#faf5ff', border: '#e9d8fd', label: 'Sobre você' },
-    device:  { color: '#b7791f', light: '#fffff0', border: '#fefcbf', label: 'Dispositivos' },
-    freq:    { color: '#2b6cb0', light: '#ebf8ff', border: '#bee3f8', label: 'Frequência' },
-    motiv:   { color: '#c05621', light: '#fffaf0', border: '#fbd38d', label: 'Motivação' },
-    share:   { color: '#276749', light: '#f0fff4', border: '#c6f6d5', label: 'Compartilhamento' },
-    barrier: { color: '#4a5568', light: '#f7fafc', border: '#e2e8f0', label: 'Barreiras' },
-    abandon: { color: '#553c9a', light: '#faf5ff', border: '#d6bcfa', label: 'Suas runs' },
-    win:     { color: '#975a16', light: '#fffaf0', border: '#f6ad55', label: 'Conquistas' },
+    triagem: { color: '#e53e3e', light: '#fff5f5', border: '#fed7d7', label: 'Triagem',          label_en: 'Screening'    },
+    demo:    { color: '#805ad5', light: '#faf5ff', border: '#e9d8fd', label: 'Sobre você',       label_en: 'About you'    },
+    device:  { color: '#b7791f', light: '#fffff0', border: '#fefcbf', label: 'Dispositivos',     label_en: 'Devices'      },
+    freq:    { color: '#2b6cb0', light: '#ebf8ff', border: '#bee3f8', label: 'Frequência',       label_en: 'Frequency'    },
+    motiv:   { color: '#c05621', light: '#fffaf0', border: '#fbd38d', label: 'Motivação',        label_en: 'Motivation'   },
+    share:   { color: '#276749', light: '#f0fff4', border: '#c6f6d5', label: 'Compartilhamento', label_en: 'Sharing'      },
+    barrier: { color: '#4a5568', light: '#f7fafc', border: '#e2e8f0', label: 'Barreiras',        label_en: 'Barriers'     },
+    abandon: { color: '#553c9a', light: '#faf5ff', border: '#d6bcfa', label: 'Suas runs',        label_en: 'Your runs'    },
+    win:     { color: '#975a16', light: '#fffaf0', border: '#f6ad55', label: 'Conquistas',       label_en: 'Achievements' },
 };
 
 /* =====================================================================
@@ -595,381 +693,418 @@ const SECTIONS = {
 const Q = {
     q0: {
         section: 'triagem', num: '1 de 2',
-        text: 'Você joga ou já jogou Pokémon?',
+        text:    'Você joga ou já jogou Pokémon?',
+        text_en: 'Do you play or have you played Pokémon?',
         type: 'single',
         pokemon: 133,
         opts: [
-            { v: 'sim-atual',  l: 'Sim, jogo atualmente' },
-            { v: 'sim-antes',  l: 'Já joguei, mas faz tempo que não jogo' },
-            { v: 'nao',        l: 'Não, nunca joguei' },
+            { v: 'sim-atual', l: 'Sim, jogo atualmente',                   l_en: 'Yes, I currently play'           },
+            { v: 'sim-antes', l: 'Já joguei, mas faz tempo que não jogo',  l_en: 'I used to play, but not anymore' },
+            { v: 'nao',       l: 'Não, nunca joguei',                      l_en: 'No, I have never played'         },
         ],
     },
     q1: {
         section: 'triagem', num: '2 de 2',
-        text: 'Qual é a sua relação com o Nuzlocke?',
+        text:    'Qual é a sua relação com o Nuzlocke?',
+        text_en: 'What is your relationship with Nuzlocke?',
         type: 'single',
         pokemon: 133,
         opts: [
-            { v: 'nao-conhece',        l: 'Nunca ouvi falar em Nuzlocke' },
-            { v: 'conhece-nao-tentou', l: 'Já ouvi falar, mas nunca tentei' },
-            { v: 'tentou',             l: 'Já tentei, mas nunca completei uma run' },
-            { v: 'completou',          l: 'Já completei pelo menos uma run' },
+            { v: 'nao-conhece',        l: 'Nunca ouvi falar em Nuzlocke',          l_en: 'I have never heard of Nuzlocke'          },
+            { v: 'conhece-nao-tentou', l: 'Já ouvi falar, mas nunca tentei',        l_en: 'I have heard of it, but never tried'     },
+            { v: 'tentou',             l: 'Já tentei, mas nunca completei uma run', l_en: 'I have tried, but never completed a run' },
+            { v: 'completou',          l: 'Já completei pelo menos uma run',        l_en: 'I have completed at least one run'       },
         ],
     },
 
     /* ── DEMOGRAFIA ── */
     a1: {
         section: 'demo', num: 'A1',
-        text: 'Qual é a sua faixa etária?',
+        text:    'Qual é a sua faixa etária?',
+        text_en: 'What is your age range?',
         type: 'single', pokemon: 35,
         opts: [
-            { v: '<13',   l: 'Menos de 13 anos' },
-            { v: '13-17', l: '13–17 anos' },
-            { v: '18-24', l: '18–24 anos' },
-            { v: '25-34', l: '25–34 anos' },
-            { v: '35-44', l: '35–44 anos' },
-            { v: '45+',   l: '45 anos ou mais' },
+            { v: '<13',   l: 'Menos de 13 anos', l_en: 'Under 13'    },
+            { v: '13-17', l: '13–17 anos',        l_en: '13–17'       },
+            { v: '18-24', l: '18–24 anos',        l_en: '18–24'       },
+            { v: '25-34', l: '25–34 anos',        l_en: '25–34'       },
+            { v: '35-44', l: '35–44 anos',        l_en: '35–44'       },
+            { v: '45+',   l: '45 anos ou mais',   l_en: '45 or older' },
         ],
     },
     a2: {
         section: 'demo', num: 'A2',
-        text: 'Em que período você começou a jogar Pokémon?',
+        text:    'Em que período você começou a jogar Pokémon?',
+        text_en: 'When did you start playing Pokémon?',
         type: 'single', pokemon: 142,
         opts: [
-            { v: 'antes-2000', l: 'Antes de 2000' },
-            { v: '2000-2005',  l: '2000–2005' },
-            { v: '2006-2010',  l: '2006–2010' },
-            { v: '2011-2016',  l: '2011–2016' },
-            { v: '2017-2022',  l: '2017–2022' },
-            { v: '2023+',      l: '2023 em diante' },
-            { v: 'nao-lembro', l: 'Não lembro ao certo' },
+            { v: 'antes-2000', l: 'Antes de 2000',      l_en: 'Before 2000'        },
+            { v: '2000-2005',  l: '2000–2005',           l_en: '2000–2005'          },
+            { v: '2006-2010',  l: '2006–2010',           l_en: '2006–2010'          },
+            { v: '2011-2016',  l: '2011–2016',           l_en: '2011–2016'          },
+            { v: '2017-2022',  l: '2017–2022',           l_en: '2017–2022'          },
+            { v: '2023+',      l: '2023 em diante',      l_en: '2023 onwards'       },
+            { v: 'nao-lembro', l: 'Não lembro ao certo', l_en: "I don't remember"   },
         ],
     },
     a2b: {
         section: 'demo', num: 'A2b',
-        text: 'Qual foi o primeiro jogo de Pokémon que você jogou?',
+        text:    'Qual foi o primeiro jogo de Pokémon que você jogou?',
+        text_en: 'What was the first Pokémon game you played?',
         type: 'single', pokemon: 143,
         opts: [
-            { v: 'gen1',  l: 'Red / Blue / Yellow' },
-            { v: 'gen2',  l: 'Gold / Silver / Crystal' },
-            { v: 'gen3',  l: 'Ruby / Sapphire / Emerald / FireRed / LeafGreen' },
-            { v: 'gen4',  l: 'Diamond / Pearl / Platinum / HeartGold / SoulSilver' },
-            { v: 'gen5',  l: 'Black / White / Black 2 / White 2' },
-            { v: 'gen6',  l: 'X / Y / Omega Ruby / Alpha Sapphire' },
-            { v: 'gen7',  l: 'Sun / Moon / Ultra Sun / Ultra Moon' },
-            { v: 'gen8',  l: 'Sword / Shield / Brilliant Diamond / Shining Pearl / Legends: Arceus' },
-            { v: 'gen9',  l: 'Scarlet / Violet' },
-            { v: 'nao-lembro', l: 'Não lembro ao certo' },
+            { v: 'gen1',       l: 'Red / Blue / Yellow',                                                  l_en: 'Red / Blue / Yellow'                                                  },
+            { v: 'gen2',       l: 'Gold / Silver / Crystal',                                              l_en: 'Gold / Silver / Crystal'                                              },
+            { v: 'gen3',       l: 'Ruby / Sapphire / Emerald / FireRed / LeafGreen',                      l_en: 'Ruby / Sapphire / Emerald / FireRed / LeafGreen'                      },
+            { v: 'gen4',       l: 'Diamond / Pearl / Platinum / HeartGold / SoulSilver',                  l_en: 'Diamond / Pearl / Platinum / HeartGold / SoulSilver'                  },
+            { v: 'gen5',       l: 'Black / White / Black 2 / White 2',                                    l_en: 'Black / White / Black 2 / White 2'                                    },
+            { v: 'gen6',       l: 'X / Y / Omega Ruby / Alpha Sapphire',                                  l_en: 'X / Y / Omega Ruby / Alpha Sapphire'                                  },
+            { v: 'gen7',       l: 'Sun / Moon / Ultra Sun / Ultra Moon',                                  l_en: 'Sun / Moon / Ultra Sun / Ultra Moon'                                  },
+            { v: 'gen8',       l: 'Sword / Shield / Brilliant Diamond / Shining Pearl / Legends: Arceus', l_en: 'Sword / Shield / Brilliant Diamond / Shining Pearl / Legends: Arceus' },
+            { v: 'gen9',       l: 'Scarlet / Violet',                                                     l_en: 'Scarlet / Violet'                                                     },
+            { v: 'nao-lembro', l: 'Não lembro ao certo',                                                  l_en: "I don't remember"                                                     },
         ],
     },
     a2c: {
         section: 'demo', num: 'A2c',
-        text: 'Qual é o seu jogo de Pokémon favorito?',
+        text:    'Qual é o seu jogo de Pokémon favorito?',
+        text_en: 'What is your favorite Pokémon game?',
         type: 'single', pokemon: 384,
         opts: [
-            { v: 'gen1',  l: 'Red / Blue / Yellow' },
-            { v: 'gen2',  l: 'Gold / Silver / Crystal' },
-            { v: 'gen3',  l: 'Ruby / Sapphire / Emerald / FireRed / LeafGreen' },
-            { v: 'gen4',  l: 'Diamond / Pearl / Platinum / HeartGold / SoulSilver' },
-            { v: 'gen5',  l: 'Black / White / Black 2 / White 2' },
-            { v: 'gen6',  l: 'X / Y / Omega Ruby / Alpha Sapphire' },
-            { v: 'gen7',  l: 'Sun / Moon / Ultra Sun / Ultra Moon' },
-            { v: 'gen8',  l: 'Sword / Shield / Brilliant Diamond / Shining Pearl / Legends: Arceus' },
-            { v: 'gen9',  l: 'Scarlet / Violet' },
-            { v: 'hack',  l: 'Um ROM hack', outro: true },
+            { v: 'gen1', l: 'Red / Blue / Yellow',                                                  l_en: 'Red / Blue / Yellow'                                                  },
+            { v: 'gen2', l: 'Gold / Silver / Crystal',                                              l_en: 'Gold / Silver / Crystal'                                              },
+            { v: 'gen3', l: 'Ruby / Sapphire / Emerald / FireRed / LeafGreen',                      l_en: 'Ruby / Sapphire / Emerald / FireRed / LeafGreen'                      },
+            { v: 'gen4', l: 'Diamond / Pearl / Platinum / HeartGold / SoulSilver',                  l_en: 'Diamond / Pearl / Platinum / HeartGold / SoulSilver'                  },
+            { v: 'gen5', l: 'Black / White / Black 2 / White 2',                                    l_en: 'Black / White / Black 2 / White 2'                                    },
+            { v: 'gen6', l: 'X / Y / Omega Ruby / Alpha Sapphire',                                  l_en: 'X / Y / Omega Ruby / Alpha Sapphire'                                  },
+            { v: 'gen7', l: 'Sun / Moon / Ultra Sun / Ultra Moon',                                  l_en: 'Sun / Moon / Ultra Sun / Ultra Moon'                                  },
+            { v: 'gen8', l: 'Sword / Shield / Brilliant Diamond / Shining Pearl / Legends: Arceus', l_en: 'Sword / Shield / Brilliant Diamond / Shining Pearl / Legends: Arceus' },
+            { v: 'gen9', l: 'Scarlet / Violet',                                                     l_en: 'Scarlet / Violet'                                                     },
+            { v: 'hack', l: 'Um ROM hack', outro: true,                                             l_en: 'A ROM hack'                                                           },
         ],
     },
     a3: {
         section: 'demo', num: 'A3',
-        text: 'Quando você fez sua primeira tentativa de Nuzlocke?',
+        text:    'Quando você fez sua primeira tentativa de Nuzlocke?',
+        text_en: 'When did you make your first Nuzlocke attempt?',
         type: 'single', pokemon: 158,
         opts: [
-            { v: '<1ano',  l: 'Menos de 1 ano atrás' },
-            { v: '1-2',    l: '1–2 anos atrás' },
-            { v: '3-5',    l: '3–5 anos atrás' },
-            { v: '5+',     l: 'Mais de 5 anos atrás' },
-            { v: 'nao-lembro', l: 'Não lembro ao certo' },
+            { v: '<1ano',      l: 'Menos de 1 ano atrás',  l_en: 'Less than 1 year ago'  },
+            { v: '1-2',        l: '1–2 anos atrás',         l_en: '1–2 years ago'         },
+            { v: '3-5',        l: '3–5 anos atrás',         l_en: '3–5 years ago'         },
+            { v: '5+',         l: 'Mais de 5 anos atrás',   l_en: 'More than 5 years ago' },
+            { v: 'nao-lembro', l: 'Não lembro ao certo',    l_en: "I don't remember"      },
         ],
     },
 
     /* ── DISPOSITIVOS ── */
     b1: {
         section: 'device', num: 'B1',
-        text: 'Em quais dispositivos você costuma jogar Pokémon?',
-        hint: 'Pode marcar mais de uma opção.',
+        text:    'Em quais dispositivos você costuma jogar Pokémon?',
+        text_en: 'On which devices do you usually play Pokémon?',
+        hint:    'Pode marcar mais de uma opção.',
+        hint_en: 'Select all that apply.',
         type: 'multi', pokemon: 137,
         opts: [
-            { v: 'celular',  l: 'Celular (Pokémon Go, Masters, emulador)' },
-            { v: 'pc-mac',   l: 'Emulador no computador (PC ou Mac)' },
-            { v: 'switch',   l: 'Nintendo Switch' },
-            { v: '3ds',      l: 'Nintendo 3DS / 2DS' },
-            { v: 'gba-ds',   l: 'Game Boy Advance / DS (cartucho original)' },
-            { v: 'outro',    l: 'Outro', outro: true },
+            { v: 'celular', l: 'Celular (Pokémon Go, Masters, emulador)',     l_en: 'Mobile (Pokémon Go, Masters, emulator)'     },
+            { v: 'pc-mac',  l: 'Emulador no computador (PC ou Mac)',          l_en: 'Emulator on computer (PC or Mac)'           },
+            { v: 'switch',  l: 'Nintendo Switch',                             l_en: 'Nintendo Switch'                            },
+            { v: '3ds',     l: 'Nintendo 3DS / 2DS',                          l_en: 'Nintendo 3DS / 2DS'                         },
+            { v: 'gba-ds',  l: 'Game Boy Advance / DS (cartucho original)',   l_en: 'Game Boy Advance / DS (original cartridge)' },
+            { v: 'outro',   l: 'Outro', outro: true,                          l_en: 'Other'                                      },
         ],
     },
     b2: {
         section: 'device', num: 'B2',
-        text: 'Em qual dispositivo você geralmente faz seus Nuzlockes?',
+        text:    'Em qual dispositivo você geralmente faz seus Nuzlockes?',
+        text_en: 'On which device do you usually do your Nuzlockes?',
         type: 'single', pokemon: 233,
         opts: [
-            { v: 'celular',  l: 'Celular (emulador)' },
-            { v: 'pc-mac',   l: 'Emulador no computador' },
-            { v: 'switch',   l: 'Nintendo Switch' },
-            { v: '3ds',      l: 'Nintendo 3DS / 2DS' },
-            { v: 'gba-ds',   l: 'Game Boy Advance / DS (cartucho original)' },
-            { v: 'outro',    l: 'Outro', outro: true },
+            { v: 'celular', l: 'Celular (emulador)',                        l_en: 'Mobile (emulator)'                          },
+            { v: 'pc-mac',  l: 'Emulador no computador',                    l_en: 'Emulator on computer'                       },
+            { v: 'switch',  l: 'Nintendo Switch',                           l_en: 'Nintendo Switch'                            },
+            { v: '3ds',     l: 'Nintendo 3DS / 2DS',                        l_en: 'Nintendo 3DS / 2DS'                         },
+            { v: 'gba-ds',  l: 'Game Boy Advance / DS (cartucho original)', l_en: 'Game Boy Advance / DS (original cartridge)' },
+            { v: 'outro',   l: 'Outro', outro: true,                        l_en: 'Other'                                      },
         ],
     },
     b3: {
         section: 'device', num: 'B3',
-        text: 'Você joga ou já jogou algum ROM hack de Pokémon?',
+        text:    'Você joga ou já jogou algum ROM hack de Pokémon?',
+        text_en: 'Do you play or have you played any Pokémon ROM hacks?',
         type: 'single', pokemon: 474,
         opts: [
-            { v: 'nao',          l: 'Não, nunca joguei ROM hack' },
-            { v: 'sim-oficial',  l: 'Sim, mas prefiro os jogos oficiais' },
-            { v: 'ambos',        l: 'Jogo os dois igualmente' },
-            { v: 'prefiro-rom',  l: 'Prefiro ROM hacks' },
+            { v: 'nao',         l: 'Não, nunca joguei ROM hack',        l_en: 'No, I have never played a ROM hack' },
+            { v: 'sim-oficial', l: 'Sim, mas prefiro os jogos oficiais', l_en: 'Yes, but I prefer official games'  },
+            { v: 'ambos',       l: 'Jogo os dois igualmente',            l_en: 'I play both equally'               },
+            { v: 'prefiro-rom', l: 'Prefiro ROM hacks',                  l_en: 'I prefer ROM hacks'                },
         ],
     },
     b4: {
         section: 'device', num: 'B4',
-        text: 'Quais ROM hacks você já usou numa run?',
-        hint: 'Pode marcar mais de uma opção.',
+        text:    'Quais ROM hacks você já usou numa run?',
+        text_en: 'Which ROM hacks have you used in a run?',
+        hint:    'Pode marcar mais de uma opção.',
+        hint_en: 'Select all that apply.',
         type: 'multi', pokemon: 474,
         opts: [
-            { v: 'radical-red',      l: 'Radical Red' },
-            { v: 'unbound',          l: 'Pokémon Unbound' },
-            { v: 'emerald-kaizo',    l: 'Emerald Kaizo' },
-            { v: 'renegade-plat',    l: 'Renegade Platinum' },
-            { v: 'blaze-black',      l: 'Blaze Black / Volt White' },
-            { v: 'gaia',             l: 'Pokémon Gaia' },
-            { v: 'glazed',           l: 'Pokémon Glazed' },
-            { v: 'insurgence',       l: 'Pokémon Insurgence' },
-            { v: 'outro',            l: 'Outro', outro: true },
+            { v: 'radical-red',   l: 'Radical Red',             l_en: 'Radical Red'            },
+            { v: 'unbound',       l: 'Pokémon Unbound',          l_en: 'Pokémon Unbound'        },
+            { v: 'emerald-kaizo', l: 'Emerald Kaizo',            l_en: 'Emerald Kaizo'          },
+            { v: 'renegade-plat', l: 'Renegade Platinum',        l_en: 'Renegade Platinum'      },
+            { v: 'blaze-black',   l: 'Blaze Black / Volt White', l_en: 'Blaze Black / Volt White' },
+            { v: 'gaia',          l: 'Pokémon Gaia',             l_en: 'Pokémon Gaia'           },
+            { v: 'glazed',        l: 'Pokémon Glazed',           l_en: 'Pokémon Glazed'         },
+            { v: 'insurgence',    l: 'Pokémon Insurgence',       l_en: 'Pokémon Insurgence'     },
+            { v: 'outro',         l: 'Outro', outro: true,       l_en: 'Other'                  },
         ],
     },
 
     /* ── FREQUÊNCIA ── */
     c1: {
         section: 'freq', num: 'C1',
-        text: 'Com que frequência você joga Pokémon atualmente?',
+        text:    'Com que frequência você joga Pokémon atualmente?',
+        text_en: 'How often do you currently play Pokémon?',
         type: 'single', pokemon: 143,
         opts: [
-            { v: 'diario',      l: 'Todo dia' },
-            { v: 'semana',      l: 'Algumas vezes por semana' },
-            { v: 'mes',         l: 'Algumas vezes por mês' },
-            { v: 'ano-intenso', l: 'Uma vez por ano (alguns dias intensos e depois paro)' },
-            { v: '>1ano',       l: 'Levo mais de um ano para terminar um jogo' },
-            { v: 'raramente',   l: 'Raramente (sem frequência definida)' },
-            { v: 'so-nuzlocke', l: 'Só jogo quando estou numa run de Nuzlocke' },
+            { v: 'diario',      l: 'Todo dia',                                             l_en: 'Every day'                                    },
+            { v: 'semana',      l: 'Algumas vezes por semana',                             l_en: 'A few times a week'                           },
+            { v: 'mes',         l: 'Algumas vezes por mês',                                l_en: 'A few times a month'                          },
+            { v: 'ano-intenso', l: 'Uma vez por ano (alguns dias intensos e depois paro)', l_en: 'Once a year (a few intense days, then I stop)' },
+            { v: '>1ano',       l: 'Levo mais de um ano para terminar um jogo',            l_en: 'It takes me more than a year to finish a game' },
+            { v: 'raramente',   l: 'Raramente (sem frequência definida)',                  l_en: 'Rarely (no set frequency)'                    },
+            { v: 'so-nuzlocke', l: 'Só jogo quando estou numa run de Nuzlocke',           l_en: "Only when I'm on a Nuzlocke run"              },
         ],
     },
     c2: {
         section: 'freq', num: 'C2',
-        text: 'Numa run de Nuzlocke, quanto tempo por sessão você costuma jogar?',
+        text:    'Numa run de Nuzlocke, quanto tempo por sessão você costuma jogar?',
+        text_en: 'During a Nuzlocke run, how long do you usually play per session?',
         type: 'single', pokemon: 52,
         opts: [
-            { v: '<30',     l: 'Menos de 30 minutos' },
-            { v: '30-1h',   l: '30 minutos – 1 hora' },
-            { v: '1-2h',    l: '1 hora – 2 horas' },
-            { v: '>2h',     l: 'Mais de 2 horas' },
-            { v: 'depende', l: 'Depende muito do momento da run' },
+            { v: '<30',     l: 'Menos de 30 minutos',             l_en: 'Less than 30 minutes'                     },
+            { v: '30-1h',   l: '30 minutos – 1 hora',            l_en: '30 minutes – 1 hour'                      },
+            { v: '1-2h',    l: '1 hora – 2 horas',               l_en: '1 hour – 2 hours'                         },
+            { v: '>2h',     l: 'Mais de 2 horas',                 l_en: 'More than 2 hours'                        },
+            { v: 'depende', l: 'Depende muito do momento da run', l_en: 'It depends a lot on the stage of the run' },
         ],
     },
 
     /* ── MOTIVAÇÃO ── */
     d1: {
         section: 'motiv', num: 'D1',
-        text: 'O que te motivou a tentar um Nuzlocke pela primeira vez?',
+        text:    'O que te motivou a tentar um Nuzlocke pela primeira vez?',
+        text_en: 'What motivated you to try a Nuzlocke for the first time?',
         type: 'single', pokemon: 390,
         opts: [
-            { v: 'stream',       l: 'Vi alguém jogando (stream ou YouTube)' },
-            { v: 'desafio',      l: 'Queria mais desafio no Pokémon' },
-            { v: 'amigo',        l: 'Recomendação de amigo' },
-            { v: 'curiosidade',  l: 'Curiosidade sobre as regras' },
-            { v: 'rejog',        l: 'Queria reviver um jogo antigo de forma nova' },
-            { v: 'outro',        l: 'Outro', outro: true },
+            { v: 'stream',      l: 'Vi alguém jogando (stream ou YouTube)',     l_en: 'I watched someone playing (stream or YouTube)' },
+            { v: 'desafio',     l: 'Queria mais desafio no Pokémon',             l_en: 'I wanted more of a challenge in Pokémon'       },
+            { v: 'amigo',       l: 'Recomendação de amigo',                      l_en: 'A friend recommended it'                       },
+            { v: 'curiosidade', l: 'Curiosidade sobre as regras',                l_en: 'Curiosity about the rules'                     },
+            { v: 'rejog',       l: 'Queria reviver um jogo antigo de forma nova', l_en: 'I wanted to replay an old game in a new way'  },
+            { v: 'outro',       l: 'Outro', outro: true,                         l_en: 'Other'                                         },
         ],
     },
     d2: {
         section: 'motiv', num: 'D2',
-        text: 'O que te faz continuar jogando Nuzlockes?',
-        hint: 'Pode marcar mais de uma opção.',
+        text:    'O que te faz continuar jogando Nuzlockes?',
+        text_en: 'What keeps you playing Nuzlockes?',
+        hint:    'Pode marcar mais de uma opção.',
+        hint_en: 'Select all that apply.',
         type: 'multi', pokemon: 6,
         opts: [
-            { v: 'tensao',       l: 'A tensão de não poder perder' },
-            { v: 'vinculo',      l: 'O vínculo com os Pokémons' },
-            { v: 'conquista',    l: 'A sensação de conquista ao terminar' },
-            { v: 'rejog',        l: 'É uma forma de rejogabilidade' },
-            { v: 'comunidade',   l: 'Compartilhar a experiência com outros' },
-            { v: 'outro',        l: 'Outro', outro: true },
+            { v: 'tensao',     l: 'A tensão de não poder perder',          l_en: 'The tension of not being able to lose'   },
+            { v: 'vinculo',    l: 'O vínculo com os Pokémons',             l_en: 'The bond with my Pokémon'                },
+            { v: 'conquista',  l: 'A sensação de conquista ao terminar',   l_en: 'The sense of achievement when finishing' },
+            { v: 'rejog',      l: 'É uma forma de rejogabilidade',         l_en: "It's a way to add replayability"         },
+            { v: 'comunidade', l: 'Compartilhar a experiência com outros', l_en: 'Sharing the experience with others'      },
+            { v: 'outro',      l: 'Outro', outro: true,                    l_en: 'Other'                                   },
         ],
     },
     d3: {
         section: 'motiv', num: 'D3',
-        text: 'Você usa regras extras além das básicas (<span class="tip" data-tip="Pokémon que desmaia é eliminado da run permanentemente — deve ser liberado ou guardado.">permadeath</span> + <span class="tip" data-tip="Só é permitido capturar o primeiro Pokémon encontrado em cada rota.">first encounter</span>)?',
+        text:    'Você usa regras extras além das básicas (<span class="tip" data-tip="Pokémon que desmaia é eliminado da run permanentemente — deve ser liberado ou guardado." data-tip-en="A Pokémon that faints is permanently eliminated from the run — must be released or boxed.">permadeath</span> + <span class="tip" data-tip="Só é permitido capturar o primeiro Pokémon encontrado em cada rota." data-tip-en="You can only catch the first Pokémon you encounter in each route.">first encounter</span>)?',
+        text_en: 'Do you use extra rules beyond the basics (<span class="tip" data-tip="Pokémon que desmaia é eliminado da run permanentemente — deve ser liberado ou guardado." data-tip-en="A Pokémon that faints is permanently eliminated from the run — must be released or boxed.">permadeath</span> + <span class="tip" data-tip="Só é permitido capturar o primeiro Pokémon encontrado em cada rota." data-tip-en="You can only catch the first Pokémon you encounter in each route.">first encounter</span>)?',
         type: 'single', pokemon: 282,
         opts: [
-            { v: 'so-basicas',   l: 'Não, só as regras básicas' },
-            { v: 'add-proprias', l: 'Sim, adiciono algumas regras próprias' },
-            { v: 'crio',         l: 'Sim, crio meus próprios rulesets' },
-            { v: 'terceiros',    l: 'Uso rulesets prontos de terceiros' },
+            { v: 'so-basicas',   l: 'Não, só as regras básicas',             l_en: 'No, just the basic rules'         },
+            { v: 'add-proprias', l: 'Sim, adiciono algumas regras próprias', l_en: 'Yes, I add a few of my own rules' },
+            { v: 'crio',         l: 'Sim, crio meus próprios rulesets',      l_en: 'Yes, I create my own rulesets'    },
+            { v: 'terceiros',    l: 'Uso rulesets prontos de terceiros',      l_en: 'I use third-party rulesets'       },
         ],
     },
     d3b: {
         section: 'motiv', num: 'D3b',
-        text: 'Quais regras extras você costuma usar?',
-        hint: 'Pode marcar mais de uma opção.',
+        text:    'Quais regras extras você costuma usar?',
+        text_en: 'Which extra rules do you usually use?',
+        hint:    'Pode marcar mais de uma opção.',
+        hint_en: 'Select all that apply.',
         type: 'multi', pokemon: 282,
         opts: [
-            { v: 'dupes',      l: 'Dupes clause — pode trocar se já tem o Pokémon da rota' },
-            { v: 'shiny',      l: 'Shiny clause — shiny encontrado sempre pode ser capturado' },
-            { v: 'level-cap',  l: 'Level cap — não nivela acima do ace do próximo gym' },
-            { v: 'set-mode',   l: 'Set mode — sem troca de Pokémon antes de batalha' },
-            { v: 'sem-itens',  l: 'Sem itens de cura durante batalhas' },
-            { v: 'blackout',   l: 'Blackout = fim da run (perder todos encerra)' },
-            { v: 'lendarios',  l: 'Lendários não podem ser capturados ou usados' },
-            { v: 'gifts',      l: 'Pokémons de presente contam como encounter da rota' },
-            { v: 'hardcore',   l: 'Hardcore Nuzlocke (level cap + sem itens + set mode)' },
-            { v: 'wedlocke',   l: 'Wedlocke — Pokémons em pares macho/fêmea' },
-            { v: 'monotype',   l: 'Monotype — só Pokémons de um único tipo' },
-            { v: 'outro',      l: 'Outro', outro: true },
+            { v: 'dupes',     l: 'Dupes clause — pode trocar se já tem o Pokémon da rota',    l_en: "Dupes clause — can swap if you already have the route's Pokémon"   },
+            { v: 'shiny',     l: 'Shiny clause — shiny encontrado sempre pode ser capturado', l_en: 'Shiny clause — any shiny encountered can always be caught'          },
+            { v: 'level-cap', l: 'Level cap — não nivela acima do ace do próximo gym',        l_en: "Level cap — don't level above the next gym leader's ace"            },
+            { v: 'set-mode',  l: 'Set mode — sem troca de Pokémon antes de batalha',          l_en: 'Set mode — no switching Pokémon before battle'                      },
+            { v: 'sem-itens', l: 'Sem itens de cura durante batalhas',                        l_en: 'No healing items during battles'                                    },
+            { v: 'blackout',  l: 'Blackout = fim da run (perder todos encerra)',               l_en: 'Blackout = run over (losing all ends the run)'                      },
+            { v: 'lendarios', l: 'Lendários não podem ser capturados ou usados',              l_en: 'Legendary Pokémon cannot be caught or used'                         },
+            { v: 'gifts',     l: 'Pokémons de presente contam como encounter da rota',        l_en: 'Gift Pokémon count as the route encounter'                          },
+            { v: 'hardcore',  l: 'Hardcore Nuzlocke (level cap + sem itens + set mode)',      l_en: 'Hardcore Nuzlocke (level cap + no items + set mode)'                },
+            { v: 'wedlocke',  l: 'Wedlocke — Pokémons em pares macho/fêmea',                 l_en: 'Wedlocke — Pokémon paired as male/female'                           },
+            { v: 'monotype',  l: 'Monotype — só Pokémons de um único tipo',                  l_en: 'Monotype — only Pokémon of a single type'                           },
+            { v: 'outro',     l: 'Outro', outro: true,                                        l_en: 'Other'                                                              },
         ],
     },
     d3c: {
         section: 'motiv', num: 'D3c',
-        text: 'Você joga ou já jogou outras modalidades de challenge run?',
-        hint: 'Pode marcar mais de uma opção.',
+        text:    'Você joga ou já jogou outras modalidades de challenge run?',
+        text_en: 'Do you play or have you played other challenge run modes?',
+        hint:    'Pode marcar mais de uma opção.',
+        hint_en: 'Select all that apply.',
         type: 'multi', pokemon: 196,
         opts: [
-            { v: 'genlock',    l: 'Genlock — só Pokémons da geração do jogo' },
-            { v: 'randomizer', l: 'Randomizer — encounters e/ou Pokémons aleatórios' },
-            { v: 'soul-link',  l: 'Soul Link — run cooperativa pareada com outra pessoa' },
-            { v: 'bingo',      l: 'Nuzlocke Bingo — completar objetivos num cartão' },
-            { v: 'nao',        l: 'Não, só Nuzlocke padrão' },
-            { v: 'outro',      l: 'Outro', outro: true },
+            { v: 'genlock',    l: 'Genlock — só Pokémons da geração do jogo',           l_en: "Genlock — only Pokémon from the game's generation"          },
+            { v: 'randomizer', l: 'Randomizer — encounters e/ou Pokémons aleatórios',   l_en: 'Randomizer — random encounters and/or Pokémon'              },
+            { v: 'soul-link',  l: 'Soul Link — run cooperativa pareada com outra pessoa', l_en: 'Soul Link — cooperative run paired with another person'   },
+            { v: 'bingo',      l: 'Nuzlocke Bingo — completar objetivos num cartão',    l_en: 'Nuzlocke Bingo — complete objectives on a card'             },
+            { v: 'nao',        l: 'Não, só Nuzlocke padrão',                            l_en: 'No, just standard Nuzlocke'                                 },
+            { v: 'outro',      l: 'Outro', outro: true,                                 l_en: 'Other'                                                      },
         ],
     },
     d4: {
         section: 'motiv', num: 'D4',
-        text: 'Como você reage quando perde um Pokémon importante?',
+        text:    'Como você reage quando perde um Pokémon importante?',
+        text_en: 'How do you react when you lose an important Pokémon?',
         type: 'single', pokemon: 93,
         opts: [
-            { v: 'reinicio',     l: 'Reinicio a run do zero' },
-            { v: 'chateado-ok',  l: 'Fico chateado mas continuo' },
-            { v: 'natural',      l: 'Encaro como parte natural do jogo' },
-            { v: 'arquivo',      l: 'Arquivo a save e começo uma nova run' },
+            { v: 'reinicio',    l: 'Reinicio a run do zero',               l_en: 'I restart the run from scratch'            },
+            { v: 'chateado-ok', l: 'Fico chateado mas continuo',           l_en: "I'm upset but keep going"                  },
+            { v: 'natural',     l: 'Encaro como parte natural do jogo',    l_en: 'I accept it as a natural part of the game' },
+            { v: 'arquivo',     l: 'Arquivo a save e começo uma nova run', l_en: 'I archive the save and start a new run'    },
         ],
     },
     d5: {
         section: 'motiv', num: 'D5',
-        text: 'Você nomeia todos os seus Pokémons nas runs?',
+        text:    'Você nomeia todos os seus Pokémons nas runs?',
+        text_en: 'Do you nickname all your Pokémon in runs?',
         type: 'single', pokemon: 25,
         opts: [
-            { v: 'sempre',    l: 'Sempre' },
-            { v: 'as-vezes',  l: 'Às vezes, só os favoritos' },
-            { v: 'raramente', l: 'Raramente' },
-            { v: 'nunca',     l: 'Nunca' },
+            { v: 'sempre',    l: 'Sempre',                    l_en: 'Always'                        },
+            { v: 'as-vezes',  l: 'Às vezes, só os favoritos', l_en: 'Sometimes, just my favorites' },
+            { v: 'raramente', l: 'Raramente',                 l_en: 'Rarely'                        },
+            { v: 'nunca',     l: 'Nunca',                     l_en: 'Never'                         },
         ],
     },
 
     /* ── COMPARTILHAMENTO ── */
     e1: {
         section: 'share', num: 'E1',
-        text: 'Você costuma registrar ou compartilhar o progresso das suas runs?',
-        hint: 'Pode marcar mais de uma opção.',
+        text:    'Você costuma registrar ou compartilhar o progresso das suas runs?',
+        text_en: 'Do you usually record or share your run progress?',
+        hint:    'Pode marcar mais de uma opção.',
+        hint_en: 'Select all that apply.',
         type: 'multi', pokemon: 65,
         opts: [
-            { v: 'nao',         l: 'Não costumo registrar' },
-            { v: 'anotacoes',   l: 'Anoto pra mim mesmo (caderno, planilha)' },
-            { v: 'whatsapp',    l: 'Compartilho com amigos pelo WhatsApp ou Telegram' },
-            { v: 'facebook',    l: 'Posto em grupos do Facebook' },
-            { v: 'reddit',      l: 'Posto no Reddit (r/nuzlocke ou similares)' },
-            { v: 'redes',       l: 'Compartilho no Instagram, TikTok ou Twitter/X' },
-            { v: 'stream',      l: 'Faço stream ou gravo vídeos' },
-            { v: 'outro',       l: 'Outro', outro: true },
+            { v: 'nao',       l: 'Não costumo registrar',                            l_en: "I don't usually record it"                   },
+            { v: 'anotacoes', l: 'Anoto pra mim mesmo (caderno, planilha)',           l_en: 'I note it for myself (notebook, spreadsheet)' },
+            { v: 'whatsapp',  l: 'Compartilho com amigos pelo WhatsApp ou Telegram', l_en: 'I share with friends via WhatsApp or Telegram' },
+            { v: 'facebook',  l: 'Posto em grupos do Facebook',                      l_en: 'I post in Facebook groups'                    },
+            { v: 'reddit',    l: 'Posto no Reddit (r/nuzlocke ou similares)',         l_en: 'I post on Reddit (r/nuzlocke or similar)'     },
+            { v: 'redes',     l: 'Compartilho no Instagram, TikTok ou Twitter/X',    l_en: 'I share on Instagram, TikTok or Twitter/X'   },
+            { v: 'stream',    l: 'Faço stream ou gravo vídeos',                      l_en: 'I stream or record videos'                   },
+            { v: 'outro',     l: 'Outro', outro: true,                               l_en: 'Other'                                        },
         ],
     },
     e2: {
         section: 'share', num: 'E2',
-        text: 'Você usa algum conteúdo de apoio durante suas runs?',
-        hint: 'Pode marcar mais de uma opção.',
+        text:    'Você usa algum conteúdo de apoio durante suas runs?',
+        text_en: 'Do you use any support content during your runs?',
+        hint:    'Pode marcar mais de uma opção.',
+        hint_en: 'Select all that apply.',
         type: 'multi', pokemon: 235,
         opts: [
-            { v: 'nada',          l: 'Não costumo usar nada externo' },
-            { v: 'univ-nuzlocke', l: 'Universidade Nuzlocke (guias de tier)' },
-            { v: 'bulbapedia',    l: 'Bulbapedia' },
-            { v: 'serebii',       l: 'Serebii' },
-            { v: 'smogon',        l: 'Smogon' },
-            { v: 'damage-calc',   l: 'Calculadora de dano' },
-            { v: 'youtube',       l: 'Guias no YouTube' },
-            { v: 'tier-list',     l: 'Tier lists específicas de Nuzlocke' },
-            { v: 'discord',       l: 'Grupos no Discord com dicas' },
-            { v: 'outro',         l: 'Outro', outro: true },
+            { v: 'nada',          l: 'Não costumo usar nada externo',              l_en: "I don't use any external resources" },
+            { v: 'univ-nuzlocke', l: 'Universidade Nuzlocke (guias de tier)',      l_en: 'Nuzlocke University (tier guides)'  },
+            { v: 'bulbapedia',    l: 'Bulbapedia',                                 l_en: 'Bulbapedia'                         },
+            { v: 'serebii',       l: 'Serebii',                                    l_en: 'Serebii'                            },
+            { v: 'smogon',        l: 'Smogon',                                     l_en: 'Smogon'                             },
+            { v: 'damage-calc',   l: 'Calculadora de dano',                        l_en: 'Damage calculator'                  },
+            { v: 'youtube',       l: 'Guias no YouTube',                           l_en: 'YouTube guides'                     },
+            { v: 'tier-list',     l: 'Tier lists específicas de Nuzlocke',         l_en: 'Nuzlocke-specific tier lists'       },
+            { v: 'discord',       l: 'Grupos no Discord com dicas',                l_en: 'Discord groups with tips'           },
+            { v: 'outro',         l: 'Outro', outro: true,                         l_en: 'Other'                              },
         ],
     },
     e3: {
         section: 'share', num: 'E3',
-        text: 'Com que frequência você consulta esses materiais durante uma run?',
+        text:    'Com que frequência você consulta esses materiais durante uma run?',
+        text_en: 'How often do you consult these resources during a run?',
         type: 'single', pokemon: 385,
         opts: [
-            { v: 'raramente',    l: 'Raramente, só quando trava em algo' },
-            { v: 'as-vezes',     l: 'Às vezes, para confirmar alguma informação' },
-            { v: 'freq',         l: 'Frequentemente, me preparo antes de cada área' },
-            { v: 'sempre',       l: 'Sempre, pesquiso tudo antes de tomar uma decisão' },
+            { v: 'raramente', l: 'Raramente, só quando trava em algo',                       l_en: "Rarely, only when I'm stuck"                             },
+            { v: 'as-vezes',  l: 'Às vezes, para confirmar alguma informação',               l_en: 'Sometimes, to confirm some information'                  },
+            { v: 'freq',      l: 'Frequentemente, me preparo antes de cada área',            l_en: 'Often, I prepare before each area'                       },
+            { v: 'sempre',    l: 'Sempre, pesquiso tudo antes de tomar uma decisão',         l_en: 'Always, I research everything before making a decision'  },
         ],
     },
 
-    /* ── BARREIRAS (só para quem conhece mas nunca tentou) ── */
+    /* ── BARREIRAS ── */
     f1: {
         section: 'barrier', num: 'F1',
-        text: 'Por que você ainda não tentou um Nuzlocke?',
-        hint: 'Pode marcar mais de uma opção.',
+        text:    'Por que você ainda não tentou um Nuzlocke?',
+        text_en: "Why haven't you tried a Nuzlocke yet?",
+        hint:    'Pode marcar mais de uma opção.',
+        hint_en: 'Select all that apply.',
         type: 'multi', pokemon: 129,
         opts: [
-            { v: 'dificil',      l: 'Parece difícil demais' },
-            { v: 'apego',        l: 'Não quero me apegar aos Pokémons e os perder' },
-            { v: 'tempo',        l: 'Nunca tive tempo' },
-            { v: 'nao-divertido',l: 'Não achei que seria divertido' },
-            { v: 'em-breve',     l: 'Pretendo tentar em breve' },
-            { v: 'nao-conhece-regras', l: 'Não conheço bem as regras' },
-            { v: 'outro',        l: 'Outro', outro: true },
+            { v: 'dificil',            l: 'Parece difícil demais',                        l_en: 'It seems too hard'                             },
+            { v: 'apego',              l: 'Não quero me apegar aos Pokémons e os perder', l_en: "I don't want to get attached to Pokémon and lose them" },
+            { v: 'tempo',              l: 'Nunca tive tempo',                              l_en: "I've never had the time"                       },
+            { v: 'nao-divertido',      l: 'Não achei que seria divertido',                 l_en: "I didn't think it would be fun"                },
+            { v: 'em-breve',           l: 'Pretendo tentar em breve',                      l_en: 'I plan to try soon'                            },
+            { v: 'nao-conhece-regras', l: 'Não conheço bem as regras',                    l_en: "I don't know the rules well"                   },
+            { v: 'outro',              l: 'Outro', outro: true,                            l_en: 'Other'                                         },
         ],
     },
 
-    /* ── ABANDONO (só para quem tentou mas não completou) ── */
+    /* ── ABANDONO ── */
     g1: {
         section: 'abandon', num: 'G1',
-        text: 'O que geralmente te faz abandonar uma run?',
+        text:    'O que geralmente te faz abandonar uma run?',
+        text_en: 'What usually makes you abandon a run?',
         type: 'single', pokemon: 75,
         opts: [
-            { v: 'perdeu-mon',  l: 'Perdi um Pokémon muito importante e não quis continuar' },
-            { v: 'dificil',     l: 'A run ficou difícil demais' },
-            { v: 'interesse',   l: 'Perdi o interesse no jogo' },
-            { v: 'nova-run',    l: 'Comecei uma nova run em outro jogo' },
-            { v: 'vida-real',   l: 'Vida real (falta de tempo)' },
-            { v: 'outro',       l: 'Outro', outro: true },
+            { v: 'perdeu-mon', l: 'Perdi um Pokémon muito importante e não quis continuar', l_en: "I lost a very important Pokémon and didn't want to continue" },
+            { v: 'dificil',    l: 'A run ficou difícil demais',                              l_en: 'The run became too hard'                                     },
+            { v: 'interesse',  l: 'Perdi o interesse no jogo',                               l_en: 'I lost interest in the game'                                 },
+            { v: 'nova-run',   l: 'Comecei uma nova run em outro jogo',                      l_en: 'I started a new run in another game'                         },
+            { v: 'vida-real',  l: 'Vida real (falta de tempo)',                              l_en: 'Real life (lack of time)'                                    },
+            { v: 'outro',      l: 'Outro', outro: true,                                      l_en: 'Other'                                                       },
         ],
     },
 
-    /* ── CONQUISTAS (só para quem completou) ── */
+    /* ── CONQUISTAS ── */
     h1: {
         section: 'win', num: 'H1',
-        text: 'Você já postou seu Hall da Fama ou registro de conclusão em algum lugar?',
+        text:    'Você já postou seu Hall da Fama ou registro de conclusão em algum lugar?',
+        text_en: 'Have you ever posted your Hall of Fame or completion record anywhere?',
         type: 'single', pokemon: 250,
         opts: [
-            { v: 'sim-sempre',   l: 'Sim, costumo postar' },
-            { v: 'sim-raramente',l: 'Já postei, mas raramente' },
-            { v: 'guardo',       l: 'Não posto, mas guardo pra mim' },
-            { v: 'nao-pensou',   l: 'Nunca pensei em registrar' },
+            { v: 'sim-sempre',    l: 'Sim, costumo postar',           l_en: 'Yes, I usually post it'               },
+            { v: 'sim-raramente', l: 'Já postei, mas raramente',      l_en: 'I have posted, but rarely'            },
+            { v: 'guardo',        l: 'Não posto, mas guardo pra mim', l_en: "I don't post, but I keep it for myself" },
+            { v: 'nao-pensou',    l: 'Nunca pensei em registrar',     l_en: 'I have never thought about recording it' },
         ],
     },
     h2: {
         section: 'win', num: 'H2',
-        text: 'Você tem algum Pokémon perdido numa run que ainda lembra hoje?',
-        hint: 'Campo opcional — conta a história se quiser.',
-        type: 'open', pokemon: 197,
-        placeholder: 'Ex: Meu Typhlosion no Emerald, morreu pra um crítico do último gym...',
+        text:           'Você tem algum Pokémon perdido numa run que ainda lembra hoje?',
+        text_en:        'Do you have a Pokémon you lost in a run that you still remember today?',
+        hint:           'Campo opcional — conta a história se quiser.',
+        hint_en:        'Optional field — share the story if you want.',
+        type: 'open',   pokemon: 197,
+        placeholder:    'Ex: Meu Typhlosion no Emerald, morreu pra um crítico do último gym...',
+        placeholder_en: 'E.g.: My Typhlosion in Emerald, died to a crit from the last gym...',
     },
 };
 
@@ -987,12 +1122,13 @@ const PROFILE_FLOWS = {
    STATE
 ===================================================================== */
 let state = {
-    answers:  {},  // { qid: value }
+    answers:  {},   // { qid: value }
     phase:    'triagem',  // 'triagem' | 'profile'
     triagem:  ['q0', 'q1'],
     triIdx:   0,
     flow:     [],
     flowIdx:  -1,
+    lang:     'pt',
 };
 
 let lastPayload = null;  // for retry
@@ -1051,6 +1187,43 @@ function setAccent(sectionKey) {
 }
 
 /* =====================================================================
+   LANGUAGE
+===================================================================== */
+function toggleLang() {
+    state.lang = state.lang === 'pt' ? 'en' : 'pt';
+    document.getElementById('lang-pt').classList.toggle('active', state.lang === 'pt');
+    document.getElementById('lang-en').classList.toggle('active', state.lang === 'en');
+    applyLang();
+    // Re-render current question if form is open
+    if (document.getElementById('card').style.display !== 'none') {
+        renderQuestion(currentQid());
+    }
+}
+
+function applyLang() {
+    const u  = UI[state.lang];
+    const el = id => document.getElementById(id);
+    document.documentElement.lang = state.lang === 'pt' ? 'pt-BR' : 'en';
+    document.title = u.page_title;
+    // Cover
+    if (el('cover-tag'))   el('cover-tag').innerHTML    = u.cover_tag;
+    if (el('cover-title')) el('cover-title').innerHTML  = u.cover_title;
+    if (el('cover-desc'))  el('cover-desc').textContent = u.cover_desc;
+    if (el('badge-time'))  el('badge-time').textContent = u.badge_time;
+    if (el('badge-anon'))  el('badge-anon').textContent = u.badge_anon;
+    if (el('badge-lang'))  el('badge-lang').textContent = u.badge_lang;
+    if (el('btn-start'))   el('btn-start').textContent  = u.btn_start;
+    // End screens
+    if (el('end-nao-title')) el('end-nao-title').textContent = u.end_nao_title;
+    if (el('end-nao-desc'))  el('end-nao-desc').textContent  = u.end_nao_desc;
+    if (el('end-ok-title'))  el('end-ok-title').textContent  = u.end_ok_title;
+    if (el('end-ok-desc'))   el('end-ok-desc').textContent   = u.end_ok_desc;
+    if (el('end-err-title')) el('end-err-title').textContent = u.end_err_title;
+    if (el('end-err-desc'))  el('end-err-desc').textContent  = u.end_err_desc;
+    if (el('btn-retry'))     el('btn-retry').textContent     = u.btn_retry;
+}
+
+/* =====================================================================
    PROGRESS BAR
 ===================================================================== */
 function renderProgress() {
@@ -1076,10 +1249,15 @@ function renderProgress() {
 function renderQuestion(qid) {
     const q   = Q[qid];
     const sec = SECTIONS[q.section] || SECTIONS.triagem;
+    const u   = UI[state.lang];
     setAccent(q.section);
 
-    const isFirst = state.phase === 'triagem' && state.triIdx === 0;
-    const isLast  = state.phase === 'profile' && state.flowIdx === state.flow.length - 1;
+    const isFirst   = state.phase === 'triagem' && state.triIdx === 0;
+    const isLast    = state.phase === 'profile' && state.flowIdx === state.flow.length - 1;
+    const qText     = (state.lang === 'en' && q.text_en)    ? q.text_en    : q.text;
+    const qHint     = (state.lang === 'en' && q.hint_en)    ? q.hint_en    : q.hint;
+    const secLabel  = (state.lang === 'en' && sec.label_en) ? sec.label_en : sec.label;
+    const outroPH   = u.outro_ph;
 
     let optsHtml = '';
 
@@ -1087,32 +1265,34 @@ function renderQuestion(qid) {
         const isMul = q.type === 'multi';
         optsHtml = `<div class="options">` +
             q.opts.map(o => {
+                const label = (state.lang === 'en' && o.l_en) ? o.l_en : o.l;
                 const outroPart = o.outro
-                    ? `<input class="outro-input" type="text" placeholder="Descreva aqui..." id="outro-${qid}-${o.v}" oninput="saveOutro('${qid}','${o.v}',this.value)">`
+                    ? `<input class="outro-input" type="text" placeholder="${outroPH}" id="outro-${qid}-${o.v}" oninput="saveOutro('${qid}','${o.v}',this.value)">`
                     : '';
                 return `
                 <div class="opt" id="opt-${o.v}" onclick="pickOpt('${qid}','${o.v}',${isMul})">
                     <div class="ctrl ${isMul ? 'sq' : ''}"></div>
-                    <div style="flex:1">${o.l}${outroPart}</div>
+                    <div style="flex:1">${label}${outroPart}</div>
                 </div>`;
             }).join('') +
             `</div>`;
     } else if (q.type === 'open') {
-        optsHtml = `<textarea class="open-area" id="open-${qid}" placeholder="${q.placeholder || ''}"
+        const ph = (state.lang === 'en' && q.placeholder_en) ? q.placeholder_en : (q.placeholder || '');
+        optsHtml = `<textarea class="open-area" id="open-${qid}" placeholder="${ph}"
             oninput="saveOpen('${qid}', this.value)">${getAns(qid) || ''}</textarea>`;
     }
 
     const monUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${q.pokemon}.png`;
 
     document.getElementById('qarea').innerHTML = `
-        <div class="q-tag">${sec.label} · ${q.num}</div>
-        <div class="q-text">${q.text}</div>
-        ${q.hint ? `<div class="q-hint">${q.hint}</div>` : ''}
+        <div class="q-tag">${secLabel} · ${q.num}</div>
+        <div class="q-text">${qText}</div>
+        ${qHint ? `<div class="q-hint">${qHint}</div>` : ''}
         ${optsHtml}
         <img class="card-mon" src="${monUrl}" alt="">
         <div class="nav">
-            ${isFirst ? '' : `<button class="btn btn-back" onclick="goBack()">← Voltar</button>`}
-            <button class="btn btn-next" id="btn-next" onclick="goNext()">${isLast ? 'Enviar →' : 'Próxima →'}</button>
+            ${isFirst ? '' : `<button class="btn btn-back" onclick="goBack()">${u.btn_back}</button>`}
+            <button class="btn btn-next" id="btn-next" onclick="goNext()">${isLast ? u.btn_send : u.btn_next}</button>
         </div>
     `;
 
@@ -1187,7 +1367,7 @@ function updateCounter() {
     const el  = document.getElementById('counter');
     const cur = currentStepNum();
     const tot = totalSteps();
-    el.textContent = `Pergunta ${cur} de ${tot}`;
+    el.textContent = UI[state.lang].counter(cur, tot);
     el.style.display = 'block';
 }
 
@@ -1273,7 +1453,7 @@ function goBack() {
         state.triIdx--;
     } else {
         // Back to cover
-        document.getElementById('card').style.display = 'none';
+        document.getElementById('card').style.display    = 'none';
         document.getElementById('progress').style.display = 'none';
         document.getElementById('counter').style.display  = 'none';
         showScreen('screen-cover');
@@ -1307,6 +1487,8 @@ function showScreen(id) {
 function buildPayload() {
     return {
         timestamp: new Date().toISOString(),
+        source:    SOURCE,
+        lang:      state.lang,
         profile:   getAns('q1') || 'unknown',
         answers:   { ...state.answers },
     };
@@ -1316,7 +1498,7 @@ function submitForm() {
     const btn = document.getElementById('btn-next');
     if (btn) {
         btn.disabled = true;
-        btn.innerHTML = `<span class="spinner"></span> Enviando...`;
+        btn.innerHTML = `<span class="spinner"></span> ${UI[state.lang].sending}`;
     }
 
     lastPayload = buildPayload();
@@ -1342,7 +1524,6 @@ function submitForm() {
 
 function retrySubmit() {
     if (!lastPayload) { submitForm(); return; }
-    showScreen('screen-end-err');
     document.getElementById('screen-end-err').classList.remove('active');
 
     fetch(APPS_SCRIPT_URL, {
@@ -1362,7 +1543,9 @@ const tipPopup = document.getElementById('tip-popup');
 
 function showTip(tip) {
     const r    = tip.getBoundingClientRect();
-    const text = tip.dataset.tip;
+    // Use EN tooltip if in EN mode and data-tip-en exists
+    const text = (state.lang === 'en' && tip.dataset.tipEn) ? tip.dataset.tipEn : tip.dataset.tip;
+    if (!text) return;
     tipPopup.textContent = text;
     tipPopup.classList.add('visible');
 
@@ -1385,11 +1568,9 @@ function showTip(tip) {
     const arrowPct = Math.round(((cx - left) / pw) * 100);
     tipPopup.style.setProperty('--arrow', arrowPct + '%');
 
-    // Flip arrow if tooltip is below
-    tipPopup.style.setProperty('--arrow-dir', flipBelow ? 'bottom' : 'top');
-    tipPopup.style.cssText += flipBelow
-        ? '; --arrow-top: auto; border-top-color: transparent;'
-        : '';
+    if (flipBelow) {
+        tipPopup.style.cssText += '; --arrow-top: auto; border-top-color: transparent;';
+    }
 }
 
 function hideTip() { tipPopup.classList.remove('visible'); }
@@ -1448,7 +1629,12 @@ function doPost(e) {
 }
 
 function flattenAnswers(data) {
-  const row = { timestamp: data.timestamp, profile: data.profile };
+  const row = {
+    timestamp: data.timestamp,
+    source:    data.source,
+    lang:      data.lang,
+    profile:   data.profile,
+  };
   Object.assign(row, data.answers);
   return row;
 }
@@ -1459,6 +1645,21 @@ function flattenAnswers(data) {
    - Executar como: Eu
    - Quem pode acessar: Qualquer pessoa
 4. Copie a URL gerada e substitua 'YOUR_APPS_SCRIPT_URL_HERE' no topo do script deste arquivo.
+
+=====================================================================
+LINKS COM RASTREAMENTO DE ORIGEM (UTM via ?s=)
+=====================================================================
+
+Use estes links ao divulgar o formulário em cada canal:
+
+  Facebook (grupos PT):  https://willianpessoa.github.io/pokedex-cpp/?s=fb-nuzlocke-br
+  Reddit r/nuzlocke:     https://willianpessoa.github.io/pokedex-cpp/?s=reddit-nuzlocke
+  Discord (servidor PT): https://willianpessoa.github.io/pokedex-cpp/?s=discord-pt
+  Twitter/X:             https://willianpessoa.github.io/pokedex-cpp/?s=twitter-br
+  WhatsApp:              https://willianpessoa.github.io/pokedex-cpp/?s=whatsapp
+  Sem parâmetro:         https://willianpessoa.github.io/pokedex-cpp/  → registra 'direct'
+
+O campo "source" aparece na planilha ao lado de cada resposta.
 
 =====================================================================
 -->
