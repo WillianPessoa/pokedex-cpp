@@ -545,7 +545,7 @@
                  alt="">
             <h1 class="cover-title" id="cover-title">Pesquisa sobre<br><em>Nuzlocke</em></h1>
             <p class="cover-desc" id="cover-desc">
-                Queremos entender quem são os jogadores de Nuzlocke no Brasil — do casual ao hardcoreador de Emerald Kaizo.
+                Queremos entender quem são os jogadores de Nuzlocke ao redor do mundo — do casual ao hardcoreador de Emerald Kaizo.
                 São de 5 a 10 minutos.
             </p>
             <div class="badges">
@@ -578,7 +578,7 @@
             <h2 id="end-ok-title">Run concluída!</h2>
             <p id="end-ok-desc">
                 Suas respostas foram registradas. Muito obrigado por participar —
-                você está ajudando a mapear a comunidade de Nuzlocke no Brasil.
+                você está ajudando a mapear a comunidade de Nuzlocke ao redor do mundo.
             </p>
         </div>
     </div>
@@ -627,7 +627,7 @@ const UI = {
     pt: {
         cover_tag:     'Quem é esse Pokémon?',
         cover_title:   'Pesquisa sobre<br><em>Nuzlocke</em>',
-        cover_desc:    'Queremos entender quem são os jogadores de Nuzlocke no Brasil — do casual ao hardcoreador de Emerald Kaizo. São de 5 a 10 minutos.',
+        cover_desc:    'Queremos entender quem são os jogadores de Nuzlocke ao redor do mundo — do casual ao hardcoreador de Emerald Kaizo. São de 5 a 10 minutos.',
         badge_time:    '🕐 ~10 min',
         badge_anon:    '🔒 Anônimo',
         badge_lang:    '🇧🇷 PT-BR',
@@ -641,7 +641,7 @@ const UI = {
         end_nao_title: 'Valeu mesmo assim!',
         end_nao_desc:  'O formulário é para jogadores de Pokémon, mas agradecemos sua curiosidade. Quem sabe você não começa a jogar depois disso?',
         end_ok_title:  'Run concluída!',
-        end_ok_desc:   'Suas respostas foram registradas. Muito obrigado por participar — você está ajudando a mapear a comunidade de Nuzlocke no Brasil.',
+        end_ok_desc:   'Suas respostas foram registradas. Muito obrigado por participar — você está ajudando a mapear a comunidade de Nuzlocke ao redor do mundo.',
         end_err_title: 'Pokémon fainted...',
         end_err_desc:  'Algo deu errado ao enviar suas respostas. Tente novamente ou entre em contato.',
         page_title:    'Pesquisa sobre Nuzlocke',
@@ -650,7 +650,7 @@ const UI = {
     en: {
         cover_tag:     "Who's that Pokémon?",
         cover_title:   'Survey on<br><em>Nuzlocke</em>',
-        cover_desc:    'We want to understand who plays Nuzlocke in Brazil — from casual players to hardcore Emerald Kaizo runners. Takes 5 to 10 minutes.',
+        cover_desc:    'We want to understand who plays Nuzlocke around the world — from casual players to hardcore Emerald Kaizo runners. Takes 5 to 10 minutes.',
         badge_time:    '🕐 ~10 min',
         badge_anon:    '🔒 Anonymous',
         badge_lang:    '🌐 EN',
@@ -664,7 +664,7 @@ const UI = {
         end_nao_title: 'Thanks anyway!',
         end_nao_desc:  "This survey is for Pokémon players, but we appreciate your curiosity. Maybe you'll start playing after this?",
         end_ok_title:  'Run complete!',
-        end_ok_desc:   'Your answers have been recorded. Thank you so much for participating — you are helping map the Nuzlocke community in Brazil.',
+        end_ok_desc:   'Your answers have been recorded. Thank you so much for participating — you are helping map the Nuzlocke community worldwide.',
         end_err_title: 'Pokémon fainted...',
         end_err_desc:  'Something went wrong while sending your answers. Please try again or get in touch.',
         page_title:    'Nuzlocke Survey',
@@ -718,6 +718,20 @@ const Q = {
     },
 
     /* ── DEMOGRAFIA ── */
+    a0: {
+        section: 'demo', num: 'A0',
+        text:    'De qual país você está respondendo?',
+        text_en: 'Which country are you responding from?',
+        type: 'single', pokemon: 132,
+        opts: [
+            { v: 'brasil',      l: 'Brasil',         l_en: 'Brazil'         },
+            { v: 'eua',         l: 'Estados Unidos', l_en: 'United States'  },
+            { v: 'reino-unido', l: 'Reino Unido',    l_en: 'United Kingdom' },
+            { v: 'canada',      l: 'Canadá',          l_en: 'Canada'         },
+            { v: 'australia',   l: 'Austrália',       l_en: 'Australia'      },
+            { v: 'outro',       l: 'Outro', outro: true, l_en: 'Other'       },
+        ],
+    },
     a1: {
         section: 'demo', num: 'A1',
         text:    'Qual é a sua faixa etária?',
@@ -1112,10 +1126,10 @@ const Q = {
    FLOWS PER PROFILE
 ===================================================================== */
 const PROFILE_FLOWS = {
-    'nao-conhece':        ['a1', 'a2', 'a2b', 'a2c', 'b1', 'b3', 'c1'],
-    'conhece-nao-tentou': ['a1', 'a2', 'a2b', 'a2c', 'b1', 'b3', 'c1', 'f1'],
-    'tentou':             ['a1', 'a2', 'a2b', 'a2c', 'a3', 'b1', 'b2', 'b3', 'c1', 'c2', 'd1', 'd2', 'd3', 'd3c', 'd4', 'd5', 'e1', 'e2', 'e3', 'g1'],
-    'completou':          ['a1', 'a2', 'a2b', 'a2c', 'a3', 'b1', 'b2', 'b3', 'c1', 'c2', 'd1', 'd2', 'd3', 'd3c', 'd4', 'd5', 'e1', 'e2', 'e3', 'h1', 'h2'],
+    'nao-conhece':        ['a0', 'a1', 'a2', 'a2b', 'a2c', 'b1', 'b3', 'c1'],
+    'conhece-nao-tentou': ['a0', 'a1', 'a2', 'a2b', 'a2c', 'b1', 'b3', 'c1', 'f1'],
+    'tentou':             ['a0', 'a1', 'a2', 'a2b', 'a2c', 'a3', 'b1', 'b2', 'b3', 'c1', 'c2', 'd1', 'd2', 'd3', 'd3c', 'd4', 'd5', 'e1', 'e2', 'e3', 'g1'],
+    'completou':          ['a0', 'a1', 'a2', 'a2b', 'a2c', 'a3', 'b1', 'b2', 'b3', 'c1', 'c2', 'd1', 'd2', 'd3', 'd3c', 'd4', 'd5', 'e1', 'e2', 'e3', 'h1', 'h2'],
 };
 
 /* =====================================================================
